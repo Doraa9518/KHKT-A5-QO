@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ Thống Trợ Lý AI Giáo Dục THPT - Hybrid Engine Edition</title>
+
+  <!-- 1. MARKED.JS -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- 2. MATHJAX -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    :root {
+      --ui-bg-1: #f0f2f5;
+      --ui-bg-2: #eef3ff;
+      --ui-card: #ffffff;
+      --ui-panel: #f7f9fb;
+      --ui-line: #e9edf3;
+      --ui-text: #1c1e21;
+      --ui-muted: #65676b;
+      --ui-accent: #5b7cff;
+      --ui-bot-bg: #ffffff;
+      --ui-bot-text: #263244;
+      --ui-shadow: 0 18px 45px rgba(37, 55, 85, 0.14);
+    }
+
+    body.dark-theme {
+      --ui-bg-1: #121417;
+      --ui-bg-2: #0f172a;
+      --ui-card: #242526;
+      --ui-panel: #1e232b;
+      --ui-line: rgba(255,255,255,0.08);
+      --ui-text: #f0f2f5;
+      --ui-muted: #b0b3b8;
+      --ui-bot-bg: #2b313c;
+      --ui-bot-text: #f1f5f9;
+      --ui-shadow: 0 22px 55px rgba(0, 0, 0, 0.34);
+    }
+
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background: radial-gradient(circle at 12% 8%, rgba(91,124,255,0.18), transparent 30%), linear-gradient(180deg, var(--ui-bg-1), var(--ui-bg-2)); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; width: 100vw; color: var(--ui-text); transition: background 0.35s ease, color 0.25s ease; }
+    .chat-card { width: min(100%, 1080px); height: 88vh; background: color-mix(in srgb, var(--ui-card) 94%, transparent); border: 1px solid var(--ui-line); border-radius: 22px; box-shadow: var(--ui-shadow); display: flex; flex-direction: column; padding: 14px 16px 16px; animation: cardEnter 0.55s cubic-bezier(.2,.8,.2,1) both; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ui-line); padding: 8px 8px 14px; margin-bottom: 12px; gap: 14px; }
+    .header-left { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; min-width: 0; flex: 1; }
+    .header h3 { margin: 0; color: var(--ui-text); font-size: 1.04rem; font-weight: 600; }
+    .header h3::first-letter { color: var(--ui-accent); }
+    
+    .mode-select, .thinking-select, .detail-select { padding: 8px 11px; border-radius: 999px; border: 1px solid var(--ui-line); background: var(--ui-panel); font-weight: 600; color: var(--ui-text); outline: none; cursor: pointer; font-size: 12px; transition: border-color 0.2s ease, transform 0.2s ease; }
+    .mode-select:hover, .thinking-select:hover, .detail-select:hover { border-color: var(--ui-accent); transform: translateY(-1px); }
+    .clear-btn { background: var(--ui-accent); color: white; border: none; padding: 9px 14px; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 600; }
+    .clear-btn:hover { background: #d9363e; }
+    .ui-tools { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .layout-btn { border: 1px solid var(--ui-line); border-radius: 999px; padding: 8px 11px; background: var(--ui-panel); color: var(--ui-text); cursor: pointer; font-size: 12px; font-weight: 600; }
+    .settings-btn { width: 36px; height: 36px; padding: 0; border: 1px solid var(--ui-line); border-radius: 50%; background: var(--ui-panel); color: var(--ui-text); cursor: pointer; font-size: 16px; }
+    .settings-panel { display: none; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 12px; margin-bottom: 10px; border: 1px solid var(--ui-line); border-radius: 14px; background: var(--ui-panel); color: var(--ui-text); font-size: 12px; }
+    .settings-panel.open { display: flex; animation: panelEnter 0.22s ease both; }
+    .theme-btn, .accent-btn { border: 1px solid var(--ui-line); border-radius: 999px; padding: 6px 10px; cursor: pointer; background: var(--ui-card); color: var(--ui-text); font-size: 12px; }
+    .accent-btn { width: 22px; height: 22px; padding: 0; border-radius: 50%; }
+    
+    .chat-box { flex: 1; overflow-y: auto; border-radius: 16px; padding: 16px; margin-bottom: 14px; background: color-mix(in srgb, var(--ui-panel) 88%, transparent); border: 1px solid var(--ui-line); display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
+    .msg-container { max-width: 900px; margin: 0 auto; width: 100%; }
+    .msg { width: fit-content; margin: 6px 0; padding: 13px 16px; border-radius: 18px; max-width: 82%; line-height: 1.55; word-wrap: break-word; font-size: 15px; animation: messageEnter 0.3s cubic-bezier(.2,.8,.2,1) both; }
+    .user { background: linear-gradient(135deg, var(--ui-accent), color-mix(in srgb, var(--ui-accent) 72%, #172554 28%)); color: white; margin-left: auto; margin-right: 0; border-bottom-right-radius: 8px; box-shadow: 0 7px 18px color-mix(in srgb, var(--ui-accent) 20%, transparent); }
+    .user img { max-width: 100%; max-height: 250px; border-radius: 12px; margin-bottom: 8px; display: block; }
+    
+    .bot { background: var(--ui-bot-bg); color: var(--ui-bot-text); margin-right: auto; border-bottom-left-radius: 8px; border: 1px solid var(--ui-line); box-shadow: 0 5px 16px rgba(15,23,42,0.06); }
+    .typing-message { display: inline-flex; align-items: center; gap: 9px; min-width: 112px; }
+    .typing-dots { display: inline-flex; align-items: center; gap: 4px; height: 14px; }
+    .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--ui-accent); animation: typingBounce 1.15s infinite ease-in-out; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+    .typing-label { color: var(--ui-muted); font-size: 12px; font-style: italic; }
+    .bot h1, .bot h2, .bot h3, .bot h4 { margin-top: 10px; margin-bottom: 6px; color: #1a73e8; }
+    .bot p { margin: 6px 0; }
+    .bot ul, .bot ol { margin: 6px 0; padding-left: 20px; }
+    .bot hr { border: 0; height: 1px; background: var(--ui-line); margin: 12px 0; }
+    
+    .engine-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; text-transform: uppercase; }
+    .engine-gemini { background: #e8f0fe; color: #1a73e8; }
+
+    .feedback-actions { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e5e7eb; display: flex; gap: 10px; align-items: center; }
+    .feedback-btn { padding: 5px 12px; border-radius: 14px; border: 1px solid var(--ui-line); background: var(--ui-card); color: var(--ui-text); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .feedback-btn.understand:hover { background: #e6f4ea; color: #137333; border-color: #137333; }
+    .feedback-btn.confused:hover { background: #fce8e6; color: #c5221f; border-color: #c5221f; }
+
+    .input-wrapper { margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 8px; }
+    .image-preview-container { display: none; align-items: center; gap: 10px; background: #f3f4f6; padding: 6px 12px; border-radius: 12px; width: fit-content; }
+    .image-preview-container img { height: 45px; border-radius: 6px; object-fit: cover; }
+    .remove-img-btn { background: #ff4d4f; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 11px; font-weight: bold; }
+    .input-row { display: flex; gap: 10px; width: 100%; }
+    .upload-btn { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; }
+    input[type="text"] { flex: 1; padding: 14px 17px; border: 1px solid var(--ui-line); border-radius: 24px; outline: none; font-size: 14px; background: var(--ui-card); color: var(--ui-text); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+    input[type="text"]:focus { border-color: var(--ui-accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ui-accent) 15%, transparent); }
+    button.send-btn { padding: 0 22px; border: none; background: var(--ui-accent); color: white; border-radius: 24px; cursor: pointer; font-weight: 600; font-size: 14px; }
+    button, .upload-btn, .settings-btn, .clear-btn, .layout-btn { transition: transform 0.2s ease, filter 0.2s ease, background 0.2s ease; }
+    button:hover, .upload-btn:hover, .settings-btn:hover, .clear-btn:hover, .layout-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+
+    body.phone-mode { padding: 14px; }
+    body.phone-mode .chat-card { width: min(100%, 430px); height: 92vh; padding: 12px; }
+    body.phone-mode .header { align-items: flex-start; flex-direction: column; }
+    body.phone-mode .header-left { width: 100%; gap: 6px; }
+    body.phone-mode .header h3 { width: 100%; }
+    body.phone-mode .ui-tools { width: 100%; justify-content: flex-end; }
+    body.phone-mode .chat-box { padding: 11px; }
+    body.phone-mode .msg { max-width: 92%; }
+    body.phone-mode .input-row { gap: 7px; }
+    body.phone-mode .upload-btn { width: 44px; height: 44px; }
+    body.phone-mode button.send-btn { padding: 0 17px; }
+
+    @keyframes cardEnter { from { opacity: 0; transform: translateY(16px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes messageEnter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes panelEnter { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.35; } 30% { transform: translateY(-4px); opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+    @media (max-width: 600px) {
+      body { padding: 14px; }
+      .chat-card { height: 92vh; padding: 12px; }
+      .header { align-items: flex-start; }
+      .header-left { gap: 6px; }
+      .header h3 { width: 100%; }
+      .msg { max-width: 88%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat-card">
+  <div class="header">
+    <div class="header-left">
+      <h3>🧠 Trợ Lý AI Giáo Dục THPT</h3>
+      
+      <!-- MODE GIÁO VIÊN VÀ HỌC SINH -->
+      <select id="aiMode" class="mode-select" onchange="switchMode()">
+        <option value="student">🎓 Chế độ: Học Sinh</option>
+        <option value="teacher">👨‍🏫 Chế độ: Giáo Viên</option>
+      </select>
+
+      <select id="thinkingMode" class="thinking-select">
+        <option value="talking">💬 Mode: Talking</option>
+        <option value="study" selected>📚 Mode: Study</option>
+      </select>
+
+      <select id="detailMode" class="detail-select">
+        <option value="normal">⚡ Lời giải Tóm Tắt</option>
+        <option value="detailed" selected>🔍 Lời giải Chi Tiết & Bản Chất</option>
+      </select>
+    </div>
+    
+    <div class="ui-tools">
+      <button class="layout-btn" id="layoutToggle" onclick="toggleLayoutMode()" title="Chuyển bố cục Phone hoặc PC">📱 Phone</button>
+      <button class="settings-btn" onclick="toggleSettings()" title="Cài đặt giao diện">⚙️</button>
+      <button class="clear-btn" onclick="clearChat()">🗑️ Xóa Chat</button>
+    </div>
+  </div>
+
+  <div class="settings-panel" id="settingsPanel">
+    <span>Giao diện:</span>
+    <button class="theme-btn" onclick="setUiTheme('light')">Sáng</button>
+    <button class="theme-btn" onclick="setUiTheme('dark')">Tối</button>
+    <span>Màu:</span>
+    <button class="accent-btn" style="background:#5b7cff" onclick="setUiAccent('#5b7cff')" aria-label="Xanh dương"></button>
+    <button class="accent-btn" style="background:#22c55e" onclick="setUiAccent('#22c55e')" aria-label="Xanh lá"></button>
+    <button class="accent-btn" style="background:#f97316" onclick="setUiAccent('#f97316')" aria-label="Cam"></button>
+    <button class="accent-btn" style="background:#ec4899" onclick="setUiAccent('#ec4899')" aria-label="Hồng"></button>
+  </div>
+  
+  <div class="chat-box" id="chatBox">
+    <div class="msg-container" id="msgContainer">
+      <div class="msg bot" id="welcomeMsg">Chào cậu nhé! Tớ là Trợ lý AI. Hãy gửi bài tập để tớ cùng cậu giải mã bản chất nhé! 😊</div>
+    </div>
+  </div>
+  
+  <div class="input-wrapper">
+    <div class="image-preview-container" id="imagePreviewContainer">
+      <img id="imagePreview" src="" alt="Ảnh">
+      <span id="imageName" style="font-size: 12px; color: #4b5563;"></span>
+      <button class="remove-img-btn" onclick="removeSelectedImage()">✕</button>
+    </div>
+
+    <div class="input-row">
+      <label class="upload-btn" title="Tải ảnh bài tập lên">📷
+        <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+      </label>
+      
+      <input type="text" id="userInput" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter') sendMessage()">
+      <button class="send-btn" onclick="sendMessage()">Gửi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // KHÔI PHỤC 4 GEMINI KEYS XOAY VÒNG
+  const GEMINI_KEYS = [
+    "QVEuQWI4Uk42SnlCLWF3M2VwaFZyNUIwaTJETWJXZzkyYXEzQXQtWUJDRWQ0OXFpWEtBeFE",
+    "QVEuQWI4Uk42TFF6dzMwRUwtU19aNFFsUG4xWmwwT3pNRlZiMmVnTzhpR2ttdjQ4OUZVSWc=",
+    "QVEuQWI4Uk42SS15LWpFT2duZjJlZVdfdnZDMjJ5MzUzOUM3TjdSc2R3bXE1UF9NMGMwa2c=",
+    "QVEuQWI4Uk42S2ktcnNMbENRdDJIUHFGenRJdUgzQUJqMUxaVzE1YWdPZVRLVjg5dUF0TVE="
+  ];
+  let currentGeminiIndex = 0;
+  function getNextGeminiKey() {
+    if (GEMINI_KEYS.length === 0) return "";
+    const key = atob(GEMINI_KEYS[currentGeminiIndex]);
+    currentGeminiIndex = (currentGeminiIndex + 1) % GEMINI_KEYS.length;
+    return key;
+  }
+
+  const GEMINI_TALKING_MODEL = "gemini-3.5-flash-lite";
+  const GEMINI_STUDY_MODEL = "gemini-3.6-flash";
+
+  // SYSTEM PROMPT BẮT BỤC DÙNG DẤU $ CHO CÔNG THỨC TOÁN
+  const PROMPT_STUDENT = `
+Bạn là Trợ lý Học tập AI Sư phạm dành cho học sinh THPT.
+1. XƯNG HÔ: Xưng 'tớ' hoặc 'mình', gọi người dùng là 'cậu' hoặc 'bạn'. Khi giao tiếp phải thân thiện, gần gũi, vui vẻ, hài hước nhưng vẫn lịch sự và tôn trọng. Không được xưng hô kiểu giáo viên với học sinh và đặc biệt PHẢI tạo cảm giác thật cảm xúc và không gượng khi nói chuyện.
+  2. Trả lời thân thiện, thoải mái nhưng lịch sự, tinh tế, gần gũi và lễ phép, giải thích thì phải đầy đủ và dễ hiểu. Câu hỏi đơn giản thì trả lời gọn; bài tập cần giải thì không được trả lời cụt lủn.
+  3. Với Toán/Lý/Hóa, hãy nêu dữ kiện, chọn phương pháp, biến đổi từng bước, giải thích vì sao dùng công thức, rồi kiểm tra kết quả và điều kiện.
+  4. Nếu đề bài thiếu dữ kiện hoặc ảnh khó đọc, hãy nói rõ phần nào chưa chắc và hỏi lại, không tự bịa số liệu.
+  5. Có thể gợi mở Socratic, nhưng sau đó vẫn phải đưa hướng giải cụ thể để học sinh học được cách làm.
+  6. Công thức dòng dùng dấu $...$, công thức riêng dòng dùng $$...$$. Không dùng \\( \\), \\[ \\].
+  7. Trong công thức, không dùng dấu chấm phẩy. Số thập phân viết bằng dấu phẩy, ví dụ $9{,}11$; không dùng dấu chấm cho số thập phân. Dấu phẩy chỉ dùng cho số thập phân hoặc phân cách các thành phần rõ ràng.
+`;
+
+  const PROMPT_TEACHER = `
+Bạn là Trợ lý Sư phạm Cao cấp hỗ trợ Giáo viên THPT.
+1. XƯNG HÔ: Trịnh trọng, xưng 'em' hoặc 'Trợ lý AI', gọi người dùng là 'Thầy/Cô'.
+2. NHIỆM VỤ CHÍNH: Xây dựng Giáo án, Kế hoạch bài dạy (KHBD), Đề thi phân hóa 4 mức độ.
+3. ĐỊNH DẠNG CÔNG THỨC TOÁN: Sử dụng dấu $ công thức $ hoặc $$ công thức $$. KHÔNG DÙNG \\( \\) HOẶC \\[ \\]. Trong công thức không dùng dấu chấm phẩy; số thập phân viết dạng $9{,}11$, không dùng $9.11$.
+`;
+
+  let chatHistory = JSON.parse(localStorage.getItem("khkt_chat_history")) || [];
+  let selectedImageBase64 = null;
+  let selectedImageMimeType = null;
+
+  function toggleSettings() {
+    document.getElementById("settingsPanel").classList.toggle("open");
+  }
+
+  function setUiTheme(theme) {
+    document.body.classList.toggle("dark-theme", theme === "dark");
+    localStorage.setItem("ai-theme", theme);
+  }
+
+  function setUiAccent(color) {
+    document.documentElement.style.setProperty("--ui-accent", color);
+    localStorage.setItem("ai-accent", color);
+  }
+
+  function setLayoutMode(mode) {
+    const isPhone = mode === "phone";
+    document.body.classList.toggle("phone-mode", isPhone);
+    document.getElementById("layoutToggle").textContent = isPhone ? "🖥️ PC" : "📱 Phone";
+    localStorage.setItem("ai-layout", mode);
+  }
+
+  function toggleLayoutMode() {
+    setLayoutMode(document.body.classList.contains("phone-mode") ? "pc" : "phone");
+  }
+
+  setUiTheme(localStorage.getItem("ai-theme") || "light");
+  setUiAccent(localStorage.getItem("ai-accent") || "#5b7cff");
+  setLayoutMode(localStorage.getItem("ai-layout") || "pc");
+
+  // HÀM CHUYỂN ĐỔI CHUẨN HÓA LATEX
+  function fixLatexFormat(text) {
+    if (!text) return "";
+    let cleaned = text
+      .replace(/\\\[/g, "$$")
+      .replace(/\\\]/g, "$$")
+      .replace(/\\\(/g, "$")
+      .replace(/\\\)/g, "$");
+
+    // Chuẩn hóa riêng phần công thức, không đụng vào dấu câu của văn bản thường.
+    cleaned = cleaned.replace(/(\$\$[\s\S]*?\$\$|\$(?!\$)[\s\S]*?\$(?!\$))/g, mathBlock => {
+      const isDisplayMath = mathBlock.startsWith("$$");
+      const delimiter = isDisplayMath ? "$$" : "$";
+      const innerMath = mathBlock.slice(delimiter.length, -delimiter.length)
+        .replace(/;/g, " ")
+        .replace(/(\d+)\.(\d+)/g, "$1{,}$2")
+        .replace(/\s+,/g, ",")
+        .replace(/[ \t]{2,}/g, " ")
+        .trim();
+      return delimiter + innerMath + delimiter;
+    });
+
+    return cleaned;
+  }
+
+  // HÀM RENDER ĐÃ DỌN RÁC VÀ ÉP MATHJAX HIỂN THỊ CHUẨN
+  function renderBotResponse(elemId, replyText, engineName, badgeClass) {
+    const botMsgElem = document.getElementById(elemId);
+    
+    // 1. Dọn rác LaTeX và Dấu chấm phẩy
+    const cleanedText = fixLatexFormat(replyText);
+
+    // 2. Chuyển Markdown sang HTML
+    const renderedContent = marked.parse(cleanedText);
+
+    // 3. Tạo nút Feedback
+    const feedbackButtons = `
+      <div class="feedback-actions">
+        <button class="feedback-btn understand" onclick="handleFeedback(this, 'understand')">👍 Đã hiểu</button>
+        <button class="feedback-btn confused" onclick="handleFeedback(this, 'confused')">❓ Chưa hiểu lắm</button>
+      </div>
+    `;
+
+    // Render ra màn hình
+    botMsgElem.innerHTML = `<span class="engine-badge ${badgeClass}">Engine: ${engineName}</span><div class="bot-text">${renderedContent}</div>` + feedbackButtons;
+
+    // 4. Gọi MathJax vẽ lại công thức
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([botMsgElem]).catch(err => console.error("MathJax Error:", err));
+    }
+
+    chatHistory.push({ role: "model", parts: [{ text: replyText }] });
+    localStorage.setItem("khkt_chat_history", JSON.stringify(chatHistory));
+  }
+
+  function switchMode() {
+    const mode = document.getElementById("aiMode").value;
+    const welcomeMsg = document.getElementById("welcomeMsg");
+    if (welcomeMsg) {
+      if (mode === "teacher") {
+        welcomeMsg.innerText = "Kính chào Thầy/Cô! Em là Trợ lý AI Giảng dạy. Em có thể hỗ trợ Thầy/Cô soạn giáo án, thiết kế đề thi phân hóa hoặc số hóa tài liệu qua ảnh ạ!";
+      } else {
+        welcomeMsg.innerText = "Chào cậu nhé! Tớ là Trợ lý AI dành cho Học sinh. Cậu có bài tập hay thắc mắc gì cần gợi mở hôm nay không? 😊";
+      }
+    }
+  }
+
+  async function sendMessage(overrideText = null) {
+    const inputField = document.getElementById("userInput");
+    const msgContainer = document.getElementById("msgContainer");
+    const chatBox = document.getElementById("chatBox");
+    
+    const text = overrideText ? overrideText : inputField.value.trim();
+    if (!text && !selectedImageBase64) return;
+
+    const userParts = [];
+    let userMsgHtml = "";
+
+    if (selectedImageBase64) {
+      userParts.push({ inline_data: { mime_type: selectedImageMimeType, data: selectedImageBase64 } });
+      userMsgHtml += `<img src="data:${selectedImageMimeType};base64,${selectedImageBase64}">`;
+    }
+
+    const textPrompt = text || "Giải bài tập trong ảnh giúp tớ nhé!";
+    userParts.push({ text: textPrompt });
+    userMsgHtml += `<div>${escapeHtml(textPrompt)}</div>`;
+
+    msgContainer.innerHTML += `<div class="msg user">${userMsgHtml}</div>`;
+    const hasImage = selectedImageBase64 !== null;
+    inputField.value = "";
+    removeSelectedImage();
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    chatHistory.push({ role: "user", parts: userParts });
+
+    const mode = document.getElementById("aiMode").value;
+    const thinkingLevel = document.getElementById("thinkingMode").value;
+    const detailLevel = document.getElementById("detailMode").value;
+
+    let activePrompt = mode === "teacher" ? PROMPT_TEACHER : PROMPT_STUDENT;
+    if (detailLevel === "detailed") {
+      activePrompt += "\n[YÊU CẦU GIẢI CHI TIẾT]: Bắt buộc phải giải thích TẠI SAO lại có công thức đó, nguồn gốc biến đổi từ đâu trước khi ra kết quả.";
+    }
+
+    const selectedGeminiModel = thinkingLevel === "talking"
+      ? GEMINI_TALKING_MODEL
+      : GEMINI_STUDY_MODEL;
+    const selectedTemperature = thinkingLevel === "talking" ? 0.35 : 0.7;
+    const loadingId = "loading-" + Date.now();
+
+    const engineLabel = thinkingLevel === "talking"
+      ? "Gemini Flash-Lite"
+      : "Gemini Flash";
+    msgContainer.innerHTML += `<div class="msg bot typing-message" id="${loadingId}"><span class="typing-dots" aria-label="AI đang soạn trả lời"><span></span><span></span><span></span></span><span class="typing-label">AI đang suy nghĩ...</span></div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    let replySuccess = await callGeminiApi(loadingId, activePrompt, selectedGeminiModel, engineLabel, selectedTemperature);
+
+    if (!replySuccess) {
+      document.getElementById(loadingId).innerHTML = "⚠️ Gemini đang bận hoặc các API key đều không khả dụng. Cậu thử lại sau vài giây nhé!";
+      chatHistory.pop();
+    }
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  // GỌI GEMINI API - TỰ CHUYỂN ĐỔI CHUẨN GEMINI FORMAT
+  async function callGeminiApi(loadingId, activePrompt, modelName, engineLabel, temperature) {
+    if (!GEMINI_KEYS || GEMINI_KEYS.length === 0) return false;
+
+    let attempts = 0;
+    while (attempts < GEMINI_KEYS.length) {
+      attempts++;
+      const apiKey = getNextGeminiKey();
+      if (!apiKey) continue;
+
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+        // TẠO MẢNG CONTENTS RIÊNG CHUẨN GEMINI
+        const geminiContents = chatHistory.map(msg => {
+          const role = (msg.role === "user") ? "user" : "model";
+          let parts = [];
+
+          if (Array.isArray(msg.parts)) {
+            parts = msg.parts;
+          } else if (typeof msg.content === "string") {
+            parts = [{ text: msg.content }];
+          } else {
+            parts = [{ text: "" }];
+          }
+
+          return { role: role, parts: parts };
+        });
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: activePrompt }] },
+            contents: geminiContents,
+            generationConfig: {
+              temperature: temperature,
+              maxOutputTokens: 4096
+            }
+          })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.error) {
+          console.warn(`Gemini Key ${attempts} bị lỗi:`, data.error);
+          continue;
+        }
+
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+          const botReply = data.candidates[0].content.parts[0].text;
+          renderBotResponse(loadingId, botReply, engineLabel, "engine-gemini");
+          return true;
+        }
+      } catch (err) {
+        console.error(`Lỗi kết nối Gemini lượt ${attempts}:`, err);
+      }
+    }
+    return false;
+  }
+
+  // HÀM RENDER ĐÃ ĐƯỢC FIX LỖI LATEX VÀ TRÌNH BÀY
+  function renderBotResponse(elemId, replyText, engineName, badgeClass) {
+    const botMsgElem = document.getElementById(elemId);
+    
+    // 1. CHUẨN HÓA LATEX VỀ DẠNG $ VÀ $$
+    const cleanedText = fixLatexFormat(replyText);
+
+    // 2. CHUYỂN DỔI MARKDOWN THÀNH HTML
+    const renderedContent = marked.parse(cleanedText);
+
+    // 3. THÊM NÚT FEEDBACK
+    const feedbackButtons = `
+      <div class="feedback-actions">
+        <button class="feedback-btn understand" onclick="handleFeedback(this, 'understand')">👍 Đã hiểu</button>
+        <button class="feedback-btn confused" onclick="handleFeedback(this, 'confused')">❓ Chưa hiểu lắm</button>
+      </div>
+    `;
+
+    // GHÉP GIAO DIỆN
+    botMsgElem.innerHTML = `<span class="engine-badge ${badgeClass}">Engine: ${engineName}</span><div class="bot-text">${renderedContent}</div>` + feedbackButtons;
+
+    // 4. KÍCH HOẠT MATHJAX VẼ CÔNG THỨC TOÁN
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([botMsgElem]).catch(err => console.error("MathJax Error:", err));
+    }
+
+    chatHistory.push({ role: "model", parts: [{ text: replyText }] });
+    localStorage.setItem("khkt_chat_history", JSON.stringify(chatHistory));
+  }
+
+  function handleFeedback(btnElement, type) {
+    const parentContainer = btnElement.parentElement;
+    if (type === 'understand') {
+      parentContainer.innerHTML = `<span style="color: #137333; font-size: 12px; font-weight: bold;">🎉 Tuyệt vời! Hãy tiếp tục nhé.</span>`;
+    } else if (type === 'confused') {
+      parentContainer.innerHTML = `<span style="color: #c5221f; font-size: 12px; font-weight: bold;">🔄 Đang yêu cầu AI chứng minh chi tiết lại...</span>`;
+      sendMessage("Tớ vẫn chưa hiểu tại sao lại có công thức đó, cậu chứng minh rõ nguồn gốc toán học giúp tớ nhé!");
+    }
+  }
+
+  function handleImageSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedImageMimeType = file.type;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      selectedImageBase64 = evt.target.result.split(",")[1];
+      document.getElementById("imagePreview").src = evt.target.result;
+      document.getElementById("imageName").innerText = file.name;
+      document.getElementById("imagePreviewContainer").style.display = "flex";
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeSelectedImage() {
+    selectedImageBase64 = null;
+    selectedImageMimeType = null;
+    document.getElementById("imageInput").value = "";
+    document.getElementById("imagePreviewContainer").style.display = "none";
+  }
+
+  function clearChat() {
+    if (confirm("Xóa toàn bộ lịch sử trò chuyện?")) {
+      chatHistory = [];
+      localStorage.removeItem("khkt_chat_history");
+      document.getElementById("msgContainer").innerHTML = `<div class="msg bot" id="welcomeMsg">Lịch sử trò chuyện đã được làm sạch! 😊</div>`;
+      switchMode();
+    }
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+</script>
+
+</body>
+</html>
