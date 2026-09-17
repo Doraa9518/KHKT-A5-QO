@@ -86,13 +86,21 @@
     .bot ul, .bot ol { margin: 6px 0; padding-left: 20px; }
     .bot hr { border: 0; height: 1px; background: var(--ui-line); margin: 12px 0; }
     
-    .engine-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; text-transform: uppercase; }
+    .response-group { width: 100%; }
+    .response-meta { width: 82%; display: flex; flex-direction: column; gap: 8px; margin: -2px 0 8px; padding: 10px 16px 0; border-top: 1px dashed var(--ui-line); }
+    .engine-badge { display: inline-block; width: fit-content; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
     .engine-gemini { background: #e8f0fe; color: #1a73e8; }
 
-    .feedback-actions { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e5e7eb; display: flex; gap: 10px; align-items: center; }
+    .feedback-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
     .feedback-btn { padding: 5px 12px; border-radius: 14px; border: 1px solid var(--ui-line); background: var(--ui-card); color: var(--ui-text); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .feedback-btn.understand:hover { background: #e6f4ea; color: #137333; border-color: #137333; }
     .feedback-btn.confused:hover { background: #fce8e6; color: #c5221f; border-color: #c5221f; }
+    .feedback-status { font-size: 12px; font-weight: 600; }
+    .feedback-status.understood { color: #137333; }
+    .feedback-status.retrying { color: #c5221f; }
+    .learning-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+    .learning-tool-btn { border: 1px solid var(--ui-line); border-radius: 12px; padding: 8px 11px; background: var(--ui-panel); color: var(--ui-text); cursor: pointer; font-size: 12px; font-weight: 700; }
+    .learning-tool-btn.active { background: color-mix(in srgb, var(--ui-accent) 16%, var(--ui-card)); border-color: var(--ui-accent); color: var(--ui-accent); }
 
     .input-wrapper { margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 8px; }
     .image-preview-container { display: none; align-items: center; gap: 10px; background: #f3f4f6; padding: 6px 12px; border-radius: 12px; width: fit-content; }
@@ -114,6 +122,7 @@
     body.phone-mode .ui-tools { width: 100%; justify-content: flex-end; }
     body.phone-mode .chat-box { padding: 11px; }
     body.phone-mode .msg { max-width: 92%; }
+    body.phone-mode .response-meta { width: 92%; }
     body.phone-mode .input-row { gap: 7px; }
     body.phone-mode .upload-btn { width: 44px; height: 44px; }
     body.phone-mode button.send-btn { padding: 0 17px; }
@@ -145,6 +154,7 @@
       <select id="aiMode" class="mode-select" onchange="switchMode()">
         <option value="student">🎓 Chế độ: Học Sinh</option>
         <option value="teacher">👨‍🏫 Chế độ: Giáo Viên</option>
+        <option value="talkshow">💬 Chế độ: Talkshow</option>
       </select>
 
       <select id="thinkingMode" class="thinking-select">
@@ -183,6 +193,10 @@
   </div>
   
   <div class="input-wrapper">
+    <div class="learning-tools" aria-label="Công cụ học tập">
+      <button class="learning-tool-btn" id="diagnoseBtn" onclick="startErrorDiagnosis()">🩺 Mình sai ở đâu?</button>
+      <button class="learning-tool-btn" id="arenaBtn" onclick="toggleArenaMode()">🏆 Luyện thi HSG</button>
+    </div>
     <div class="image-preview-container" id="imagePreviewContainer">
       <img id="imagePreview" src="" alt="Ảnh">
       <span id="imageName" style="font-size: 12px; color: #4b5563;"></span>
@@ -238,7 +252,26 @@ Bạn là Trợ lý Sư phạm Cao cấp hỗ trợ Giáo viên THPT.
 3. ĐỊNH DẠNG CÔNG THỨC TOÁN: Sử dụng dấu $ công thức $ hoặc $$ công thức $$. KHÔNG DÙNG \\( \\) HOẶC \\[ \\]. Trong công thức không dùng dấu chấm phẩy; số thập phân viết dạng $9{,}11$, không dùng $9.11$.
 `;
 
+  const PROMPT_TALKSHOW = `
+Bạn là một đàn anh/đàn chị sinh viên năm nhất, đáng tin cậy, đồng hành cùng học sinh THPT trong chế độ Talkshow.
+1. XƯNG HÔ: Xưng 'tớ' hoặc 'mình', gọi người dùng là 'cậu' hoặc 'bạn'. Dùng ngôn ngữ tự nhiên, trẻ trung kiểu Gen Z vừa phải, có thể đùa duyên một chút nhưng không lố, không rập khuôn.
+2. LẮNG NGHE TRƯỚC: Đón nhận cảm xúc không phán xét, phản hồi điều cậu đang cảm thấy rồi mới đưa lời khuyên. Không chế giễu, dọa nạt, áp đặt hoặc giả vờ là chuyên gia tâm lý.
+3. KẾT NỐI VỚI HỌC TẬP: Khi cậu đã được lắng nghe và tình huống phù hợp, hãy khéo léo đề xuất một bước học rất nhỏ, ví dụ: 'Xả stress xong chưa? Mình thử xử lý một câu nhẹ để lấy lại phong độ nhé?'. Không ép học khi cậu đang cần được hỗ trợ cảm xúc.
+4. TƯ VẤN THỰC TẾ: Đưa ra các bước nhỏ, phù hợp với hoàn cảnh về học tập, áp lực, tình bạn, gia đình và đời sống. Hỏi thêm một câu nhẹ nhàng khi cần hiểu rõ hơn.
+5. AN TOÀN: Nếu cậu có dấu hiệu muốn tự làm hại bản thân, tuyệt vọng cùng cực, bị bạo lực hoặc gặp nguy hiểm, hãy phản hồi bình tĩnh, khuyến khích cậu tìm ngay một người lớn đáng tin cậy, giáo viên/cố vấn học đường hoặc dịch vụ khẩn cấp tại nơi cậu sống. Không đùa, không tranh luận, không để cậu ở một mình với nguy hiểm.
+6. Không biến mọi câu chuyện thành bài giảng. Chỉ dùng danh sách hoặc giải pháp học tập khi thật sự hữu ích.
+`;
+
   let chatHistory = JSON.parse(localStorage.getItem("khkt_chat_history")) || [];
+  let learningPreferences = JSON.parse(localStorage.getItem("ai-learning-preferences")) || { detail: "" };
+  let learnerProfile = JSON.parse(localStorage.getItem("ai-learner-profile")) || {
+    totalQuestions: 0,
+    confusedCount: 0,
+    diagnosisCount: 0,
+    arenaCount: 0,
+    recentSignals: []
+  };
+  let learningMode = "normal";
   let selectedImageBase64 = null;
   let selectedImageMimeType = null;
 
@@ -271,6 +304,32 @@ Bạn là Trợ lý Sư phạm Cao cấp hỗ trợ Giáo viên THPT.
   setUiAccent(localStorage.getItem("ai-accent") || "#5b7cff");
   setLayoutMode(localStorage.getItem("ai-layout") || "pc");
 
+  function saveLearnerProfile(signal, detail = "") {
+    if (signal === "question") learnerProfile.totalQuestions += 1;
+    if (signal === "confused") learnerProfile.confusedCount += 1;
+    if (signal === "diagnosis") learnerProfile.diagnosisCount += 1;
+    if (signal === "arena") learnerProfile.arenaCount += 1;
+    if (signal !== "question") {
+      learnerProfile.recentSignals.unshift({ signal, detail: detail.slice(0, 180) });
+      learnerProfile.recentSignals = learnerProfile.recentSignals.slice(0, 8);
+    }
+    localStorage.setItem("ai-learner-profile", JSON.stringify(learnerProfile));
+  }
+
+  function getLearnerContext() {
+    const recentSignals = learnerProfile.recentSignals
+      .map(item => `${item.signal}: ${item.detail}`)
+      .join(" | ");
+    return `
+[HỒ SƠ HỌC TẬP TÍCH LŨY]:
+- Tổng lượt hỏi: ${learnerProfile.totalQuestions}
+- Số lần cần giải thích lại: ${learnerProfile.confusedCount}
+- Số lần dùng Bắt Mạch Lỗi Sai: ${learnerProfile.diagnosisCount}
+- Số lần luyện HSG: ${learnerProfile.arenaCount}
+- Tín hiệu gần đây: ${recentSignals || "chưa có"}
+[QUY TẮC DÙNG HỒ SƠ]: Chỉ dùng để điều chỉnh cách dạy, không được nhắc đến dữ liệu nội bộ.`;
+  }
+
   // HÀM CHUYỂN ĐỔI CHUẨN HÓA LATEX
   function fixLatexFormat(text) {
     if (!text) return "";
@@ -296,46 +355,66 @@ Bạn là Trợ lý Sư phạm Cao cấp hỗ trợ Giáo viên THPT.
     return cleaned;
   }
 
-  // HÀM RENDER ĐÃ DỌN RÁC VÀ ÉP MATHJAX HIỂN THỊ CHUẨN
-  function renderBotResponse(elemId, replyText, engineName, badgeClass) {
-    const botMsgElem = document.getElementById(elemId);
-    
-    // 1. Dọn rác LaTeX và Dấu chấm phẩy
-    const cleanedText = fixLatexFormat(replyText);
-
-    // 2. Chuyển Markdown sang HTML
-    const renderedContent = marked.parse(cleanedText);
-
-    // 3. Tạo nút Feedback
-    const feedbackButtons = `
-      <div class="feedback-actions">
-        <button class="feedback-btn understand" onclick="handleFeedback(this, 'understand')">👍 Đã hiểu</button>
-        <button class="feedback-btn confused" onclick="handleFeedback(this, 'confused')">❓ Chưa hiểu lắm</button>
-      </div>
-    `;
-
-    // Render ra màn hình
-    botMsgElem.innerHTML = `<span class="engine-badge ${badgeClass}">Engine: ${engineName}</span><div class="bot-text">${renderedContent}</div>` + feedbackButtons;
-
-    // 4. Gọi MathJax vẽ lại công thức
-    if (window.MathJax && window.MathJax.typesetPromise) {
-      window.MathJax.typesetPromise([botMsgElem]).catch(err => console.error("MathJax Error:", err));
-    }
-
-    chatHistory.push({ role: "model", parts: [{ text: replyText }] });
-    localStorage.setItem("khkt_chat_history", JSON.stringify(chatHistory));
-  }
-
   function switchMode() {
     const mode = document.getElementById("aiMode").value;
     const welcomeMsg = document.getElementById("welcomeMsg");
     if (welcomeMsg) {
       if (mode === "teacher") {
         welcomeMsg.innerText = "Kính chào Thầy/Cô! Em là Trợ lý AI Giảng dạy. Em có thể hỗ trợ Thầy/Cô soạn giáo án, thiết kế đề thi phân hóa hoặc số hóa tài liệu qua ảnh ạ!";
+      } else if (mode === "talkshow") {
+        welcomeMsg.innerText = "Tớ đang ở đây để lắng nghe cậu. Cậu muốn kể tớ nghe chuyện gì hôm nay?";
       } else {
         welcomeMsg.innerText = "Chào cậu nhé! Tớ là Trợ lý AI dành cho Học sinh. Cậu có bài tập hay thắc mắc gì cần gợi mở hôm nay không? 😊";
       }
     }
+  }
+
+  function buildActivePrompt() {
+    const mode = document.getElementById("aiMode").value;
+    const detailLevel = document.getElementById("detailMode").value;
+    let activePrompt = mode === "teacher"
+      ? PROMPT_TEACHER
+      : mode === "talkshow" ? PROMPT_TALKSHOW : PROMPT_STUDENT;
+
+    if (detailLevel === "detailed") {
+      activePrompt += "\n[YÊU CẦU GIẢI CHI TIẾT]: Bắt buộc phải giải thích TẠI SAO lại có công thức đó, nguồn gốc biến đổi từ đâu trước khi ra kết quả.";
+    }
+    if (learningPreferences.detail) {
+      activePrompt += `\n[ƯU TIÊN ĐÃ HỌC TỪ PHẢN HỒI TRƯỚC]: ${learningPreferences.detail}`;
+    }
+    activePrompt += getLearnerContext();
+    if (learningMode === "diagnose") {
+      activePrompt += `
+[CHẾ ĐỘ BẮT MẠCH LỖI SAI]: Đóng vai bác sĩ tư duy. Phân tích bài làm trong ảnh hoặc nội dung người dùng cung cấp để tìm đúng bước sai đầu tiên và lỗi tư duy đứng phía sau. Không đưa ngay lời giải hoàn chỉnh. Hãy chỉ rõ: (1) điểm bắt đầu đúng, (2) điểm sai cụ thể, (3) vì sao cách nghĩ đó sai bằng ví dụ hoặc phản ví dụ ngắn, (4) một câu hỏi gợi mở để người học tự sửa, rồi chỉ đưa hướng sửa khi cần. Nếu ảnh không đủ rõ, nói chính xác phần cần chụp lại.`;
+    } else if (learningMode === "arena") {
+      activePrompt += `
+[CHẾ ĐỘ ĐẤU TRƯỜNG HSG]: Đóng vai giám khảo khó tính nhưng công bằng. Không giải bài ngay và không tiết lộ đáp án cuối. Chia bài thành các checkpoint, mỗi lượt chỉ đưa một gợi ý nhỏ nhất cần thiết, yêu cầu người học tự chứng minh bước trung gian và chờ họ trả lời. Ưu tiên bài tổ hợp, hình tọa độ, bất đẳng thức và các bài cần nhìn ra ý tưởng.`;
+    }
+    return activePrompt;
+  }
+
+  function startErrorDiagnosis() {
+    learningMode = "diagnose";
+    saveLearnerProfile("diagnosis", "Người học muốn tìm bước sai và nguyên nhân tư duy.");
+    document.getElementById("diagnoseBtn").classList.add("active");
+    document.getElementById("arenaBtn").classList.remove("active");
+    const inputField = document.getElementById("userInput");
+    if (selectedImageBase64) {
+      sendMessage("Mình sai ở đâu trong bài làm này? Hãy bắt mạch lỗi tư duy, đừng đưa ngay đáp án.");
+      return;
+    }
+    inputField.placeholder = "Chụp ảnh bài làm dở dang hoặc mô tả bước cậu nghi là sai...";
+    inputField.focus();
+  }
+
+  function toggleArenaMode() {
+    learningMode = learningMode === "arena" ? "normal" : "arena";
+    if (learningMode === "arena") saveLearnerProfile("arena", "Người học bật chế độ luyện thi HSG.");
+    document.getElementById("arenaBtn").classList.toggle("active", learningMode === "arena");
+    document.getElementById("diagnoseBtn").classList.toggle("active", learningMode === "diagnose");
+    document.getElementById("userInput").placeholder = learningMode === "arena"
+      ? "Nhập bài để bắt đầu thử thách..."
+      : "Nhập câu hỏi...";
   }
 
   async function sendMessage(overrideText = null) {
@@ -365,15 +444,11 @@ Bạn là Trợ lý Sư phạm Cao cấp hỗ trợ Giáo viên THPT.
     chatBox.scrollTop = chatBox.scrollHeight;
 
     chatHistory.push({ role: "user", parts: userParts });
+    saveLearnerProfile("question", textPrompt);
 
     const mode = document.getElementById("aiMode").value;
     const thinkingLevel = document.getElementById("thinkingMode").value;
-    const detailLevel = document.getElementById("detailMode").value;
-
-    let activePrompt = mode === "teacher" ? PROMPT_TEACHER : PROMPT_STUDENT;
-    if (detailLevel === "detailed") {
-      activePrompt += "\n[YÊU CẦU GIẢI CHI TIẾT]: Bắt buộc phải giải thích TẠI SAO lại có công thức đó, nguồn gốc biến đổi từ đâu trước khi ra kết quả.";
-    }
+    const activePrompt = buildActivePrompt();
 
     const selectedGeminiModel = thinkingLevel === "talking"
       ? GEMINI_TALKING_MODEL
@@ -460,6 +535,9 @@ Bạn là Trợ lý Sư phạm Cao cấp hỗ trợ Giáo viên THPT.
   // HÀM RENDER ĐÃ ĐƯỢC FIX LỖI LATEX VÀ TRÌNH BÀY
   function renderBotResponse(elemId, replyText, engineName, badgeClass) {
     const botMsgElem = document.getElementById(elemId);
+    const responseTarget = document.getElementById(`${elemId}-group`)
+      || botMsgElem.closest(".response-group")
+      || botMsgElem;
     
     // 1. CHUẨN HÓA LATEX VỀ DẠNG $ VÀ $$
     const cleanedText = fixLatexFormat(replyText);
@@ -476,24 +554,42 @@ Bạn là Trợ lý Sư phạm Cao cấp hỗ trợ Giáo viên THPT.
     `;
 
     // GHÉP GIAO DIỆN
-    botMsgElem.innerHTML = `<span class="engine-badge ${badgeClass}">Engine: ${engineName}</span><div class="bot-text">${renderedContent}</div>` + feedbackButtons;
+    responseTarget.outerHTML = `<div class="response-group" id="${elemId}-group"><div class="msg bot" id="${elemId}"><div class="bot-text">${renderedContent}</div></div><div class="response-meta"><span class="engine-badge ${badgeClass}">Engine: ${engineName}</span>${feedbackButtons}</div></div>`;
 
     // 4. KÍCH HOẠT MATHJAX VẼ CÔNG THỨC TOÁN
     if (window.MathJax && window.MathJax.typesetPromise) {
-      window.MathJax.typesetPromise([botMsgElem]).catch(err => console.error("MathJax Error:", err));
+      window.MathJax.typesetPromise([document.getElementById(elemId)]).catch(err => console.error("MathJax Error:", err));
     }
 
     chatHistory.push({ role: "model", parts: [{ text: replyText }] });
     localStorage.setItem("khkt_chat_history", JSON.stringify(chatHistory));
   }
 
-  function handleFeedback(btnElement, type) {
+  async function handleFeedback(btnElement, type) {
     const parentContainer = btnElement.parentElement;
+    const responseGroup = parentContainer.closest(".response-group");
+    const responseElement = responseGroup ? responseGroup.querySelector(".msg.bot") : null;
     if (type === 'understand') {
-      parentContainer.innerHTML = `<span style="color: #137333; font-size: 12px; font-weight: bold;">🎉 Tuyệt vời! Hãy tiếp tục nhé.</span>`;
+      const detailLevel = document.getElementById("detailMode").value;
+      learningPreferences.detail = detailLevel === "detailed"
+        ? "Hãy tiếp tục ưu tiên cách giải từng bước, giải thích bản chất và lý do của mỗi bước."
+        : "Hãy ưu tiên cách giải ngắn gọn, rõ ý và đi thẳng vào trọng tâm.";
+      localStorage.setItem("ai-learning-preferences", JSON.stringify(learningPreferences));
+      saveLearnerProfile("understood", learningPreferences.detail);
+      parentContainer.innerHTML = `<span class="feedback-status understood">Đã ghi nhận cách giải này cho các câu hỏi sau.</span>`;
     } else if (type === 'confused') {
-      parentContainer.innerHTML = `<span style="color: #c5221f; font-size: 12px; font-weight: bold;">🔄 Đang yêu cầu AI chứng minh chi tiết lại...</span>`;
-      sendMessage("Tớ vẫn chưa hiểu tại sao lại có công thức đó, cậu chứng minh rõ nguồn gốc toán học giúp tớ nhé!");
+      if (!responseElement || !responseGroup) return;
+      saveLearnerProfile("confused", "Người học chưa nắm được cách giải ở lượt gần nhất.");
+      const lastModelIndex = chatHistory.map(item => item.role).lastIndexOf("model");
+      if (lastModelIndex >= 0) chatHistory.splice(lastModelIndex, 1);
+      responseElement.innerHTML = `<span class="typing-dots" aria-label="AI đang viết lại"><span></span><span></span><span></span></span><span class="typing-label">AI đang viết lại...</span>`;
+      const retryPrompt = buildActivePrompt() + `
+    [PHẢN HỒI ÂM THẦM]: Câu trả lời vừa rồi chưa giúp người dùng hiểu. Hãy viết lại từ đầu bằng một cách giải thích khác hẳn, không lặp lại cấu trúc và câu chữ cũ. Bắt buộc dùng ít nhất một ví dụ thực tế, phép so sánh trực quan hoặc phản ví dụ phù hợp; sau đó kiểm tra lại bằng một câu hỏi ngắn để biết người học đã nắm ý chưa. Không nhắc đến phản hồi nội bộ này.`;
+      const thinkingLevel = document.getElementById("thinkingMode").value;
+      const modelName = thinkingLevel === "talking" ? GEMINI_TALKING_MODEL : GEMINI_STUDY_MODEL;
+      const temperature = thinkingLevel === "talking" ? 0.35 : 0.7;
+      const success = await callGeminiApi(responseElement.id, retryPrompt, modelName, thinkingLevel === "talking" ? "Gemini Flash-Lite" : "Gemini Flash", temperature);
+      if (!success) responseElement.innerHTML = "⚠️ Chưa thể viết lại lúc này. Cậu thử bấm gửi lại câu hỏi sau nhé!";
     }
   }
 
