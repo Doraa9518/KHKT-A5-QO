@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ Thống Trợ Lý AI Giáo Dục THPT - Hybrid Engine Edition</title>
+
+  <!-- 1. MARKED.JS -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- 2. MATHJAX -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    :root {
+      --ui-bg-1: #f4f7fb;
+      --ui-bg-2: #e8eef7;
+      --ui-card: rgba(255, 255, 255, 0.86);
+      --ui-panel: rgba(15, 23, 42, 0.05);
+      --ui-line: rgba(15, 23, 42, 0.12);
+      --ui-text: #172033;
+      --ui-muted: #5b6678;
+      --ui-accent: #5b7cff;
+      --ui-bot-bg: rgba(255,255,255,0.82);
+      --ui-bot-text: #172033;
+      --ui-shadow: 0 20px 48px rgba(15, 23, 42, 0.14);
+    }
+
+    body.dark-theme {
+      --ui-bg-1: #121417;
+      --ui-bg-2: #0f172a;
+      --ui-card: rgba(24, 29, 36, 0.8);
+      --ui-panel: rgba(255,255,255,0.04);
+      --ui-line: rgba(255,255,255,0.08);
+      --ui-text: #f0f2f5;
+      --ui-muted: #b0b3b8;
+      --ui-bot-bg: rgba(255,255,255,0.06);
+      --ui-bot-text: #f1f5f9;
+      --ui-shadow: 0 22px 55px rgba(0, 0, 0, 0.34);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--ui-accent) 16%, transparent), var(--ui-bg-1) 58%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--ui-text);
+      transition: background 0.35s ease, color 0.25s ease;
+    }
+
+    .chat-card {
+      position: relative;
+      width: min(100%, 1400px);
+      height: 90vh;
+      background: rgba(7, 11, 18, 0.52);
+      border: 1px solid var(--ui-line);
+      border-radius: 28px;
+      box-shadow: var(--ui-shadow);
+      display: flex;
+      flex-direction: column;
+      padding: 14px 18px 18px;
+      animation: cardEnter 0.55s cubic-bezier(.2,.8,.2,1) both;
+      backdrop-filter: blur(4px);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--ui-line);
+      padding: 8px 10px 14px;
+      margin-bottom: 12px;
+      gap: 14px;
+    }
+    .header-left { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; min-width: 0; flex: 1; }
+    .header h3 {
+      margin: 0;
+      color: var(--ui-text);
+      font-size: 1.04rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .header h3::first-letter { color: var(--ui-accent); }
+
+    .mode-select, .thinking-select, .detail-select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--ui-line);
+      background: rgba(255,255,255,0.04);
+      font-weight: 600;
+      color: var(--ui-text);
+      outline: none;
+      cursor: pointer;
+      font-size: 12px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .mode-select:hover, .thinking-select:hover, .detail-select:hover { border-color: var(--ui-accent); transform: translateY(-1px); }
+
+    .clear-btn {
+      background: rgba(91,124,255,0.2);
+      color: var(--ui-text);
+      border: none;
+      padding: 9px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .clear-btn:hover { background: rgba(217, 54, 62, 0.9); }
+
+    .ui-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .layout-btn {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 8px 11px;
+      background: rgba(255,255,255,0.04);
+      color: var(--ui-text);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .gear-btn {
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      color: var(--ui-text);
+      cursor: pointer;
+      font-size: 18px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .gear-btn:hover {
+      transform: rotate(90deg) scale(1.04);
+      box-shadow: 0 8px 18px rgba(91, 124, 255, 0.12);
+    }
+
+    .settings-panel {
+      position: absolute;
+      top: 76px;
+      right: 18px;
+      display: flex;
+      gap: 10px;
+      flex-direction: column;
+      align-items: stretch;
+      width: min(360px, calc(100% - 32px));
+      padding: 16px;
+      border: 1px solid var(--ui-line);
+      border-radius: 20px;
+      background: color-mix(in srgb, var(--ui-bg-1) 94%, transparent);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.4);
+      opacity: 0;
+      transform: translateY(-10px) scale(0.97);
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+      z-index: 20;
+      color: var(--ui-text);
+      font-size: 12px;
+    }
+    .settings-panel.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      animation: panelEnter 0.22s ease both;
+    }
+    .settings-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .settings-group label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ui-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .theme-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .theme-btn, .accent-btn {
+      border: 1px solid var(--ui-line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.03);
+      color: var(--ui-text);
+      font-size: 12px;
+    }
+    .accent-btn { width: 22px; height: 22px; padding: 0; border-radius: 50%; }
+
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      border-radius: 22px;
+      padding: 18px 18px 20px;
+      margin-bottom: 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--ui-line);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      scroll-behavior: smooth;
+    }
+    .msg-container { max-width: 1280px; margin: 0 auto; width: 100%; }
+    .msg {
+      width: fit-content;
+      margin: 6px 0;
+      padding: 15px 18px;
+      border-radius: 20px;
+      max-width: 88%;
+      line-height: 1.6;
+      word-wrap: break-word;
+      font-size: 15px;
+      animation: messageEnter 0.3s cubic-bezier(.2,.8,.2,1) both;
+    }
+    .user {
+      background: linear-gradient(135deg, var(--ui-accent), color-mix(in srgb, var(--ui-accent) 72%, #172554 28%));
+      color: white;
+      margin-left: auto;
+      margin-right: 0;
+      border-bottom-right-radius: 8px;
+      box-shadow: 0 7px 18px color-mix(in srgb, var(--ui-accent) 20%, transparent);
+    }
+    .user img { max-width: 100%; max-height: 250px; border-radius: 12px; margin-bottom: 8px; display: block; }
+    .bot {
+      background: var(--ui-bot-bg);
+      color: var(--ui-bot-text);
+      margin-right: auto;
+      border-bottom-left-radius: 8px;
+      border: 1px solid var(--ui-line);
+      box-shadow: 0 5px 16px rgba(15,23,42,0.06);
+    }
+    .typing-message { display: inline-flex; align-items: center; gap: 9px; min-width: 112px; }
+    .typing-dots { display: inline-flex; align-items: center; gap: 4px; height: 14px; }
+    .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--ui-accent); animation: typingBounce 1.15s infinite ease-in-out; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+    .typing-label { color: var(--ui-muted); font-size: 12px; font-style: italic; }
+    .bot h1, .bot h2, .bot h3, .bot h4 { margin-top: 10px; margin-bottom: 6px; color: #7db6ff; }
+    .bot p { margin: 6px 0; }
+    .bot ul, .bot ol { margin: 6px 0; padding-left: 20px; }
+    .bot hr { border: 0; height: 1px; background: var(--ui-line); margin: 12px 0; }
+
+    .response-group { width: 100%; }
+    .response-meta { width: 90%; display: flex; flex-direction: column; gap: 8px; margin: -2px 0 8px; padding: 10px 18px 0; border-top: 1px dashed var(--ui-line); }
+    .engine-badge { display: inline-block; width: fit-content; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+    .engine-gemini { background: #e8f0fe; color: #1a73e8; }
+
+    .feedback-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .feedback-btn { padding: 5px 12px; border-radius: 14px; border: 1px solid var(--ui-line); background: rgba(255,255,255,0.04); color: var(--ui-text); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .feedback-btn.understand:hover { background: #e6f4ea; color: #137333; border-color: #137333; }
+    .feedback-btn.confused:hover { background: #fce8e6; color: #c5221f; border-color: #c5221f; }
+    .feedback-status { font-size: 12px; font-weight: 600; }
+    .feedback-status.understood { color: #137333; }
+    .feedback-status.retrying { color: #c5221f; }
+    .speech-toggle-btn { padding: 5px 9px; border-radius: 12px; border: 1px solid var(--ui-line); background: rgba(255,255,255,0.04); color: var(--ui-text); font-size: 12px; cursor: pointer; }
+    .learning-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+    .learning-tool-btn { border: 1px solid var(--ui-line); border-radius: 12px; padding: 8px 11px; background: rgba(255,255,255,0.04); color: var(--ui-text); cursor: pointer; font-size: 12px; font-weight: 700; }
+    .learning-tool-btn.active { background: rgba(91,124,255,0.18); border-color: rgba(91,124,255,0.5); color: #dfe9ff; }
+    .english-tools { display: none; gap: 8px; align-items: center; flex-wrap: wrap; }
+    body.english-mode .english-tools { display: flex; }
+    body.english-mode .learning-tools { display: none; }
+    body.english-mode .upload-btn,
+    body.english-mode .image-preview-container { display: none !important; }
+    .english-level { width: auto; min-width: 150px; padding: 8px 11px; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-panel); color: var(--ui-text); font-size: 12px; font-weight: 700; }
+    .voice-status { color: var(--ui-muted); font-size: 12px; font-style: italic; }
+    .english-mode-btn, .voice-btn { border: 1px solid var(--ui-line); border-radius: 999px; padding: 9px 13px; background: var(--ui-panel); color: var(--ui-text); cursor: pointer; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .english-mode-btn.active, .voice-btn.active { background: color-mix(in srgb, var(--ui-accent) 20%, transparent); border-color: var(--ui-accent); color: var(--ui-accent); }
+    .voice-btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; font-size: 19px; flex: 0 0 44px; }
+
+    .input-wrapper { margin: 0 auto; width: min(100%, 1280px); display: flex; flex-direction: column; gap: 8px; }
+    .image-preview-container { display: none; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 12px; width: fit-content; }
+    .image-preview-container img { height: 45px; border-radius: 6px; object-fit: cover; }
+    .remove-img-btn { background: #ff4d4f; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 11px; font-weight: bold; }
+    .input-row { display: flex; gap: 12px; width: 100%; align-items: center; }
+    .upload-btn { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; }
+    input[type="text"] {
+      flex: 1;
+      padding: 16px 18px;
+      border: 1px solid var(--ui-line);
+      border-radius: 26px;
+      outline: none;
+      font-size: 15px;
+      background: rgba(255,255,255,0.04);
+      color: var(--ui-text);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      min-height: 56px;
+    }
+    input[type="text"]:focus { border-color: rgba(91,124,255,0.8); box-shadow: 0 0 0 4px rgba(91,124,255,0.18); }
+    button.send-btn { min-height:56px; padding:0 26px; border:none; background: rgba(91,124,255,0.9); color:white; border-radius:26px; cursor:pointer; font-weight:600; font-size:15px; }
+    button, .upload-btn, .clear-btn, .layout-btn, .gear-btn { transition: transform 0.2s ease, filter 0.2s ease, background 0.2s ease; }
+    button:hover, .upload-btn:hover, .clear-btn:hover, .layout-btn:hover, .gear-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+
+    body.phone-mode { padding: 14px; }
+    body.phone-mode .chat-card { width: min(100%, 430px); height: 92vh; padding: 12px; }
+    body.phone-mode .header { align-items: flex-start; flex-direction: column; }
+    body.phone-mode .header-left { width: 100%; gap: 6px; }
+    body.phone-mode .header h3 { width: 100%; }
+    body.phone-mode .ui-tools { width: 100%; justify-content: flex-end; }
+    body.phone-mode .chat-box { padding: 11px; }
+    body.phone-mode .msg { max-width: 92%; }
+    body.phone-mode .response-meta { width: 92%; }
+    body.phone-mode .input-row { gap: 7px; }
+    body.phone-mode .upload-btn { width: 44px; height: 44px; }
+    body.phone-mode button.send-btn { padding: 0 17px; }
+
+    @keyframes cardEnter { from { opacity: 0; transform: translateY(16px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes messageEnter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes panelEnter { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.35; } 30% { transform: translateY(-4px); opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+    @media (max-width: 600px) {
+      body { padding: 14px; }
+      .chat-card { height: 92vh; padding: 12px; }
+      .header { align-items: flex-start; }
+      .header-left { gap: 6px; }
+      .header h3 { width: 100%; }
+      .msg { max-width: 88%; }
+    }
+
+    /* Gemini-inspired spacing layer: keeps the existing controls and behavior intact. */
+    body {
+      padding: 0;
+      align-items: stretch;
+      background: var(--ui-bg-1);
+    }
+    .chat-card {
+      width: 100%;
+      height: 100vh;
+      max-width: none;
+      padding: 16px 24px 22px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+    .header {
+      width: min(100%, 1180px);
+      margin: 0 auto 8px;
+      padding: 4px 0 12px;
+      border-bottom: 0;
+    }
+    .chat-box {
+      width: min(100%, 980px);
+      margin: 0 auto 18px;
+      padding: 22px 10px 28px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+    .msg-container { max-width: 900px; }
+    .msg {
+      max-width: min(86%, 760px);
+      padding: 14px 18px;
+    }
+    .bot {
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      padding-left: 0;
+    }
+    .input-wrapper {
+      width: min(100%, 980px);
+      gap: 10px;
+    }
+    .learning-tools { padding-left: 4px; }
+    .input-row {
+      gap: 8px;
+      padding: 7px 8px 7px 10px;
+      border: 1px solid var(--ui-line);
+      border-radius: 32px;
+      background: var(--ui-panel);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+    }
+    .upload-btn {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      border: 0;
+      background: transparent;
+    }
+    input[type="text"] {
+      min-height: 42px;
+      padding: 10px 6px;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+    input[type="text"]:focus {
+      border-color: transparent;
+      box-shadow: none;
+    }
+    button.send-btn {
+      min-height: 42px;
+      padding: 0 20px;
+      border-radius: 24px;
+      font-size: 14px;
+    }
+    .settings-panel { top: 62px; }
+
+    @media (max-width: 600px) {
+      .chat-card { padding: 12px 14px 16px; }
+      .header { padding-bottom: 4px; }
+      .chat-box { padding: 10px 2px 20px; }
+      .msg { max-width: 94%; }
+      .input-row { padding-left: 6px; }
+      .upload-btn { width: 38px; height: 38px; flex-basis: 38px; }
+      button.send-btn { padding: 0 15px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat-card">
+  <div class="header">
+    <div class="header-left">
+      <h3>🧠 Trợ Lý AI Giáo Dục THPT</h3>
+    </div>
+
+    <div class="ui-tools">
+      <button class="layout-btn" id="layoutToggle" onclick="toggleLayoutMode()" title="Chuyển bố cục Phone hoặc PC">📱 Phone</button>
+      <button class="english-mode-btn" id="englishModeBtn" onclick="toggleEnglishMode()" title="Chuyển sang không gian luyện tiếng Anh">🇬🇧 Mode English</button>
+      <button class="gear-btn" onclick="toggleSettings()" title="Cài đặt giao diện">⚙️</button>
+      <button class="clear-btn" onclick="clearChat()">🗑️ Xóa Chat</button>
+    </div>
+  </div>
+
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-group">
+      <label>Chế độ AI</label>
+      <select id="aiMode" class="mode-select" onchange="switchMode()">
+        <option value="student">🎓 Học Sinh</option>
+        <option value="teacher">👨‍🏫 Giáo Viên</option>
+        <option value="talkshow">💬 Talkshow</option>
+        <option value="english">🇬🇧 Luyện tiếng Anh</option>
+      </select>
+    </div>
+
+    <div class="settings-group english-settings">
+      <label>Trình độ tiếng Anh</label>
+      <select id="englishLevel" class="thinking-select">
+        <option value="A1">A1 - Beginner</option>
+        <option value="A2">A2 - Elementary</option>
+        <option value="B1" selected>B1 - Intermediate</option>
+        <option value="B2">B2 - Upper-intermediate</option>
+      </select>
+    </div>
+
+    <div class="settings-group">
+      <label>Phong cách trả lời</label>
+      <select id="thinkingMode" class="thinking-select">
+        <option value="talking">💬 Talking</option>
+        <option value="study" selected>📚 Study</option>
+      </select>
+    </div>
+
+    <div class="settings-group">
+      <label>Mức độ giải thích</label>
+      <select id="detailMode" class="detail-select">
+        <option value="normal">⚡ Tóm Tắt</option>
+        <option value="detailed" selected>🔍 Chi Tiết & Bản Chất</option>
+      </select>
+    </div>
+
+    <div class="settings-group">
+      <label>Giao diện</label>
+      <div class="theme-row">
+        <button class="theme-btn" onclick="setUiTheme('light')">Sáng</button>
+        <button class="theme-btn" onclick="setUiTheme('dark')">Tối</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <label>Màu nhấn</label>
+      <div class="theme-row">
+        <button class="accent-btn" style="background:#5b7cff" onclick="setUiAccent('#5b7cff')" aria-label="Xanh dương"></button>
+        <button class="accent-btn" style="background:#22c55e" onclick="setUiAccent('#22c55e')" aria-label="Xanh lá"></button>
+        <button class="accent-btn" style="background:#f97316" onclick="setUiAccent('#f97316')" aria-label="Cam"></button>
+        <button class="accent-btn" style="background:#ec4899" onclick="setUiAccent('#ec4899')" aria-label="Hồng"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-box" id="chatBox">
+    <div class="msg-container" id="msgContainer">
+      <div class="msg bot" id="welcomeMsg">Chào cậu nhé! Tớ là Trợ lý AI. Hãy gửi bài tập để tớ cùng cậu giải mã bản chất nhé! 😊</div>
+    </div>
+  </div>
+
+  <div class="input-wrapper">
+    <div class="learning-tools" aria-label="Công cụ học tập">
+      <button class="learning-tool-btn" id="diagnoseBtn" onclick="startErrorDiagnosis()">🩺 Mình sai ở đâu?</button>
+      <button class="learning-tool-btn" id="arenaBtn" onclick="toggleArenaMode()">🏆 Luyện thi HSG</button>
+    </div>
+    <div class="english-tools" aria-label="Công cụ luyện tiếng Anh">
+      <span class="voice-status" id="voiceStatus">Nhắn tin hoặc bật voice mode để luyện nói.</span>
+    </div>
+    <div class="image-preview-container" id="imagePreviewContainer">
+      <img id="imagePreview" src="" alt="Ảnh">
+      <span id="imageName" style="font-size: 12px; color: #4b5563;"></span>
+      <button class="remove-img-btn" onclick="removeSelectedImage()">✕</button>
+    </div>
+
+    <div class="input-row">
+      <label class="upload-btn" title="Tải ảnh bài tập lên">📷
+        <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+      </label>
+      <button class="voice-btn" id="voiceModeBtn" onclick="toggleVoiceMode()" title="Bấm để nói bằng tiếng Anh" aria-label="Bật micro">🎙️</button>
+      <input type="text" id="userInput" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter') sendMessage()">
+      <button class="send-btn" onclick="sendMessage()">Gửi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // KHÔI PHỤC 4 GEMINI KEYS XOAY VÒNG
+  const GEMINI_KEYS = [
+    "QVEuQWI4Uk42SnlCLWF3M2VwaFZyNUIwaTJETWJXZzkyYXEzQXQtWUJDRWQ0OXFpWEtBeFE",
+    "QVEuQWI4Uk42TFF6dzMwRUwtU19aNFFsUG4xWmwwT3pNRlZiMmVnTzhpR2ttdjQ4OUZVSWc=",
+    "QVEuQWI4Uk42SS15LWpFT2duZjJlZVdfdnZDMjJ5MzUzOUM3TjdSc2R3bXE1UF9NMGMwa2c=",
+    "QVEuQWI4Uk42S2ktcnNMbENRdDJIUHFGenRJdUgzQUJqMUxaVzE1YWdPZVRLVjg5dUF0TVE=",
+    "QVEuQWI4Uk42THJZVE5aR2k4bTJ6b3huSzBlUWZ2TWNrS2dLdU1RbW5jVnplaVBYME5QQnc=",
+    "QVEuQWI4Uk42SnBNLUhtZlRvOWFhMG1vRDVneUZpRW10d2c2djBmSW5scnczXy1oYWZXVGc="
+
+  ];
+  let currentGeminiIndex = 0;
+  function getNextGeminiKey() {
+    if (GEMINI_KEYS.length === 0) return "";
+    const key = atob(GEMINI_KEYS[currentGeminiIndex]);
+    currentGeminiIndex = (currentGeminiIndex + 1) % GEMINI_KEYS.length;
+    return key;
+  }
+
+  const GEMINI_TALKING_MODEL = "gemini-3.5-flash-lite";
+  const GEMINI_STUDY_MODEL = "gemini-3.6-flash";
+  const GROQ_ENDPOINT = "/api/groq";
+
+  const GROQ_QWEN_MODEL = "qwen/qwen3-32b";
+  const GROQ_VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct";
+  const QWEN_ARENA_PROMPT = `
+Bạn là giám khảo luyện thi học sinh giỏi THPT, chuyên Toán, Lý và Hóa.
+Mục tiêu của bạn là rèn năng lực tự giải bằng lập luận chính xác, không phải biến mọi câu hỏi thành một trò đố mẹo.
+Đọc đúng câu hỏi hiện tại trước khi dùng lịch sử. Không được tự thêm giả thiết, ký hiệu, góc, số liệu hoặc kết luận mà người học chưa nêu.
+Phân loại câu hỏi trước khi trả lời:
+- Nếu là câu hỏi khái niệm, định nghĩa hoặc hỏi bản chất: trả lời trực tiếp, giải thích cốt lõi bằng một ví dụ đúng. Không ép thành checkpoint.
+- Nếu là bài toán cụ thể cần giải: đánh giá bước tư duy gần nhất, đưa đúng một checkpoint và một gợi ý nhỏ nhất, rồi chờ người học tự làm.
+- Nếu là yêu cầu giải thích một mệnh đề: kiểm tra mệnh đề trước. Nếu mệnh đề sai hoặc mơ hồ, nói rõ chỗ sai rồi sửa bằng phản ví dụ phù hợp.
+Chỉ dùng chế độ checkpoint cho bài toán thực sự cần người học tự triển khai. Không đưa lời giải hoàn chỉnh cho bài toán thi, nhưng vẫn phải trả lời đúng phần người học đang hỏi.
+TƯ DUY PHẢN BIỆN:
+1. Xác định chính xác câu hỏi đang yêu cầu điều gì, không trả lời lan sang một bài khác.
+2. Tách dữ kiện chắc chắn khỏi giả định. Kiểm tra thuật ngữ, dấu câu, ký hiệu và tiền đề trước khi suy luận.
+3. Nếu có từ hai cách hiểu hợp lý, ghi rõ "Cách hiểu 1" và "Cách hiểu 2", phân tích ngắn từng cách rồi kết luận cách phù hợp hơn với ngữ cảnh.
+4. Nếu chỉ có một cách hiểu tự nhiên, không cố tạo thêm trường hợp giả để làm câu trả lời dài hơn.
+5. Mỗi kết luận quan trọng phải có căn cứ: định nghĩa, công thức, tính chất hoặc phép kiểm tra ngắn.
+6. Kết luận phải quay lại đúng câu hỏi ban đầu. Nếu cần hỏi lại, chỉ hỏi một câu cụ thể giúp phân biệt các cách hiểu.
+Không hiển thị suy nghĩ nội bộ dài dòng; hãy trình bày các điểm kiểm tra và lập luận cần thiết một cách tự nhiên.
+NGƯỠNG TƯ DUY HSG:
+- Trước khi biến đổi, hãy tìm cấu trúc ẩn của bài: bất biến, đối xứng, đơn điệu, cực trị, bảo toàn, quan hệ truy hồi, tương tự hóa hoặc điều kiện dấu.
+- Hãy cân nhắc các chiến lược phù hợp như làm ngược từ kết luận, phản chứng, quy nạp, chia trường hợp tối thiểu, đánh giá chặn trên/chặn dưới, phản ví dụ hoặc biến đổi về bài toán quen thuộc.
+- Không chọn cách dài chỉ vì có thể tính được. Ưu tiên ý tưởng then chốt giúp giảm bài toán, và nói ngắn gọn vì sao ý tưởng đó phù hợp.
+- Mọi bước nhảy logic phải có cầu nối rõ ràng. Khi dùng định lý, phải kiểm tra điều kiện áp dụng; khi loại một trường hợp, phải nêu lý do loại.
+- Sau mỗi checkpoint, tự kiểm tra xem hướng đi có thật sự tiến gần mục tiêu không. Nếu bế tắc, quay lại tìm một biểu diễn hoặc chiến lược khác thay vì tiếp tục biến đổi máy móc.
+- Với hình học, ưu tiên quan hệ góc, đồng dạng, đẳng giác, đường tròn, phép biến hình và tọa độ hóa có chủ đích. Với đại số, ưu tiên cấu trúc, đối xứng, đơn điệu, đánh giá và phân tích nhân tử. Với tổ hợp, ưu tiên song ánh, bất biến, nguyên lý Dirichlet, cực hạn và đếm bù.
+Trước khi gửi, tự kiểm tra mọi ví dụ và suy luận. Đặc biệt không được suy ra hoặc hỏi về trường hợp $\\alpha > 90^\\circ$ nếu người học chưa nêu trường hợp đó.
+Độ dài câu trả lời phải phù hợp với câu hỏi: câu đơn giản trả lời gọn, câu mơ hồ hoặc cần phản biện có thể phân tích theo từng trường hợp. Dùng LaTeX với dấu $...$ hoặc $$...$$ khi cần.
+`;
+
+  // SYSTEM PROMPT BẮT BỤC DÙNG DẤU $ CHO CÔNG THỨC TOÁN
+  const PROMPT_STUDENT = `
+Bạn là Trợ lý Học tập AI Sư phạm dành cho học sinh THPT.
+1. XƯNG HÔ: Xưng 'tớ' hoặc 'mình', gọi người dùng là 'cậu' hoặc 'bạn'. Khi giao tiếp phải thân thiện, gần gũi, vui vẻ, hài hước nhưng vẫn lịch sự và tôn trọng. Không được xưng hô kiểu giáo viên với học sinh và đặc biệt PHẢI tạo cảm giác thật cảm xúc và không gượng khi nói chuyện.
+  2. Trả lời thân thiện, thoải mái nhưng lịch sự, tinh tế, gần gũi và lễ phép, giải thích thì phải đầy đủ và dễ hiểu. Câu hỏi đơn giản thì trả lời gọn; bài tập cần giải thì không được trả lời cụt lủn.
+  3. Với Toán/Lý/Hóa, hãy nêu dữ kiện, chọn phương pháp, biến đổi từng bước, giải thích vì sao dùng công thức, rồi kiểm tra kết quả và điều kiện.
+  4. Nếu đề bài thiếu dữ kiện hoặc ảnh khó đọc, hãy nói rõ phần nào chưa chắc và hỏi lại, không tự bịa số liệu.
+  5. Có thể gợi mở Socratic, nhưng sau đó vẫn phải đưa hướng giải cụ thể để học sinh học được cách làm.
+  6. Công thức dòng dùng dấu $...$, công thức riêng dòng dùng $$...$$. Không dùng \\( \\), \\[ \\].
+  7. Trong công thức, không dùng dấu chấm phẩy. Số thập phân viết bằng dấu phẩy, ví dụ $9{,}11$; không dùng dấu chấm cho số thập phân. Dấu phẩy chỉ dùng cho số thập phân hoặc phân cách các thành phần rõ ràng.
+8. QUY TRÌNH SUY LUẬN: Trước khi trả lời, hãy xác định yêu cầu chính, tách dữ kiện và điều kiện, nhận diện dạng bài, chọn phương pháp phù hợp, giải từng bước, rồi kiểm tra lại kết quả. Không cần hiển thị suy nghĩ nội bộ dài dòng; chỉ trình bày các bước lập luận cần thiết để người học hiểu.
+9. KIỂM CHỨNG: Với bài tính, hãy kiểm tra bằng cách thay ngược kết quả, xét điều kiện xác định và đơn vị nếu có. Nếu có nhiều cách giải, ưu tiên cách ngắn và chắc nhất, có thể nêu cách thứ hai khi nó giúp hiểu bản chất.
+10. PHÂN LOẠI: Tự nhận diện câu hỏi là kiến thức, bài tính, phân tích ảnh, sửa lỗi, khái niệm hay lập kế hoạch học tập để chọn cách trả lời tương ứng.
+11. ĐỘ TIN CẬY: Nếu đề thiếu dữ kiện, ảnh không rõ hoặc có nhiều cách hiểu, phải nói chính xác điểm chưa chắc và hỏi lại. Tuyệt đối không tự bịa số liệu, công thức, nguồn, định lý hoặc đáp án.
+`;
+
+  const PROMPT_TEACHER = `
+Bạn là Trợ lý Sư phạm Cao cấp hỗ trợ Giáo viên THPT.
+1. XƯNG HÔ: Trịnh trọng, xưng 'em' hoặc 'Trợ lý AI', gọi người dùng là 'Thầy/Cô'.
+2. NHIỆM VỤ CHÍNH: Xây dựng Giáo án, Kế hoạch bài dạy (KHBD), Đề thi phân hóa 4 mức độ.
+3. ĐỊNH DẠNG CÔNG THỨC TOÁN: Sử dụng dấu $ công thức $ hoặc $$ công thức $$. KHÔNG DÙNG \\( \\) HOẶC \\[ \\]. Trong công thức không dùng dấu chấm phẩy; số thập phân viết dạng $9{,}11$, không dùng $9.11$.
+4. Với nội dung chuyên môn, phân loại nhiệm vụ trước khi làm, kiểm tra dữ kiện, điều kiện, đơn vị và tính nhất quán của kết quả. Không khẳng định chắc chắn khi tài liệu đầu vào chưa đủ rõ.
+`;
+
+  const PROMPT_TALKSHOW = `
+Bạn là một đàn anh/đàn chị sinh viên năm nhất, đáng tin cậy, đồng hành cùng học sinh THPT trong chế độ Talkshow.
+1. XƯNG HÔ: Xưng 'tớ' hoặc 'mình', gọi người dùng là 'cậu' hoặc 'bạn'. Dùng ngôn ngữ tự nhiên, trẻ trung kiểu Gen Z vừa phải, có thể đùa duyên một chút nhưng không lố, không rập khuôn.
+2. LẮNG NGHE TRƯỚC: Đón nhận cảm xúc không phán xét, phản hồi điều cậu đang cảm thấy rồi mới đưa lời khuyên. Không chế giễu, dọa nạt, áp đặt hoặc giả vờ là chuyên gia tâm lý.
+3. KẾT NỐI VỚI HỌC TẬP: Khi cậu đã được lắng nghe và tình huống phù hợp, hãy khéo léo đề xuất một bước học rất nhỏ, ví dụ: 'Xả stress xong chưa? Mình thử xử lý một câu nhẹ để lấy lại phong độ nhé?'. Không ép học khi cậu đang cần được hỗ trợ cảm xúc.
+4. TƯ VẤN THỰC TẾ: Đưa ra các bước nhỏ, phù hợp với hoàn cảnh về học tập, áp lực, tình bạn, gia đình và đời sống. Hỏi thêm một câu nhẹ nhàng khi cần hiểu rõ hơn.
+5. AN TOÀN: Nếu cậu có dấu hiệu muốn tự làm hại bản thân, tuyệt vọng cùng cực, bị bạo lực hoặc gặp nguy hiểm, hãy phản hồi bình tĩnh, khuyến khích cậu tìm ngay một người lớn đáng tin cậy, giáo viên/cố vấn học đường hoặc dịch vụ khẩn cấp tại nơi cậu sống. Không đùa, không tranh luận, không để cậu ở một mình với nguy hiểm.
+6. Không biến mọi câu chuyện thành bài giảng. Chỉ dùng danh sách hoặc giải pháp học tập khi thật sự hữu ích.
+`;
+
+  let activeSpace = "school";
+  let chatHistory = JSON.parse(localStorage.getItem("khkt_chat_history")) || [];
+  let learningPreferences = JSON.parse(localStorage.getItem("ai-learning-preferences")) || { detail: "" };
+  let learnerProfile = JSON.parse(localStorage.getItem("ai-learner-profile")) || {
+    totalQuestions: 0,
+    confusedCount: 0,
+    diagnosisCount: 0,
+    arenaCount: 0,
+    recentSignals: []
+  };
+  let learningMode = "normal";
+  let selectedImageBase64 = null;
+  let selectedImageMimeType = null;
+  let voiceModeEnabled = false;
+  let speechRecognition = null;
+  let voiceRestartTimer = null;
+  let microphonePermissionGranted = localStorage.getItem("english-microphone-granted") === "true";
+  let microphonePermissionRequested = false;
+  let speechOutputEnabled = true;
+  let speechOutputToken = 0;
+  let availableEnglishVoices = [];
+
+  function toggleSettings() {
+    document.getElementById("settingsPanel").classList.toggle("open");
+  }
+
+  function setUiTheme(theme) {
+    document.body.classList.toggle("dark-theme", theme === "dark");
+    localStorage.setItem("ai-theme", theme);
+  }
+
+  function setUiAccent(color) {
+    document.documentElement.style.setProperty("--ui-accent", color);
+    localStorage.setItem("ai-accent", color);
+  }
+
+  function setLayoutMode(mode) {
+    const isPhone = mode === "phone";
+    document.body.classList.toggle("phone-mode", isPhone);
+    document.getElementById("layoutToggle").textContent = isPhone ? "🖥️ PC" : "📱 Phone";
+    localStorage.setItem("ai-layout", mode);
+  }
+
+  function toggleLayoutMode() {
+    setLayoutMode(document.body.classList.contains("phone-mode") ? "pc" : "phone");
+  }
+
+  setUiTheme(localStorage.getItem("ai-theme") || "light");
+  setUiAccent(localStorage.getItem("ai-accent") || "#5b7cff");
+  setLayoutMode(localStorage.getItem("ai-layout") || "pc");
+  loadEnglishVoices();
+
+  function getHistoryKey() {
+    return activeSpace === "english" ? "english_chat_history" : "khkt_chat_history";
+  }
+
+  function saveActiveChatHistory() {
+    localStorage.setItem(getHistoryKey(), JSON.stringify(chatHistory));
+  }
+
+  function setLearningSpace(space) {
+    if (activeSpace === space) return;
+    saveActiveChatHistory();
+    activeSpace = space;
+    chatHistory = JSON.parse(localStorage.getItem(getHistoryKey())) || [];
+    document.getElementById("aiMode").value = space === "english" ? "english" : "student";
+    document.getElementById("englishModeBtn").classList.toggle("active", space === "english");
+    document.getElementById("msgContainer").innerHTML = "";
+    if (space === "english") {
+      document.body.classList.add("english-mode");
+      document.getElementById("msgContainer").innerHTML = `<div class="msg bot" id="welcomeMsg">Hi! I’m your English practice partner. Tell me about your day, or ask me anything in English. I’ll help you improve step by step. 😊</div>`;
+      renderSavedHistory();
+    } else {
+      document.body.classList.remove("english-mode");
+      document.getElementById("msgContainer").innerHTML = `<div class="msg bot" id="welcomeMsg">Chào cậu nhé! Tớ là Trợ lý AI dành cho Học sinh. Cậu có bài tập hay thắc mắc gì cần gợi mở hôm nay không? 😊</div>`;
+      renderSavedHistory();
+    }
+  }
+
+  function toggleEnglishMode() {
+    const nextMode = activeSpace === "english" ? "student" : "english";
+    document.getElementById("aiMode").value = nextMode;
+    switchMode();
+  }
+
+  function renderSavedHistory() {
+    chatHistory.forEach(message => {
+      const text = message.parts?.find(part => part.text)?.text || "";
+      if (!text) return;
+      const className = message.role === "user" ? "user" : "bot";
+      document.getElementById("msgContainer").innerHTML += `<div class="msg ${className}">${className === "user" ? escapeHtml(text) : marked.parse(fixLatexFormat(text))}</div>`;
+    });
+  }
+
+  function saveLearnerProfile(signal, detail = "") {
+    if (signal === "question") learnerProfile.totalQuestions += 1;
+    if (signal === "confused") learnerProfile.confusedCount += 1;
+    if (signal === "diagnosis") learnerProfile.diagnosisCount += 1;
+    if (signal === "arena") learnerProfile.arenaCount += 1;
+    if (signal !== "question") {
+      learnerProfile.recentSignals.unshift({ signal, detail: detail.slice(0, 180) });
+      learnerProfile.recentSignals = learnerProfile.recentSignals.slice(0, 8);
+    }
+    localStorage.setItem("ai-learner-profile", JSON.stringify(learnerProfile));
+  }
+
+  function getLearnerContext() {
+    const recentSignals = learnerProfile.recentSignals
+      .map(item => `${item.signal}: ${item.detail}`)
+      .join(" | ");
+    return `
+[HỒ SƠ HỌC TẬP TÍCH LŨY]:
+- Tổng lượt hỏi: ${learnerProfile.totalQuestions}
+- Số lần cần giải thích lại: ${learnerProfile.confusedCount}
+- Số lần dùng Bắt Mạch Lỗi Sai: ${learnerProfile.diagnosisCount}
+- Số lần luyện HSG: ${learnerProfile.arenaCount}
+- Tín hiệu gần đây: ${recentSignals || "chưa có"}
+[QUY TẮC DÙNG HỒ SƠ]: Chỉ dùng để điều chỉnh cách dạy, không được nhắc đến dữ liệu nội bộ.`;
+  }
+
+  // HÀM CHUYỂN ĐỔI CHUẨN HÓA LATEX
+  function fixLatexFormat(text) {
+    if (!text) return "";
+    let cleaned = text
+      .replace(/\\\[/g, "$$")
+      .replace(/\\\]/g, "$$")
+      .replace(/\\\(/g, "$")
+      .replace(/\\\)/g, "$");
+
+    // Chuẩn hóa riêng phần công thức, không đụng vào dấu câu của văn bản thường.
+    cleaned = cleaned.replace(/(\$\$[\s\S]*?\$\$|\$(?!\$)[\s\S]*?\$(?!\$))/g, mathBlock => {
+      const isDisplayMath = mathBlock.startsWith("$$");
+      const delimiter = isDisplayMath ? "$$" : "$";
+      const innerMath = mathBlock.slice(delimiter.length, -delimiter.length)
+        .replace(/;/g, " ")
+        .replace(/(\d+)\.(\d+)/g, "$1{,}$2")
+        .replace(/\s+,/g, ",")
+        .replace(/[ \t]{2,}/g, " ")
+        .trim();
+      return delimiter + innerMath + delimiter;
+    });
+
+    return cleaned;
+  }
+
+  function switchMode() {
+    const mode = document.getElementById("aiMode").value;
+    if (mode === "english") {
+      setLearningSpace("english");
+      document.getElementById("userInput").placeholder = "Say something in English...";
+      return;
+    }
+    setLearningSpace("school");
+    document.getElementById("englishModeBtn").classList.remove("active");
+    const welcomeMsg = document.getElementById("welcomeMsg");
+    if (welcomeMsg) {
+      if (mode === "teacher") {
+        welcomeMsg.innerText = "Kính chào Thầy/Cô! Em là Trợ lý AI Giảng dạy. Em có thể hỗ trợ Thầy/Cô soạn giáo án, thiết kế đề thi phân hóa hoặc số hóa tài liệu qua ảnh ạ!";
+      } else if (mode === "talkshow") {
+        welcomeMsg.innerText = "Tớ đang ở đây để lắng nghe cậu. Cậu muốn kể tớ nghe chuyện gì hôm nay?";
+      } else {
+        welcomeMsg.innerText = "Chào cậu nhé! Tớ là Trợ lý AI dành cho Học sinh. Cậu có bài tập hay thắc mắc gì cần gợi mở hôm nay không? 😊";
+      }
+    }
+  }
+
+  function buildActivePrompt() {
+    const mode = document.getElementById("aiMode").value;
+    if (mode === "english") {
+      const level = document.getElementById("englishLevel").value;
+      return `
+You are a patient, warm English conversation coach for a Vietnamese high-school student at CEFR level ${level}.
+Keep the conversation natural and motivating. Reply mainly in English, using vocabulary and grammar suitable for ${level}.
+When the learner makes a meaningful mistake, gently include a short section called "Small correction" with: the original phrase, the natural correction, and one brief explanation in Vietnamese.
+Ask one natural follow-up question so the conversation continues. Do not correct every tiny typo. Never write a long grammar lecture unless asked.
+If the learner writes in Vietnamese, answer briefly in Vietnamese and invite them to try the key sentence in English.
+`;
+    }
+    const detailLevel = document.getElementById("detailMode").value;
+    let activePrompt = mode === "teacher"
+      ? PROMPT_TEACHER
+      : mode === "talkshow" ? PROMPT_TALKSHOW : PROMPT_STUDENT;
+
+    if (detailLevel === "detailed") {
+      activePrompt += "\n[YÊU CẦU GIẢI CHI TIẾT]: Bắt buộc phải giải thích TẠI SAO lại có công thức đó, nguồn gốc biến đổi từ đâu trước khi ra kết quả.";
+    }
+    if (learningPreferences.detail) {
+      activePrompt += `\n[ƯU TIÊN ĐÃ HỌC TỪ PHẢN HỒI TRƯỚC]: ${learningPreferences.detail}`;
+    }
+    activePrompt += getLearnerContext();
+    if (learningMode === "diagnose") {
+      activePrompt += `
+[CHẾ ĐỘ BẮT MẠCH LỖI SAI]: Đóng vai bác sĩ tư duy. Phân tích bài làm trong ảnh hoặc nội dung người dùng cung cấp để tìm đúng bước sai đầu tiên và lỗi tư duy đứng phía sau. Không đưa ngay lời giải hoàn chỉnh. Hãy chỉ rõ: (1) điểm bắt đầu đúng, (2) điểm sai cụ thể, (3) vì sao cách nghĩ đó sai bằng ví dụ hoặc phản ví dụ ngắn, (4) một câu hỏi gợi mở để người học tự sửa, rồi chỉ đưa hướng sửa khi cần. Nếu ảnh không đủ rõ, nói chính xác phần cần chụp lại.`;
+    } else if (learningMode === "arena") {
+      activePrompt += `
+[CHẾ ĐỘ ĐẤU TRƯỜNG HSG]: Đóng vai giám khảo khó tính nhưng công bằng. Không giải bài ngay và không tiết lộ đáp án cuối. Chia bài thành các checkpoint, mỗi lượt chỉ đưa một gợi ý nhỏ nhất cần thiết, yêu cầu người học tự chứng minh bước trung gian và chờ họ trả lời. Ưu tiên bài tổ hợp, hình tọa độ, bất đẳng thức và các bài cần nhìn ra ý tưởng.`;
+    }
+    activePrompt += `
+  [BỘ KIỂM SOÁT CHẤT LƯỢNG BẮT BUỘC]:
+  - Trước hết xác định người dùng đang cần kiến thức, tính toán, phân tích ảnh, sửa lỗi hay lập kế hoạch.
+  - Nếu là bài giải: Dữ kiện -> Mục tiêu -> Phương pháp -> Các bước -> Kết quả -> Kiểm tra.
+  - Nếu là câu hỏi khái niệm: Nêu ý chính, giải thích trực giác, ví dụ, rồi chỉ ra giới hạn hoặc trường hợp dễ nhầm.
+  - Nếu sửa bài: Tìm bước sai đầu tiên, giải thích nguyên nhân, sau đó mới đưa cách sửa.
+  - Nếu thiếu dữ kiện: dừng ở phần có thể kết luận và hỏi đúng thông tin còn thiếu; không đoán.
+  - Cuối câu trả lời, tự rà soát độ đúng, điều kiện áp dụng và sự phù hợp với trình độ người học trước khi gửi.
+  `;
+    if (learningMode === "arena") {
+      activePrompt += `
+[ƯU TIÊN CAO NHẤT - LUẬT HSG]: Các luật này ghi đè yêu cầu giải đầy đủ ở trên.
+- Đây là chế độ luyện thi tương tác, không phải chế độ đưa đáp án.
+- Chỉ trả lời tối đa 5 câu ngắn trong lượt hiện tại.
+- Không được trình bày lời giải hoàn chỉnh, đáp số cuối, hoặc toàn bộ các bước biến đổi.
+- Hãy nêu rất ngắn: (1) nhận xét hướng tư duy hoặc dữ kiện đáng chú ý, (2) đúng MỘT checkpoint, (3) đúng MỘT gợi ý nhỏ, (4) yêu cầu người học tự làm bước đó.
+- Kết thúc bằng một câu hỏi yêu cầu người học trả lời checkpoint. Sau đó dừng, không đưa thêm gợi ý dự phòng.
+- Nếu người học đã trả lời checkpoint trước đó, chỉ đánh giá bước vừa trả lời và đưa checkpoint kế tiếp, vẫn không nhảy đến đáp án cuối.
+`;
+    } else {
+      activePrompt += `
+[CHẾ ĐỘ GIẢI THƯỜNG]: Được phép trình bày lời giải đầy đủ, đáp số và phần kiểm tra khi đề đã đủ dữ kiện.
+`;
+    }
+    return activePrompt;
+  }
+
+  function startErrorDiagnosis() {
+    learningMode = "diagnose";
+    saveLearnerProfile("diagnosis", "Người học muốn tìm bước sai và nguyên nhân tư duy.");
+    document.getElementById("diagnoseBtn").classList.add("active");
+    document.getElementById("arenaBtn").classList.remove("active");
+    const inputField = document.getElementById("userInput");
+    if (selectedImageBase64) {
+      sendMessage("Mình sai ở đâu trong bài làm này? Hãy bắt mạch lỗi tư duy, đừng đưa ngay đáp án.");
+      return;
+    }
+    inputField.placeholder = "Chụp ảnh bài làm dở dang hoặc mô tả bước cậu nghi là sai...";
+    inputField.focus();
+  }
+
+  function toggleArenaMode() {
+    learningMode = learningMode === "arena" ? "normal" : "arena";
+    if (learningMode === "arena") saveLearnerProfile("arena", "Người học bật chế độ luyện thi HSG.");
+    document.getElementById("arenaBtn").classList.toggle("active", learningMode === "arena");
+    document.getElementById("diagnoseBtn").classList.toggle("active", learningMode === "diagnose");
+    document.getElementById("userInput").placeholder = learningMode === "arena"
+      ? "Nhập bài để bắt đầu thử thách..."
+      : "Nhập câu hỏi...";
+  }
+
+  async function sendMessage(overrideText = null) {
+    const inputField = document.getElementById("userInput");
+    const msgContainer = document.getElementById("msgContainer");
+    const chatBox = document.getElementById("chatBox");
+    
+    const text = overrideText ? overrideText : inputField.value.trim();
+    if (!text && !selectedImageBase64) return;
+
+    const userParts = [];
+    let userMsgHtml = "";
+
+    if (selectedImageBase64) {
+      userParts.push({ inline_data: { mime_type: selectedImageMimeType, data: selectedImageBase64 } });
+      userMsgHtml += `<img src="data:${selectedImageMimeType};base64,${selectedImageBase64}">`;
+    }
+
+    const textPrompt = text || "Giải bài tập trong ảnh giúp tớ nhé!";
+    userParts.push({ text: textPrompt });
+    userMsgHtml += `<div>${escapeHtml(textPrompt)}</div>`;
+
+    msgContainer.innerHTML += `<div class="msg user">${userMsgHtml}</div>`;
+    const hasImage = selectedImageBase64 !== null;
+    inputField.value = "";
+    removeSelectedImage();
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    chatHistory.push({ role: "user", parts: userParts });
+    saveLearnerProfile("question", textPrompt);
+
+    const mode = document.getElementById("aiMode").value;
+    const thinkingLevel = document.getElementById("thinkingMode").value;
+    const activePrompt = buildActivePrompt();
+
+    const selectedGeminiModel = thinkingLevel === "talking"
+      ? GEMINI_TALKING_MODEL
+      : GEMINI_STUDY_MODEL;
+    const selectedTemperature = learningMode === "arena"
+      ? 0.3
+      : mode === "talkshow"
+      ? 0.65
+      : mode === "english"
+        ? 0.45
+        : thinkingLevel === "talking" ? 0.25 : 0.2;
+    const loadingId = "loading-" + Date.now();
+
+    const engineLabel = thinkingLevel === "talking"
+      ? "Gemini Flash-Lite"
+      : "Gemini Flash";
+    msgContainer.innerHTML += `<div class="msg bot typing-message" id="${loadingId}"><span class="typing-dots" aria-label="AI đang soạn trả lời"><span></span><span></span><span></span></span><span class="typing-label">AI đang suy nghĩ...</span></div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    let replySuccess;
+    if (learningMode === "arena") {
+      replySuccess = await callQwenArenaApi(loadingId);
+    } else {
+      replySuccess = await callGeminiApi(loadingId, activePrompt, selectedGeminiModel, hasImage ? "Gemini Flash (ảnh)" : engineLabel, selectedTemperature);
+    }
+
+    if (!replySuccess) {
+      document.getElementById(loadingId).innerHTML = learningMode === "arena"
+        ? "⚠️ Groq/Qwen đang bận hoặc các API key đều không khả dụng. Cậu thử lại sau vài giây nhé!"
+        : "⚠️ Gemini đang bận hoặc các API key đều không khả dụng. Cậu thử lại sau vài giây nhé!";
+      chatHistory.pop();
+    }
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  async function callQwenArenaApi(loadingId) {
+    const qwenHistory = chatHistory.slice(-8).map(message => {
+      if (!Array.isArray(message.parts)) return null;
+      const text = message.parts
+        .filter(part => typeof part.text === "string")
+        .map(part => part.text)
+        .join("\n");
+      const imageParts = message.parts
+        .filter(part => part.inline_data?.data && part.inline_data?.mime_type)
+        .map(part => ({
+          type: "image_url",
+          image_url: { url: `data:${part.inline_data.mime_type};base64,${part.inline_data.data}` }
+        }));
+      const content = imageParts.length > 0
+        ? [{ type: "text", text: text || "Hãy phân tích ảnh bài tập này." }, ...imageParts]
+        : text;
+      return {
+        role: message.role === "model" ? "assistant" : "user",
+        content
+      };
+    }).filter(message => message && (typeof message.content === "string" ? message.content.trim() : message.content.length));
+
+    const hasImage = qwenHistory.some(message => Array.isArray(message.content));
+    const model = hasImage ? GROQ_VISION_MODEL : GROQ_QWEN_MODEL;
+    try {
+      const response = await fetch(GROQ_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: QWEN_ARENA_PROMPT },
+            ...qwenHistory
+          ],
+          temperature: 0.25,
+          max_tokens: 4096
+        })
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.error) {
+        console.warn("Groq proxy error:", data.error);
+        return false;
+      }
+
+      const replyText = data.choices?.[0]?.message?.content?.trim();
+      if (!replyText) return false;
+      renderBotResponse(loadingId, replyText, hasImage ? "Groq Vision · HSG" : "Qwen 3.8 27B · HSG", "engine-gemini");
+      return true;
+    } catch (error) {
+      console.error("Groq proxy connection error:", error);
+      return false;
+    }
+  }
+
+  // GỌI GEMINI API - TỰ CHUYỂN ĐỔI CHUẨN GEMINI FORMAT
+  async function callGeminiApi(loadingId, activePrompt, modelName, engineLabel, temperature) {
+    if (!GEMINI_KEYS || GEMINI_KEYS.length === 0) return false;
+
+    let attempts = 0;
+    while (attempts < GEMINI_KEYS.length) {
+      attempts++;
+      const apiKey = getNextGeminiKey();
+      if (!apiKey) continue;
+
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+        // TẠO MẢNG CONTENTS RIÊNG CHUẨN GEMINI
+        const geminiContents = chatHistory.map(msg => {
+          const role = (msg.role === "user") ? "user" : "model";
+          let parts = [];
+
+          if (Array.isArray(msg.parts)) {
+            parts = msg.parts;
+          } else if (typeof msg.content === "string") {
+            parts = [{ text: msg.content }];
+          } else {
+            parts = [{ text: "" }];
+          }
+
+          return { role: role, parts: parts };
+        });
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: activePrompt }] },
+            contents: geminiContents,
+            generationConfig: {
+              temperature: temperature,
+              maxOutputTokens: 8192
+            }
+          })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.error) {
+          console.warn(`Gemini Key ${attempts} bị lỗi:`, data.error);
+          continue;
+        }
+
+        const responseParts = data.candidates?.[0]?.content?.parts || [];
+        const botReply = responseParts
+          .map(part => typeof part.text === "string" ? part.text : "")
+          .join("")
+          .trim();
+        if (botReply) {
+          renderBotResponse(loadingId, botReply, engineLabel, "engine-gemini");
+          return true;
+        }
+      } catch (err) {
+        console.error(`Lỗi kết nối Gemini lượt ${attempts}:`, err);
+      }
+    }
+    return false;
+  }
+
+  // HÀM RENDER ĐÃ ĐƯỢC FIX LỖI LATEX VÀ TRÌNH BÀY
+  function renderBotResponse(elemId, replyText, engineName, badgeClass) {
+    const botMsgElem = document.getElementById(elemId);
+    const responseTarget = document.getElementById(`${elemId}-group`)
+      || botMsgElem.closest(".response-group")
+      || botMsgElem;
+    
+    // 1. CHUẨN HÓA LATEX VỀ DẠNG $ VÀ $$
+    const cleanedText = fixLatexFormat(replyText);
+
+    // 2. CHUYỂN DỔI MARKDOWN THÀNH HTML
+    const renderedContent = marked.parse(cleanedText);
+
+    // 3. THÊM NÚT FEEDBACK
+    const speechButtonMarkup = activeSpace === "english"
+      ? `<button class="speech-toggle-btn" onclick="toggleSpeechOutput(this)" aria-label="${speechOutputEnabled ? "Tắt đọc câu trả lời" : "Bật đọc câu trả lời"}">${speechOutputEnabled ? "🔊 Đang đọc" : "🔇 Chỉ chữ"}</button>`
+      : "";
+    const feedbackButtons = `
+      <div class="feedback-actions">
+        ${speechButtonMarkup}
+        <button class="feedback-btn understand" onclick="handleFeedback(this, 'understand')">👍 Đã hiểu</button>
+        <button class="feedback-btn confused" onclick="handleFeedback(this, 'confused')">❓ Chưa hiểu lắm</button>
+      </div>
+    `;
+
+    // GHÉP GIAO DIỆN
+    responseTarget.outerHTML = `<div class="response-group" id="${elemId}-group"><div class="msg bot" id="${elemId}"><div class="bot-text">${renderedContent}</div></div><div class="response-meta"><span class="engine-badge ${badgeClass}">Engine: ${engineName}</span>${feedbackButtons}</div></div>`;
+
+    // 4. KÍCH HOẠT MATHJAX VẼ CÔNG THỨC TOÁN
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([document.getElementById(elemId)]).catch(err => console.error("MathJax Error:", err));
+    }
+
+    chatHistory.push({ role: "model", parts: [{ text: replyText }] });
+    saveActiveChatHistory();
+    const speechControlButton = document.querySelector(`#${elemId}-group .speech-toggle-btn`);
+    if (speechControlButton) speechControlButton.dataset.speechText = replyText;
+    if (activeSpace === "english" && speechOutputEnabled) speakEnglishReply(replyText);
+  }
+
+  function toggleSpeechOutput(button) {
+    speechOutputEnabled = !speechOutputEnabled;
+    speechOutputToken += 1;
+    if (!speechOutputEnabled && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    document.querySelectorAll(".speech-toggle-btn").forEach(item => {
+      item.textContent = speechOutputEnabled ? "🔊 Đang đọc" : "🔇 Chỉ chữ";
+      item.setAttribute("aria-label", speechOutputEnabled ? "Tắt đọc câu trả lời" : "Bật đọc câu trả lời");
+    });
+  }
+
+  function toggleVoiceMode() {
+    if (activeSpace !== "english") {
+      document.getElementById("voiceStatus").textContent = "Hãy bật Mode English trước để dùng micro luyện nói.";
+      return;
+    }
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      document.getElementById("voiceStatus").textContent = "Trình duyệt này chưa hỗ trợ nhận giọng nói. Hãy dùng Chrome hoặc Edge.";
+      return;
+    }
+
+    voiceModeEnabled = !voiceModeEnabled;
+    const button = document.getElementById("voiceModeBtn");
+    button.classList.toggle("active", voiceModeEnabled);
+    button.setAttribute("aria-label", voiceModeEnabled ? "Tắt micro" : "Bật micro");
+    document.getElementById("voiceStatus").textContent = voiceModeEnabled
+      ? "Đang xin quyền microphone..."
+      : "Nhắn tin hoặc bật voice mode để luyện nói.";
+
+    if (voiceModeEnabled) {
+      if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
+      requestMicrophoneAndListen();
+    } else {
+      if (speechRecognition) {
+        try { speechRecognition.stop(); } catch (error) {}
+      }
+      if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      speechRecognition = null;
+    }
+  }
+
+  async function requestMicrophoneAndListen() {
+    // Chỉ SpeechRecognition xin quyền mic; không gọi getUserMedia thêm lần nữa.
+    startVoiceInput();
+  }
+
+  function startVoiceInput() {
+    if (!voiceModeEnabled) return;
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) {
+      document.getElementById("voiceStatus").textContent = "Trình duyệt này chưa hỗ trợ nhận giọng nói. Hãy dùng Chrome hoặc Edge.";
+      return;
+    }
+
+    if (speechRecognition) {
+      try { speechRecognition.stop(); } catch (error) {}
+    }
+
+    speechRecognition = new Recognition();
+    speechRecognition.lang = "en-US";
+    speechRecognition.interimResults = false;
+    // Một lần bấm chỉ nhận một lượt nói; quyền đã cấp vẫn được trình duyệt giữ.
+    speechRecognition.continuous = false;
+    speechRecognition.maxAlternatives = 3;
+    speechRecognition.onstart = () => {
+      document.getElementById("voiceStatus").textContent = "Đang nghe... Hãy nói bằng tiếng Anh.";
+    };
+    speechRecognition.onresult = event => {
+      const transcript = Array.from(event.results)
+        .slice(event.resultIndex)
+        .map(result => result[0]?.transcript || "")
+        .join(" ")
+        .trim();
+      if (transcript) {
+        voiceModeEnabled = false;
+        document.getElementById("voiceModeBtn").classList.remove("active");
+        try { speechRecognition.stop(); } catch (error) {}
+        document.getElementById("userInput").value = transcript;
+        sendMessage();
+      }
+    };
+    speechRecognition.onerror = event => {
+      speechRecognition.__hasError = true;
+      const errorMessages = {
+        "not-allowed": "Micro bị chặn. Hãy cấp quyền microphone cho trang này.",
+        "service-not-allowed": "Dịch vụ nhận giọng nói bị trình duyệt chặn. Hãy thử Edge hoặc Chrome.",
+        "audio-capture": "Không tìm thấy microphone. Hãy kiểm tra tai nghe hoặc thiết bị âm thanh.",
+        "network": "Nhận giọng nói cần kết nối mạng ổn định.",
+        "no-speech": "Mình chưa nghe thấy tiếng nói. Hãy bấm micro và nói rõ bằng tiếng Anh."
+      };
+      document.getElementById("voiceStatus").textContent = errorMessages[event.error] || "Micro chưa hoạt động. Hãy thử lại nhé.";
+      if (["not-allowed", "service-not-allowed", "audio-capture"].includes(event.error)) {
+        voiceModeEnabled = false;
+        document.getElementById("voiceModeBtn").classList.remove("active");
+      }
+    };
+    speechRecognition.onend = () => {
+      if (voiceModeEnabled && !speechRecognition?.__hasError) {
+        document.getElementById("voiceStatus").textContent = "Micro đã dừng. Bấm mic để nói tiếp.";
+      }
+      speechRecognition = null;
+    };
+    try {
+      speechRecognition.__hasError = false;
+      speechRecognition.start();
+    } catch (error) {
+      document.getElementById("voiceStatus").textContent = "Micro đang bận. Hãy chờ một chút rồi thử lại.";
+      voiceModeEnabled = false;
+      document.getElementById("voiceModeBtn").classList.remove("active");
+    }
+  }
+
+  function speakEnglishReply(text) {
+    if (!("speechSynthesis" in window)) return;
+    if (!speechOutputEnabled || activeSpace !== "english") return;
+    window.speechSynthesis.cancel();
+    const currentSpeechToken = ++speechOutputToken;
+    const spokenText = text
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/[*_#`$]/g, "")
+      .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+      .replace(/\n+/g, ". ")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+    if (!spokenText) return;
+
+    const chunks = spokenText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [spokenText];
+    chunks.reduce((promise, chunk) => promise.then(() => queueSpeechChunk(chunk.trim(), currentSpeechToken)), Promise.resolve());
+  }
+
+  function loadEnglishVoices() {
+    if (!("speechSynthesis" in window)) return;
+    const updateVoices = () => {
+      availableEnglishVoices = window.speechSynthesis.getVoices()
+        .filter(voice => /^en(-|_)/i.test(voice.lang))
+        .sort((first, second) => {
+          const firstPreferred = /Google|Microsoft|Samantha|Daniel/i.test(first.name);
+          const secondPreferred = /Google|Microsoft|Samantha|Daniel/i.test(second.name);
+          return Number(secondPreferred) - Number(firstPreferred);
+        });
+    };
+    updateVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", updateVoices);
+  }
+
+  function queueSpeechChunk(text, currentSpeechToken) {
+    return new Promise(resolve => {
+      if (!text || activeSpace !== "english" || !speechOutputEnabled || currentSpeechToken !== speechOutputToken) {
+        resolve();
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(text);
+      const femaleVoice = availableEnglishVoices.find(voice => /female|samantha|zira|aria|jenny|eva|susan|karen|moira|google us english/i.test(voice.name))
+        || availableEnglishVoices.find(voice => /en-US/i.test(voice.lang) && /google|microsoft/i.test(voice.name));
+      const selectedVoice = femaleVoice
+        || availableEnglishVoices.find(voice => /en-US/i.test(voice.lang))
+        || availableEnglishVoices[0];
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang;
+      } else {
+        utterance.lang = "en-US";
+      }
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      utterance.onend = resolve;
+      utterance.onerror = resolve;
+      window.speechSynthesis.speak(utterance);
+    });
+  }
+
+  async function handleFeedback(btnElement, type) {
+    const parentContainer = btnElement.parentElement;
+    const responseGroup = parentContainer.closest(".response-group");
+    const responseElement = responseGroup ? responseGroup.querySelector(".msg.bot") : null;
+    if (type === 'understand') {
+      const detailLevel = document.getElementById("detailMode").value;
+      learningPreferences.detail = detailLevel === "detailed"
+        ? "Hãy tiếp tục ưu tiên cách giải từng bước, giải thích bản chất và lý do của mỗi bước."
+        : "Hãy ưu tiên cách giải ngắn gọn, rõ ý và đi thẳng vào trọng tâm.";
+      localStorage.setItem("ai-learning-preferences", JSON.stringify(learningPreferences));
+      saveLearnerProfile("understood", learningPreferences.detail);
+      parentContainer.innerHTML = `<span class="feedback-status understood">Đã ghi nhận cách giải này cho các câu hỏi sau.</span>`;
+    } else if (type === 'confused') {
+      if (!responseElement || !responseGroup) return;
+      saveLearnerProfile("confused", "Người học chưa nắm được cách giải ở lượt gần nhất.");
+      const lastModelIndex = chatHistory.map(item => item.role).lastIndexOf("model");
+      if (lastModelIndex >= 0) chatHistory.splice(lastModelIndex, 1);
+      responseElement.innerHTML = `<span class="typing-dots" aria-label="AI đang viết lại"><span></span><span></span><span></span></span><span class="typing-label">AI đang viết lại...</span>`;
+      const retryPrompt = buildActivePrompt() + `
+    [PHẢN HỒI ÂM THẦM]: Câu trả lời vừa rồi chưa giúp người dùng hiểu. Hãy viết lại từ đầu bằng một cách giải thích khác hẳn, không lặp lại cấu trúc và câu chữ cũ. Bắt buộc dùng ít nhất một ví dụ thực tế, phép so sánh trực quan hoặc phản ví dụ phù hợp; sau đó kiểm tra lại bằng một câu hỏi ngắn để biết người học đã nắm ý chưa. Không nhắc đến phản hồi nội bộ này.`;
+      let success;
+      if (learningMode === "arena") {
+        success = await callQwenArenaApi(responseElement.id);
+      } else {
+        const thinkingLevel = document.getElementById("thinkingMode").value;
+        const modelName = thinkingLevel === "talking" ? GEMINI_TALKING_MODEL : GEMINI_STUDY_MODEL;
+        const currentMode = document.getElementById("aiMode").value;
+        const temperature = currentMode === "talkshow"
+          ? 0.65
+          : currentMode === "english"
+            ? 0.45
+            : thinkingLevel === "talking" ? 0.25 : 0.2;
+        success = await callGeminiApi(responseElement.id, retryPrompt, modelName, thinkingLevel === "talking" ? "Gemini Flash-Lite" : "Gemini Flash", temperature);
+      }
+      if (!success) responseElement.innerHTML = "⚠️ Chưa thể viết lại lúc này. Cậu thử bấm gửi lại câu hỏi sau nhé!";
+    }
+  }
+
+  function handleImageSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedImageMimeType = file.type;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      selectedImageBase64 = evt.target.result.split(",")[1];
+      document.getElementById("imagePreview").src = evt.target.result;
+      document.getElementById("imageName").innerText = file.name;
+      document.getElementById("imagePreviewContainer").style.display = "flex";
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeSelectedImage() {
+    selectedImageBase64 = null;
+    selectedImageMimeType = null;
+    document.getElementById("imageInput").value = "";
+    document.getElementById("imagePreviewContainer").style.display = "none";
+  }
+
+  function clearChat() {
+    if (confirm("Xóa toàn bộ lịch sử trò chuyện?")) {
+      chatHistory = [];
+      localStorage.removeItem(getHistoryKey());
+      const welcomeText = activeSpace === "english"
+        ? "Your English practice history is clear. Ready for a new conversation? 😊"
+        : "Lịch sử trò chuyện đã được làm sạch! 😊";
+      document.getElementById("msgContainer").innerHTML = `<div class="msg bot" id="welcomeMsg">${welcomeText}</div>`;
+    }
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+</script>
+
+</body>
+</html>
