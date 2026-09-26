@@ -1,0 +1,2442 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ Thống Trợ Lý AI Giáo Dục THPT - Hybrid Engine Edition</title>
+
+  <!-- 1. MARKED.JS -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- 2. MATHJAX -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script>
+    window.APP_CONFIG = {
+      geminiKeys: [
+        "QVEuQWI4Uk42SnlCLWF3M2VwaFZyNUIwaTJETWJXZzkyYXEzQXQtWUJDRWQ0OXFpWEtBeFE",
+        "QVEuQWI4Uk42TFF6dzMwRUwtU19aNFFsUG4xWmwwT3pNRlZiMmVnTzhpR2ttdjQ4OUZVSWc=",
+        "QVEuQWI4Uk42SS15LWpFT2duZjJlZVdfdnZDMjJ5MzUzOUM3TjdSc2R3bXE1UF9NMGMwa2c=",
+        "QVEuQWI4Uk42S2ktcnNMbENRdDJIUHFGenRJdUgzQUJqMUxaVzE1YWdPZVRLVjg5dUF0TVE=",
+        "QVEuQWI4Uk42THJZVE5aR2k4bTJ6b3huSzBlUWZ2TWNrS2dLdU1RbW5jVnplaVBYME5QQnc="
+      ]
+    };
+  </script>
+
+  <style>
+    :root {
+      --ui-bg-1: #f4f7fb;
+      --ui-bg-2: #e8eef7;
+      --ui-card: rgba(255, 255, 255, 0.86);
+      --ui-panel: rgba(15, 23, 42, 0.05);
+      --ui-line: rgba(15, 23, 42, 0.12);
+      --ui-text: #172033;
+      --ui-muted: #5b6678;
+      --ui-accent: #5b7cff;
+      --ui-bot-bg: rgba(255,255,255,0.82);
+      --ui-bot-text: #172033;
+      --ui-shadow: 0 20px 48px rgba(15, 23, 42, 0.14);
+    }
+
+    body.dark-theme {
+      --ui-bg-1: #121417;
+      --ui-bg-2: #0f172a;
+      --ui-card: rgba(24, 29, 36, 0.8);
+      --ui-panel: rgba(255,255,255,0.04);
+      --ui-line: rgba(255,255,255,0.08);
+      --ui-text: #f0f2f5;
+      --ui-muted: #b0b3b8;
+      --ui-bot-bg: rgba(255,255,255,0.06);
+      --ui-bot-text: #f1f5f9;
+      --ui-shadow: 0 22px 55px rgba(0, 0, 0, 0.34);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--ui-accent) 16%, transparent), var(--ui-bg-1) 58%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--ui-text);
+      transition: background 0.35s ease, color 0.25s ease;
+    }
+
+    .chat-card {
+      position: relative;
+      width: min(100%, 1400px);
+      height: 90vh;
+      background: rgba(7, 11, 18, 0.52);
+      border: 1px solid var(--ui-line);
+      border-radius: 28px;
+      box-shadow: var(--ui-shadow);
+      display: flex;
+      flex-direction: column;
+      padding: 14px 18px 18px;
+      animation: cardEnter 0.55s cubic-bezier(.2,.8,.2,1) both;
+      backdrop-filter: blur(4px);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--ui-line);
+      padding: 8px 10px 14px;
+      margin-bottom: 12px;
+      gap: 14px;
+    }
+    .header-left { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; min-width: 0; flex: 1; }
+    .header h3 {
+      margin: 0;
+      color: var(--ui-text);
+      font-size: 1.04rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .header h3::first-letter { color: var(--ui-accent); }
+
+    .mode-select, .thinking-select, .detail-select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--ui-line);
+      background: rgba(255,255,255,0.04);
+      font-weight: 600;
+      color: var(--ui-text);
+      outline: none;
+      cursor: pointer;
+      font-size: 12px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .mode-select option, .thinking-select option, .detail-select option {
+      background: #ffffff;
+      color: #172033;
+    }
+    body.dark-theme .mode-select,
+    body.dark-theme .thinking-select,
+    body.dark-theme .detail-select {
+      background: #1b2028;
+      color: #f0f2f5;
+      color-scheme: dark;
+    }
+    body.dark-theme .mode-select option,
+    body.dark-theme .thinking-select option,
+    body.dark-theme .detail-select option {
+      background: #1b2028;
+      color: #f0f2f5;
+    }
+    .mode-select:hover, .thinking-select:hover, .detail-select:hover { border-color: var(--ui-accent); transform: translateY(-1px); }
+
+    .clear-btn {
+      background: rgba(91,124,255,0.2);
+      color: var(--ui-text);
+      border: none;
+      padding: 9px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .clear-btn:hover { background: rgba(217, 54, 62, 0.9); }
+
+    .ui-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .layout-btn {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 8px 11px;
+      background: rgba(255,255,255,0.04);
+      color: var(--ui-text);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .gear-btn {
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      color: var(--ui-text);
+      cursor: pointer;
+      font-size: 18px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .gear-btn:hover {
+      transform: rotate(90deg) scale(1.04);
+      box-shadow: 0 8px 18px rgba(91, 124, 255, 0.12);
+    }
+
+    .settings-panel {
+      position: absolute;
+      top: 76px;
+      right: 18px;
+      display: flex;
+      gap: 10px;
+      flex-direction: column;
+      align-items: stretch;
+      width: min(360px, calc(100% - 32px));
+      padding: 16px;
+      border: 1px solid var(--ui-line);
+      border-radius: 20px;
+      background: color-mix(in srgb, var(--ui-bg-1) 94%, transparent);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.4);
+      opacity: 0;
+      transform: translateY(-10px) scale(0.97);
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+      z-index: 20;
+      color: var(--ui-text);
+      font-size: 12px;
+    }
+    .settings-panel.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      animation: panelEnter 0.22s ease both;
+    }
+    .settings-close-btn {
+      align-self: flex-end;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 1px solid var(--ui-line);
+      border-radius: 50%;
+      background: var(--ui-panel);
+      color: var(--ui-text);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .settings-close-btn:hover { background: color-mix(in srgb, var(--ui-accent) 18%, transparent); }
+    .settings-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .settings-group label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ui-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .theme-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .theme-btn, .accent-btn {
+      border: 1px solid var(--ui-line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.03);
+      color: var(--ui-text);
+      font-size: 12px;
+    }
+    .accent-btn { width: 22px; height: 22px; padding: 0; border-radius: 50%; }
+
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      border-radius: 22px;
+      padding: 18px 18px 20px;
+      margin-bottom: 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--ui-line);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      scroll-behavior: smooth;
+    }
+    .msg-container { max-width: 1280px; margin: 0 auto; width: 100%; }
+    .msg {
+      width: fit-content;
+      margin: 6px 0;
+      padding: 15px 18px;
+      border-radius: 20px;
+      max-width: 88%;
+      line-height: 1.6;
+      word-wrap: break-word;
+      font-size: 15px;
+      animation: messageEnter 0.3s cubic-bezier(.2,.8,.2,1) both;
+    }
+    .user {
+      background: linear-gradient(135deg, var(--ui-accent), color-mix(in srgb, var(--ui-accent) 72%, #172554 28%));
+      color: white;
+      margin-left: auto;
+      margin-right: 0;
+      border-bottom-right-radius: 8px;
+      box-shadow: 0 7px 18px color-mix(in srgb, var(--ui-accent) 20%, transparent);
+    }
+    .user img { max-width: 100%; max-height: 250px; border-radius: 12px; margin-bottom: 8px; display: block; }
+    .bot {
+      background: var(--ui-bot-bg);
+      color: var(--ui-bot-text);
+      margin-right: auto;
+      border-bottom-left-radius: 8px;
+      border: 1px solid var(--ui-line);
+      box-shadow: 0 5px 16px rgba(15,23,42,0.06);
+    }
+    .typing-message { display: inline-flex; align-items: center; gap: 9px; min-width: 112px; }
+    .typing-dots { display: inline-flex; align-items: center; gap: 4px; height: 14px; }
+    .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--ui-accent); animation: typingBounce 1.15s infinite ease-in-out; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+    .typing-label { color: var(--ui-muted); font-size: 12px; font-style: italic; }
+    .bot h1, .bot h2, .bot h3, .bot h4 { margin-top: 10px; margin-bottom: 6px; color: #7db6ff; }
+    .bot p { margin: 6px 0; }
+    .bot ul, .bot ol { margin: 6px 0; padding-left: 20px; }
+    .bot hr { border: 0; height: 1px; background: var(--ui-line); margin: 12px 0; }
+
+    .response-group { width: 100%; }
+    .response-meta { width: 90%; display: flex; flex-direction: column; gap: 8px; margin: -2px 0 8px; padding: 10px 18px 0; border-top: 1px dashed var(--ui-line); }
+    .engine-badge { display: inline-block; width: fit-content; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+    .engine-gemini { background: #e8f0fe; color: #1a73e8; }
+
+    .feedback-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .feedback-btn { padding: 5px 12px; border-radius: 14px; border: 1px solid var(--ui-line); background: rgba(255,255,255,0.04); color: var(--ui-text); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .feedback-btn.understand:hover { background: #e6f4ea; color: #137333; border-color: #137333; }
+    .feedback-btn.confused:hover { background: #fce8e6; color: #c5221f; border-color: #c5221f; }
+    .feedback-status { font-size: 12px; font-weight: 600; }
+    .feedback-status.understood { color: #137333; }
+    .feedback-status.retrying { color: #c5221f; }
+    .speech-toggle-btn { padding: 5px 9px; border-radius: 12px; border: 1px solid var(--ui-line); background: rgba(255,255,255,0.04); color: var(--ui-text); font-size: 12px; cursor: pointer; }
+    .illustration-btn { padding: 5px 10px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--ui-accent) 45%, var(--ui-line)); background: color-mix(in srgb, var(--ui-accent) 10%, transparent); color: var(--ui-text); font-size: 12px; cursor: pointer; }
+    .illustration-btn:hover { background: color-mix(in srgb, var(--ui-accent) 22%, transparent); }
+    .illustration-btn:disabled { opacity: 0.65; cursor: wait; }
+    .illustration-panel { margin-top: 14px; padding: 14px; border: 1px solid var(--ui-line); border-radius: 18px; background: color-mix(in srgb, var(--ui-panel) 82%, transparent); overflow: hidden; animation: illustrationEnter 0.45s cubic-bezier(.2,.8,.2,1) both; }
+    .illustration-panel svg { display: block; width: min(100%, 620px); max-height: 420px; margin: 0 auto; filter: drop-shadow(0 12px 18px rgba(15,23,42,0.14)); }
+    .illustration-code-frame { display: block; width: min(100%, 720px); height: 440px; margin: 0 auto; border: 0; border-radius: 12px; background: var(--ui-bg-1); }
+    .animation-container { width: 100%; height: 320px; margin: 10px 0; overflow: hidden; border: 1px solid var(--ui-line); border-radius: 12px; background: #0f172a; }
+    .animation-container iframe { display: block; width: 100%; height: 100%; border: 0; }
+    .manim-video { display: block; width: min(100%, 720px); max-height: 440px; margin: 0 auto; border-radius: 12px; background: #0f172a; }
+    .diagram-svg { color: var(--ui-text); background: color-mix(in srgb, var(--ui-bg-1) 72%, transparent); border-radius: 12px; }
+    .diagram-line { stroke: var(--ui-accent); stroke-width: 3; fill: none; stroke-linecap: round; }
+    .sine-curve { stroke: #f23f9b; stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .diagram-arrow { stroke: #ef6c4f; }
+    .diagram-axis { stroke: var(--ui-muted); stroke-width: 2; fill: none; }
+    .diagram-grid { stroke: var(--ui-line); stroke-width: 1; stroke-dasharray: 3 5; }
+    .diagram-point { fill: var(--ui-accent); stroke: var(--ui-bg-1); stroke-width: 2; }
+    .diagram-circle { stroke: var(--ui-accent); stroke-width: 3; fill: color-mix(in srgb, var(--ui-accent) 10%, transparent); }
+    .diagram-title { fill: var(--ui-text); font-size: 18px; font-weight: 700; }
+    .diagram-label, .diagram-note { fill: var(--ui-text); font-size: 14px; }
+    .diagram-tick-label { font-size: 12px; }
+    .diagram-note { fill: var(--ui-muted); font-size: 12px; }
+    .diagram-svg .diagram-animated { transform-box: fill-box; transform-origin: center; }
+    .manim-code { width: 100%; max-height: 420px; overflow: auto; margin: 10px 0 0; padding: 14px; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-bg-1); color: var(--ui-text); font: 12px/1.5 Consolas, "Courier New", monospace; text-align: left; white-space: pre-wrap; }
+    .illustration-note { color: var(--ui-muted); font-size: 11px; margin-top: 8px; text-align: center; }
+    .learning-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+    .learning-tool-btn { border: 1px solid var(--ui-line); border-radius: 12px; padding: 8px 11px; background: rgba(255,255,255,0.04); color: var(--ui-text); cursor: pointer; font-size: 12px; font-weight: 700; }
+    .learning-tool-btn.active { background: rgba(91,124,255,0.18); border-color: rgba(91,124,255,0.5); color: #dfe9ff; }
+    .english-tools { display: none; gap: 8px; align-items: center; flex-wrap: wrap; }
+    body.english-mode .english-tools { display: flex; }
+    body.english-mode .learning-tools { display: none; }
+    body.english-mode .upload-btn,
+    body.english-mode .image-preview-container { display: none !important; }
+    .english-level { width: auto; min-width: 150px; padding: 8px 11px; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-panel); color: var(--ui-text); font-size: 12px; font-weight: 700; }
+    .voice-status { color: var(--ui-muted); font-size: 12px; font-style: italic; }
+    .english-mode-btn, .voice-btn { border: 1px solid var(--ui-line); border-radius: 999px; padding: 9px 13px; background: var(--ui-panel); color: var(--ui-text); cursor: pointer; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .english-mode-btn.active, .voice-btn.active { background: color-mix(in srgb, var(--ui-accent) 20%, transparent); border-color: var(--ui-accent); color: var(--ui-accent); }
+    .voice-btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; font-size: 19px; flex: 0 0 44px; }
+
+    .input-wrapper { margin: 0 auto; width: min(100%, 1280px); display: flex; flex-direction: column; gap: 8px; }
+    .image-preview-container { display: none; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 12px; width: fit-content; }
+    .image-preview-container img { height: 45px; border-radius: 6px; object-fit: cover; }
+    .remove-img-btn { background: #ff4d4f; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 11px; font-weight: bold; }
+    .input-row { display: flex; gap: 12px; width: 100%; align-items: center; }
+    .upload-btn { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; }
+    input[type="text"] {
+      flex: 1;
+      padding: 16px 18px;
+      border: 1px solid var(--ui-line);
+      border-radius: 26px;
+      outline: none;
+      font-size: 15px;
+      background: rgba(255,255,255,0.04);
+      color: var(--ui-text);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      min-height: 56px;
+    }
+    input[type="text"]:focus { border-color: rgba(91,124,255,0.8); box-shadow: 0 0 0 4px rgba(91,124,255,0.18); }
+    button.send-btn { min-height:56px; padding:0 26px; border:none; background: var(--ui-accent); color:white; border-radius:26px; cursor:pointer; font-weight:600; font-size:15px; box-shadow: 0 8px 20px color-mix(in srgb, var(--ui-accent) 24%, transparent); }
+    button, .upload-btn, .clear-btn, .layout-btn, .gear-btn { transition: transform 0.2s ease, filter 0.2s ease, background 0.2s ease; }
+    button:hover, .upload-btn:hover, .clear-btn:hover, .layout-btn:hover, .gear-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+
+    body.phone-mode { padding: 14px; }
+    body.phone-mode .chat-card { width: min(100%, 430px); height: 92vh; padding: 12px; }
+    body.phone-mode .header { align-items: flex-start; flex-direction: column; }
+    body.phone-mode .header-left { width: 100%; gap: 6px; }
+    body.phone-mode .header h3 { width: 100%; }
+    body.phone-mode .ui-tools { width: 100%; justify-content: flex-end; }
+    body.phone-mode .chat-box { padding: 11px; }
+    body.phone-mode .msg { max-width: 92%; }
+    body.phone-mode .response-meta { width: 92%; }
+    body.phone-mode .input-row { gap: 7px; }
+    body.phone-mode .upload-btn { width: 44px; height: 44px; }
+    body.phone-mode button.send-btn { padding: 0 17px; }
+
+    /* Chống tràn ngang: công thức MathJax / bảng / code dài cuộn trong bong bóng */
+    .msg, .bot-text, .response-group { min-width: 0; }
+    .msg { overflow-wrap: anywhere; }
+    .bot-text mjx-container[display="true"] {
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 2px 0 6px;
+      scrollbar-width: thin;
+    }
+    .msg pre, .msg table, .msg img, .msg video { max-width: 100%; overflow-x: auto; }
+    body.phone-mode .chat-box { overflow-x: hidden; }
+    body.phone-mode .bot-text mjx-container[display="true"] { font-size: 0.92em; }
+
+    @keyframes cardEnter { from { opacity: 0; transform: translateY(16px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes messageEnter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes panelEnter { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.35; } 30% { transform: translateY(-4px); opacity: 1; } }
+    @keyframes illustrationEnter { from { opacity: 0; transform: translateY(10px) scale(0.985); filter: blur(5px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+    @media (max-width: 600px) {
+      body { padding: 14px; }
+      .chat-card { height: 92vh; padding: 12px; }
+      .header { align-items: flex-start; }
+      .header-left { gap: 6px; }
+      .header h3 { width: 100%; }
+      .msg { max-width: 88%; }
+    }
+
+    /* Gemini-inspired spacing layer: keeps the existing controls and behavior intact. */
+    body {
+      padding: 0;
+      align-items: stretch;
+      background: var(--ui-bg-1);
+    }
+    .chat-card {
+      width: 100%;
+      height: 100vh;
+      max-width: none;
+      padding: 16px 24px 22px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+    .header {
+      width: min(100%, 1180px);
+      margin: 0 auto 8px;
+      padding: 4px 0 12px;
+      border-bottom: 0;
+    }
+    .chat-box {
+      width: min(100%, 980px);
+      margin: 0 auto 18px;
+      padding: 22px 10px 28px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+    .msg-container { max-width: 900px; }
+    .msg {
+      max-width: min(86%, 760px);
+      padding: 14px 18px;
+    }
+    .bot {
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      padding-left: 0;
+    }
+    .input-wrapper {
+      width: min(100%, 980px);
+      gap: 10px;
+    }
+    .learning-tools { padding-left: 4px; }
+    .input-row {
+      gap: 8px;
+      padding: 7px 8px 7px 10px;
+      border: 1px solid var(--ui-line);
+      border-radius: 32px;
+      background: var(--ui-panel);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+    }
+    .upload-btn {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      border: 0;
+      background: transparent;
+    }
+    input[type="text"] {
+      min-height: 42px;
+      padding: 10px 6px;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+    input[type="text"]:focus {
+      border-color: transparent;
+      box-shadow: none;
+    }
+    button.send-btn {
+      min-height: 42px;
+      padding: 0 20px;
+      border-radius: 24px;
+      font-size: 14px;
+    }
+    .settings-panel { top: 62px; }
+
+    @media (max-width: 600px) {
+      .chat-card { padding: 12px 14px 16px; }
+      .header { padding-bottom: 4px; }
+      .chat-box { padding: 10px 2px 20px; }
+      .msg { max-width: 94%; }
+      .input-row { padding-left: 6px; }
+      .upload-btn { width: 38px; height: 38px; flex-basis: 38px; }
+      button.send-btn { padding: 0 15px; }
+    }
+
+    /* Refurbished Liquid Glass UI layer. Application behavior remains unchanged. */
+    :root {
+      --ui-bg-1: #eaf1fb;
+      --ui-bg-2: #dce8f7;
+      --ui-card: rgba(255, 255, 255, 0.48);
+      --ui-panel: rgba(255, 255, 255, 0.42);
+      --ui-line: rgba(25, 55, 90, 0.14);
+      --ui-muted: rgba(20, 32, 51, 0.68);
+      --ui-bot-bg: rgba(255, 255, 255, 0.48);
+      --ui-bot-text: #17253a;
+      --ui-shadow: 0 28px 80px rgba(45, 74, 110, 0.18);
+      --glass-border: rgba(255, 255, 255, 0.28);
+      --glass-strength: 0.58;
+      --ui-menu-bg: linear-gradient(145deg, rgba(255,255,255,0.94), rgba(236,243,252,0.90));
+    }
+
+    body.dark-theme {
+      --ui-bg-1: #050d1a;
+      --ui-bg-2: #0a1630;
+      --ui-card: rgba(15, 24, 36, 0.46);
+      --ui-panel: rgba(255, 255, 255, 0.06);
+      --ui-line: rgba(255, 255, 255, 0.12);
+      --ui-muted: rgba(245, 248, 255, 0.72);
+      --ui-bot-bg: rgba(21, 31, 53, 0.42);
+      --ui-bot-text: #edf4ff;
+      --ui-shadow: 0 28px 80px rgba(1, 5, 15, 0.52);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --ui-menu-bg: linear-gradient(145deg, rgba(35,48,72,0.88), rgba(12,20,34,0.84));
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      overflow-x: hidden;
+      font-family: 'Segoe UI', 'SF Pro Display', Helvetica, Arial, sans-serif;
+      background:
+        radial-gradient(circle at 16% 18%, rgba(124, 196, 255, 0.22), transparent 20%),
+        radial-gradient(circle at 76% 12%, rgba(170, 136, 255, 0.18), transparent 22%),
+        radial-gradient(circle at 60% 78%, rgba(255, 163, 118, 0.12), transparent 24%),
+        linear-gradient(180deg, var(--ui-bg-1) 0%, var(--ui-bg-2) 46%, #f5f8fc 100%);
+      transition: background 0.35s ease, color 0.25s ease;
+    }
+
+    body.dark-theme {
+      background:
+        radial-gradient(circle at 16% 18%, rgba(49, 112, 190, 0.18), transparent 20%),
+        radial-gradient(circle at 76% 12%, rgba(104, 78, 184, 0.16), transparent 22%),
+        linear-gradient(180deg, var(--ui-bg-1) 0%, var(--ui-bg-2) 58%, #111b34 100%);
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      width: 42vw;
+      height: 42vw;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(40px);
+      opacity: 0.85;
+      z-index: -1;
+      background: radial-gradient(circle, rgba(120, 168, 255, 0.20), rgba(120, 168, 255, 0.08) 28%, transparent 70%);
+      top: -12%;
+      left: -8%;
+    }
+
+    body::after {
+      top: auto;
+      left: auto;
+      right: -10%;
+      bottom: -8%;
+      background: radial-gradient(circle, rgba(192, 136, 255, 0.18), rgba(255, 166, 140, 0.08) 24%, transparent 70%);
+      filter: blur(46px);
+    }
+
+    .chat-card {
+      width: min(100%, 1350px);
+      height: 100vh;
+      margin: 0 auto;
+      padding: 18px 20px 20px;
+      border: 1px solid var(--glass-border);
+      border-radius: 34px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.11), rgba(255,255,255,0.025));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), var(--ui-shadow);
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .header, .chat-box, .input-wrapper { position: relative; z-index: 1; }
+    .header { width: min(100%, 1180px); margin: 0 auto 10px; padding: 8px 6px 12px; border-bottom: 0; }
+    .header h3 {
+      padding: 10px 16px;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.025));
+      color: var(--ui-text);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 8px 26px rgba(8,15,24,0.16);
+    }
+
+    .layout-btn, .english-mode-btn, .gear-btn, .clear-btn, .learning-tool-btn, .input-row,
+    .upload-btn, .voice-btn, .send-btn, .settings-panel, .mode-select, .thinking-select,
+    .detail-select, .theme-btn, .accent-btn, .feedback-btn, .speech-toggle-btn, .illustration-btn {
+      border: 1px solid var(--glass-border);
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 12px 28px rgba(2,8,18,0.12);
+    }
+
+    .layout-btn, .english-mode-btn, .clear-btn { min-height: 38px; padding: 8px 14px; border-radius: 999px; color: var(--ui-text); white-space: nowrap; }
+    .gear-btn { width: 40px; height: 40px; border-radius: 50%; color: var(--ui-text); }
+    .settings-panel {
+      top: 74px;
+      width: min(340px, calc(100% - 30px));
+      max-height: min(72vh, 620px);
+      overflow-y: auto;
+      padding: 16px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(226,237,249,0.58));
+      box-shadow: 0 30px 60px rgba(3,9,19,0.28), inset 0 1px 0 rgba(255,255,255,0.58);
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+    }
+    body.dark-theme .settings-panel { background: linear-gradient(180deg, rgba(17,24,38,0.74), rgba(13,20,32,0.62)); }
+    .settings-group { gap: 9px; padding: 11px; border: 1px solid rgba(255,255,255,0.14); border-radius: 17px; background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.025)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 8px 22px rgba(3,9,18,0.08); }
+    .settings-group + .settings-group { margin-top: 8px; }
+    .settings-group label { font-size: 10px; letter-spacing: 0.12em; }
+    .mode-select, .thinking-select, .detail-select { padding: 10px 12px; border-radius: 14px; color: var(--ui-text); background: rgba(255,255,255,0.16); }
+
+    .chat-box { width: min(100%, 980px); margin: 0 auto 18px; padding: 20px 12px 16px; border: 0; border-radius: 28px; background: transparent; }
+    .msg-container { max-width: 900px; }
+    .msg { padding: 16px 18px; border-radius: 22px; }
+    .bot {
+      background: var(--ui-bot-bg);
+      border: 1px solid var(--ui-line);
+      color: var(--ui-bot-text);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 16px 30px rgba(8,18,28,0.14);
+    }
+    .response-meta { display: flex; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 8px; width: 90%; border-top: 0; padding: 8px 4px 0; }
+    .engine-badge { border-radius: 999px; background: rgba(255,255,255,0.18); color: var(--ui-muted); text-transform: none; }
+    .feedback-actions { gap: 6px; padding: 4px; border-radius: 999px; background: rgba(255,255,255,0.08); }
+    .feedback-btn, .speech-toggle-btn, .illustration-btn { min-height: 30px; padding: 6px 10px; border-radius: 999px; color: var(--ui-text); }
+    .learning-tools { width: min(100%, 980px); margin: 0 auto; padding-left: 0; }
+    .learning-tool-btn { height: 36px; padding: 8px 14px; border-radius: 999px; color: var(--ui-text); }
+    .learning-tool-btn.active, .english-mode-btn.active, .voice-btn.active { background: color-mix(in srgb, var(--ui-accent) 20%, transparent); border-color: color-mix(in srgb, var(--ui-accent) 42%, white 10%); }
+    .input-wrapper { width: min(100%, 980px); gap: 10px; }
+    .input-row { min-height: 68px; padding: 10px 12px 10px 10px; border-radius: 34px; background: linear-gradient(135deg, var(--ui-card), var(--ui-panel)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 24px 54px rgba(6,14,26,0.22); }
+    .upload-btn, .voice-btn { width: 46px; height: 46px; flex-basis: 46px; color: var(--ui-text); }
+    input[type="text"] { min-height: 48px; padding: 14px 16px; color: var(--ui-text); }
+    button.send-btn { min-height: 50px; padding: 0 22px; border-radius: 22px; background: linear-gradient(135deg, color-mix(in srgb, var(--ui-accent) 72%, white 28%), var(--ui-accent)); box-shadow: 0 14px 28px color-mix(in srgb, var(--ui-accent) 28%, transparent), inset 0 1px 0 rgba(255,255,255,0.2); }
+    .image-preview-container { padding: 7px 12px; border-radius: 16px; color: var(--ui-text); background: var(--ui-card); }
+
+    @media (max-width: 820px) { .header { flex-wrap: wrap; justify-content: center; } .header-left, .ui-tools { width: 100%; justify-content: center; } }
+    @media (max-width: 600px) {
+      body { padding: 0; }
+      .chat-card { width: 100%; height: 100vh; border-radius: 0; padding: 12px 12px 16px; }
+      .header h3 { width: 100%; text-align: center; }
+      .chat-box { padding-left: 6px; padding-right: 6px; }
+      .msg { max-width: 92%; font-size: 14px; }
+      .input-row { min-height: 62px; padding: 8px 9px 8px 8px; gap: 8px; }
+      .upload-btn, .voice-btn { width: 42px; height: 42px; flex-basis: 42px; }
+      button.send-btn { min-height: 46px; padding: 0 16px; }
+    }
+
+    .glass-select { position: relative; width: 100%; z-index: 1; }
+    .glass-select.open { z-index: 50; }
+    .glass-select > select { display: none; }
+    .glass-select-trigger {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 13px;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--glass-border) calc(55% + var(--glass-strength) * 45%), transparent);
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,255,255,calc(.055 + var(--glass-strength) * .12)), rgba(255,255,255,calc(.018 + var(--glass-strength) * .055)));
+      color: var(--ui-text);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,calc(.10 + var(--glass-strength) * .20)), 0 8px calc(18px + var(--glass-strength) * 24px) rgba(3,10,20,calc(.08 + var(--glass-strength) * .20));
+      transition: transform .18s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .glass-select-trigger::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(255,255,255,.12), transparent 34%, rgba(255,255,255,.035) 68%, transparent);
+      opacity: calc(.25 + var(--glass-strength) * .75);
+      pointer-events: none;
+    }
+    .glass-select-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .glass-select-chevron { flex: 0 0 auto; color: var(--ui-muted); font-size: 15px; transition: transform .18s ease; }
+    .glass-select-trigger:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--ui-accent) 38%, var(--glass-border)); }
+    .glass-select-trigger:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 2px; }
+    .glass-select.open .glass-select-trigger {
+      border-color: color-mix(in srgb, var(--ui-accent) 48%, var(--glass-border));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 12px 30px rgba(2,8,18,.20), 0 0 0 1px color-mix(in srgb, var(--ui-accent) 12%, transparent);
+    }
+    .glass-select.open .glass-select-chevron { transform: rotate(180deg); }
+    .glass-select-menu {
+      position: absolute;
+      top: calc(100% + 7px);
+      left: 4px;
+      right: 4px;
+      z-index: 60;
+      display: grid;
+      gap: 4px;
+      max-height: 220px;
+      padding: 6px;
+      overflow: auto;
+      border: 1px solid color-mix(in srgb, var(--glass-border) calc(60% + var(--glass-strength) * 40%), transparent);
+      border-radius: 16px;
+      background: var(--ui-menu-bg);
+      backdrop-filter: blur(calc(8px + var(--glass-strength) * 8px)) saturate(calc(110% + var(--glass-strength) * 40%));
+      -webkit-backdrop-filter: blur(calc(8px + var(--glass-strength) * 8px)) saturate(calc(110% + var(--glass-strength) * 40%));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,calc(.12 + var(--glass-strength) * .20)), 0 18px 38px rgba(2,8,18,calc(.20 + var(--glass-strength) * .25));
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-5px) scale(.985);
+      transform-origin: top center;
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease, visibility .16s;
+    }
+    .glass-select.open .glass-select-menu { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
+    .glass-select-option {
+      position: relative;
+      min-height: 36px;
+      padding: 8px 30px 8px 10px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      background: linear-gradient(135deg, rgba(255,255,255,calc(.045 + var(--glass-strength) * .10)), rgba(255,255,255,calc(.012 + var(--glass-strength) * .035)));
+      color: var(--ui-text);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: background .14s ease, border-color .14s ease, transform .14s ease;
+    }
+    .glass-select-option:hover, .glass-select-option:focus-visible {
+      transform: translateX(1px);
+      border-color: color-mix(in srgb, var(--ui-accent) 34%, transparent);
+      background: color-mix(in srgb, var(--ui-accent) 16%, transparent);
+      outline: none;
+    }
+    .glass-select-option.selected {
+      border-color: color-mix(in srgb, var(--ui-accent) 38%, transparent);
+      background: color-mix(in srgb, var(--ui-accent) 22%, transparent);
+    }
+    .glass-select-option.selected::after { content: "✓"; position: absolute; right: 10px; color: var(--ui-accent); font-weight: 800; }
+    body.light-theme .glass-select-menu { background: linear-gradient(145deg, rgba(255,255,255,.97), rgba(233,240,250,.94)); border-color: rgba(35,65,100,.16); }
+    body.light-theme .glass-select-option { background: linear-gradient(135deg, rgba(255,255,255,.82), rgba(235,243,252,.62)); }
+    body.light-theme .glass-select-option.selected { background: color-mix(in srgb, var(--ui-accent) 20%, white 80%); }
+
+    .glass-strength-row { display: flex; align-items: center; gap: 10px; }
+    .glass-strength-slider {
+      flex: 1;
+      appearance: none;
+      height: 5px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--ui-accent) 0%, var(--ui-accent) calc(var(--glass-strength) * 100%), rgba(255,255,255,.18) calc(var(--glass-strength) * 100%), rgba(255,255,255,.18) 100%);
+      outline: none;
+      cursor: pointer;
+    }
+    .glass-strength-slider::-webkit-slider-thumb { appearance: none; width: 17px; height: 17px; border: 1px solid rgba(255,255,255,.72); border-radius: 50%; background: #fff; box-shadow: 0 3px 14px rgba(0,0,0,.28), 0 0 0 3px color-mix(in srgb, var(--ui-accent) 18%, transparent); }
+    .glass-strength-slider::-moz-range-thumb { width: 17px; height: 17px; border: 1px solid rgba(255,255,255,.72); border-radius: 50%; background: #fff; box-shadow: 0 3px 14px rgba(0,0,0,.28), 0 0 0 3px color-mix(in srgb, var(--ui-accent) 18%, transparent); }
+    .glass-strength-value { min-width: 38px; color: var(--ui-muted); font-size: 10px; font-weight: 700; text-align: right; }
+
+    .chat-card {
+      background: linear-gradient(145deg, rgba(255,255,255,calc(.035 + var(--glass-strength) * .11)), rgba(255,255,255,calc(.012 + var(--glass-strength) * .045)));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,calc(.10 + var(--glass-strength) * .18)), 0 30px calc(70px + var(--glass-strength) * 45px) rgba(3,10,20,calc(.18 + var(--glass-strength) * .28));
+      backdrop-filter: blur(calc(8px + var(--glass-strength) * 8px)) saturate(calc(105% + var(--glass-strength) * 40%));
+      -webkit-backdrop-filter: blur(calc(8px + var(--glass-strength) * 8px)) saturate(calc(105% + var(--glass-strength) * 40%));
+      transition: background .25s ease, box-shadow .25s ease;
+    }
+    .bot, .layout-btn, .english-mode-btn, .gear-btn, .clear-btn, .learning-tool-btn, .upload-btn, .voice-btn, .send-btn, .feedback-btn, .speech-toggle-btn, .illustration-btn {
+      transition: background .22s ease, border-color .22s ease, box-shadow .22s ease, transform .22s ease;
+    }
+    .input-row {
+      backdrop-filter: blur(calc(6px + var(--glass-strength) * 8px)) saturate(calc(105% + var(--glass-strength) * 35%));
+      -webkit-backdrop-filter: blur(calc(6px + var(--glass-strength) * 8px)) saturate(calc(105% + var(--glass-strength) * 35%));
+      transition: background .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+    .input-row.image-drop-active { border-color: color-mix(in srgb, var(--ui-accent) 62%, white 12%); box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-accent) 20%, transparent), 0 20px 44px color-mix(in srgb, var(--ui-accent) 18%, transparent); }
+    .input-row.image-drop-active::after {
+      content: "Thả ảnh vào đây";
+      position: absolute;
+      inset: 6px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed color-mix(in srgb, var(--ui-accent) 65%, white 15%);
+      border-radius: 28px;
+      background: color-mix(in srgb, var(--ui-accent) 16%, transparent);
+      color: var(--ui-text);
+      font-size: 13px;
+      font-weight: 700;
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    @media (max-width: 600px) { .glass-select-menu { max-height: 190px; } }
+  </style>
+</head>
+<body>
+
+<div class="chat-card">
+  <div class="header">
+    <div class="header-left">
+      <h3>🧠 Trợ Lý AI Giáo Dục THPT</h3>
+    </div>
+
+    <div class="ui-tools">
+      <button class="layout-btn" id="layoutToggle" onclick="toggleLayoutMode()" title="Chuyển bố cục Phone hoặc PC">📱 Phone</button>
+      <button class="english-mode-btn" id="englishModeBtn" onclick="toggleEnglishMode()" title="Chuyển sang không gian luyện tiếng Anh">🇬🇧 Mode English</button>
+      <button class="gear-btn" onclick="toggleSettings()" title="Cài đặt giao diện">⚙️</button>
+      <button class="clear-btn" onclick="clearChat()">🗑️ Xóa Chat</button>
+    </div>
+  </div>
+
+  <div class="settings-panel" id="settingsPanel">
+    <button class="settings-close-btn" onclick="closeSettings()" title="Đóng cài đặt" aria-label="Đóng cài đặt">×</button>
+    <div class="settings-group">
+      <label>Chế độ AI</label>
+      <div class="glass-select" data-select-id="aiMode">
+        <select id="aiMode" class="mode-select" onchange="switchMode()">
+          <option value="student">🎓 Học Sinh</option>
+          <option value="teacher">👨‍🏫 Giáo Viên</option>
+          <option value="talkshow">💬 Talkshow</option>
+          <option value="english">🇬🇧 Luyện tiếng Anh</option>
+        </select>
+        <button type="button" class="glass-select-trigger" aria-haspopup="listbox" aria-expanded="false"><span class="glass-select-label">🎓 Học Sinh</span><span class="glass-select-chevron" aria-hidden="true">⌄</span></button>
+        <div class="glass-select-menu" role="listbox"></div>
+      </div>
+    </div>
+
+    <div class="settings-group english-settings">
+      <label>Trình độ tiếng Anh</label>
+      <div class="glass-select" data-select-id="englishLevel">
+        <select id="englishLevel" class="thinking-select">
+          <option value="A1">A1 - Beginner</option>
+          <option value="A2">A2 - Elementary</option>
+          <option value="B1" selected>B1 - Intermediate</option>
+          <option value="B2">B2 - Upper-intermediate</option>
+        </select>
+        <button type="button" class="glass-select-trigger" aria-haspopup="listbox" aria-expanded="false"><span class="glass-select-label">B1 - Intermediate</span><span class="glass-select-chevron" aria-hidden="true">⌄</span></button>
+        <div class="glass-select-menu" role="listbox"></div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <label>Phong cách trả lời</label>
+      <div class="glass-select" data-select-id="thinkingMode">
+        <select id="thinkingMode" class="thinking-select">
+          <option value="talking">💬 Talking</option>
+          <option value="study" selected>📚 Study</option>
+        </select>
+        <button type="button" class="glass-select-trigger" aria-haspopup="listbox" aria-expanded="false"><span class="glass-select-label">📚 Study</span><span class="glass-select-chevron" aria-hidden="true">⌄</span></button>
+        <div class="glass-select-menu" role="listbox"></div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <label>Mức độ giải thích</label>
+      <div class="glass-select" data-select-id="detailMode">
+        <select id="detailMode" class="detail-select">
+          <option value="normal">⚡ Tóm Tắt</option>
+          <option value="detailed" selected>🔍 Chi Tiết & Bản Chất</option>
+        </select>
+        <button type="button" class="glass-select-trigger" aria-haspopup="listbox" aria-expanded="false"><span class="glass-select-label">🔍 Chi Tiết & Bản Chất</span><span class="glass-select-chevron" aria-hidden="true">⌄</span></button>
+        <div class="glass-select-menu" role="listbox"></div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <label for="glassStrength">Độ Liquid Glass</label>
+      <div class="glass-strength-row">
+        <input id="glassStrength" class="glass-strength-slider" type="range" min="0" max="100" value="58" oninput="setGlassStrength(this.value)" aria-label="Độ Liquid Glass">
+        <span id="glassStrengthValue" class="glass-strength-value">58%</span>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <label>Giao diện</label>
+      <div class="theme-row">
+        <button class="theme-btn" onclick="setUiTheme('light')">Sáng</button>
+        <button class="theme-btn" onclick="setUiTheme('dark')">Tối</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <label>Màu nhấn</label>
+      <div class="theme-row">
+        <button class="accent-btn" style="background:#5b7cff" onclick="setUiAccent('#5b7cff')" aria-label="Xanh dương"></button>
+        <button class="accent-btn" style="background:#22c55e" onclick="setUiAccent('#22c55e')" aria-label="Xanh lá"></button>
+        <button class="accent-btn" style="background:#f97316" onclick="setUiAccent('#f97316')" aria-label="Cam"></button>
+        <button class="accent-btn" style="background:#ec4899" onclick="setUiAccent('#ec4899')" aria-label="Hồng"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-box" id="chatBox">
+    <div class="msg-container" id="msgContainer">
+      <div class="msg bot" id="welcomeMsg">Chào cậu nhé! Tớ là Trợ lý AI. Hãy gửi bài tập để tớ cùng cậu giải mã bản chất nhé! 😊</div>
+    </div>
+  </div>
+
+  <div class="input-wrapper">
+    <div class="learning-tools" aria-label="Công cụ học tập">
+      <button class="learning-tool-btn" id="diagnoseBtn" onclick="startErrorDiagnosis()">🩺 Mình sai ở đâu?</button>
+      <button class="learning-tool-btn" id="arenaBtn" onclick="toggleArenaMode()">🏆 Luyện thi HSG</button>
+    </div>
+    <div class="english-tools" aria-label="Công cụ luyện tiếng Anh">
+      <span class="voice-status" id="voiceStatus">Nhắn tin hoặc bật voice mode để luyện nói.</span>
+    </div>
+    <div class="image-preview-container" id="imagePreviewContainer">
+      <img id="imagePreview" src="" alt="Ảnh">
+      <span id="imageName" style="font-size: 12px; color: #4b5563;"></span>
+      <button class="remove-img-btn" onclick="removeSelectedImage()">✕</button>
+    </div>
+
+    <div class="input-row" id="inputRow">
+      <label class="upload-btn" title="Tải ảnh bài tập lên">📷
+        <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+      </label>
+      <button class="voice-btn" id="voiceModeBtn" onclick="toggleVoiceMode()" title="Bấm để nói bằng tiếng Anh" aria-label="Bật micro">🎙️</button>
+      <input type="text" id="userInput" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter') sendMessage()">
+      <button class="send-btn" onclick="sendMessage()">Gửi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // KHÔI PHỤC 4 GEMINI KEYS XOAY VÒNG
+  const GEMINI_KEYS = window.APP_CONFIG?.geminiKeys || [];
+  let currentGeminiIndex = 0;
+  function getNextGeminiKey() {
+    if (GEMINI_KEYS.length === 0) return "";
+    const key = atob(GEMINI_KEYS[currentGeminiIndex]);
+    currentGeminiIndex = (currentGeminiIndex + 1) % GEMINI_KEYS.length;
+    return key;
+  }
+
+  const GEMINI_TALKING_MODELS = ["gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-latest"];
+  const GEMINI_STUDY_MODELS = ["gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-latest"];
+  const GEMINI_TALKING_MODEL = GEMINI_TALKING_MODELS[0];
+  const GEMINI_STUDY_MODEL = GEMINI_STUDY_MODELS[0];
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  const MANIM_SYSTEM_PROMPT = `
+**System Prompt:**
+Bạn là một trợ lý giáo dục Toán/Lý trực quan theo phong cách 3Blue1Brown.
+
+**QUY TẮC BẮT BUỘC:**
+
+1. Trả lời bài giảng bằng văn bản Markdown ngắn gọn, dễ hiểu.
+2. Nếu có mô phỏng, BẮT BUỘC tạo 1 đoạn code Python Manim (Manim Community) và đặt duy nhất trong cặp thẻ:
+<manim_code>
+from manim import *
+class DynamicScene(Scene):
+    def construct(self):
+        # Code animation ở đây
+</manim_code>
+3. Tên class chính BẮT BUỘC là DynamicScene.
+4. KHÔNG viết bất kỳ dòng code Python nào ra ngoài cặp thẻ <manim_code>.
+`;
+  // SYSTEM PROMPT BẮT BỤC DÙNG DẤU $ CHO CÔNG THỨC TOÁN
+  const PROMPT_STUDENT = `
+Bạn là Trợ lý Học tập AI Sư phạm dành cho học sinh THPT.
+1. XƯNG HÔ: Xưng 'tớ' hoặc 'mình', gọi người dùng là 'cậu' hoặc 'bạn'. Khi giao tiếp phải thân thiện, gần gũi, vui vẻ, hài hước nhưng vẫn lịch sự và tôn trọng. Không được xưng hô kiểu giáo viên với học sinh và đặc biệt PHẢI tạo cảm giác thật cảm xúc và không gượng khi nói chuyện.
+  2. Trả lời thân thiện, thoải mái nhưng lịch sự, tinh tế, gần gũi và lễ phép, giải thích thì phải đầy đủ và dễ hiểu. Câu hỏi đơn giản thì trả lời gọn; bài tập cần giải thì không được trả lời cụt lủn.
+  3. Với Toán/Lý/Hóa, hãy nêu dữ kiện, chọn phương pháp, biến đổi từng bước, giải thích vì sao dùng công thức, rồi kiểm tra kết quả và điều kiện.
+  4. Nếu đề bài thiếu dữ kiện hoặc ảnh khó đọc, hãy nói rõ phần nào chưa chắc và hỏi lại, không tự bịa số liệu.
+  5. Có thể gợi mở Socratic, nhưng sau đó vẫn phải đưa hướng giải cụ thể để học sinh học được cách làm.
+  6. Công thức dòng dùng dấu $...$, công thức riêng dòng dùng $$...$$. Không dùng \\( \\), \\[ \\].
+  7. Trong công thức, không dùng dấu chấm phẩy. Số thập phân viết bằng dấu phẩy, ví dụ $9{,}11$; không dùng dấu chấm cho số thập phân. Dấu phẩy chỉ dùng cho số thập phân hoặc phân cách các thành phần rõ ràng.
+8. QUY TRÌNH SUY LUẬN: Trước khi trả lời, hãy xác định yêu cầu chính, tách dữ kiện và điều kiện, nhận diện dạng bài, chọn phương pháp phù hợp, giải từng bước, rồi kiểm tra lại kết quả. Không cần hiển thị suy nghĩ nội bộ dài dòng; chỉ trình bày các bước lập luận cần thiết để người học hiểu.
+9. KIỂM CHỨNG: Với bài tính, hãy kiểm tra bằng cách thay ngược kết quả, xét điều kiện xác định và đơn vị nếu có. Nếu có nhiều cách giải, ưu tiên cách ngắn và chắc nhất, có thể nêu cách thứ hai khi nó giúp hiểu bản chất.
+10. PHÂN LOẠI: Tự nhận diện câu hỏi là kiến thức, bài tính, phân tích ảnh, sửa lỗi, khái niệm hay lập kế hoạch học tập để chọn cách trả lời tương ứng.
+11. ĐỘ TIN CẬY: Nếu đề thiếu dữ kiện, ảnh không rõ hoặc có nhiều cách hiểu, phải nói chính xác điểm chưa chắc và hỏi lại. Tuyệt đối không tự bịa số liệu, công thức, nguồn, định lý hoặc đáp án.
+${MANIM_SYSTEM_PROMPT}
+`;
+
+  const PROMPT_TEACHER = `
+Bạn là Trợ lý Sư phạm Cao cấp hỗ trợ Giáo viên THPT.
+1. XƯNG HÔ: Trịnh trọng, xưng 'em' hoặc 'Trợ lý AI', gọi người dùng là 'Thầy/Cô'.
+2. NHIỆM VỤ CHÍNH: Xây dựng Giáo án, Kế hoạch bài dạy (KHBD), Đề thi phân hóa 4 mức độ.
+3. ĐỊNH DẠNG CÔNG THỨC TOÁN: Sử dụng dấu $ công thức $ hoặc $$ công thức $$. KHÔNG DÙNG \\( \\) HOẶC \\[ \\]. Trong công thức không dùng dấu chấm phẩy; số thập phân viết dạng $9{,}11$, không dùng $9.11$.
+4. Với nội dung chuyên môn, phân loại nhiệm vụ trước khi làm, kiểm tra dữ kiện, điều kiện, đơn vị và tính nhất quán của kết quả. Không khẳng định chắc chắn khi tài liệu đầu vào chưa đủ rõ.
+${MANIM_SYSTEM_PROMPT}
+`;
+
+  const PROMPT_TALKSHOW = `
+Bạn là 1 người bạn thân, luôn luôn lắng nghe, đồng cảm và chia sẻ với người dùng. Bạn có thể trò chuyện về học tập, áp lực, tình bạn, gia đình và đời sống. Bạn không phải là chuyên gia tâm lý, nhưng luôn sẵn sàng lắng nghe và đưa ra lời khuyên thực tế, phù hợp với hoàn cảnh của người dùng. Bạn không phán xét, không chế giễu, không dọa nạt, không áp đặt và không tranh luận. Bạn luôn tôn trọng cảm xúc của người dùng và khuyến khích họ tìm kiếm sự giúp đỡ từ người lớn đáng tin cậy nếu cần. 
+1. XƯNG HÔ: Xưng 'tớ' hoặc 'mình', gọi người dùng là 'cậu' hoặc 'bạn'. Dùng ngôn ngữ tự nhiên, trẻ trung kiểu Gen Z vừa phải, có thể đùa duyên một chút nhưng không lố, không rập khuôn.
+2. LẮNG NGHE TRƯỚC: Đón nhận cảm xúc không phán xét, phản hồi điều cậu đang cảm thấy rồi mới đưa lời khuyên. Không chế giễu, dọa nạt, áp đặt hoặc giả vờ là chuyên gia tâm lý.
+3. KẾT NỐI VỚI HỌC TẬP: Khi cậu đã được lắng nghe và tình huống phù hợp, hãy khéo léo đề xuất một bước học rất nhỏ, ví dụ: 'Xả stress xong chưa? Mình thử xử lý một câu nhẹ để lấy lại phong độ nhé?'. Không ép học khi cậu đang cần được hỗ trợ cảm xúc.
+4. TƯ VẤN THỰC TẾ: Đưa ra các bước nhỏ, phù hợp với hoàn cảnh về học tập, áp lực, tình bạn, gia đình và đời sống. Hỏi thêm một câu nhẹ nhàng khi cần hiểu rõ hơn.
+5. AN TOÀN: Nếu cậu có dấu hiệu muốn tự làm hại bản thân, tuyệt vọng cùng cực, bị bạo lực hoặc gặp nguy hiểm, hãy phản hồi bình tĩnh, khuyến khích cậu tìm ngay một người lớn đáng tin cậy, giáo viên/cố vấn học đường hoặc dịch vụ khẩn cấp tại nơi cậu sống. Không đùa, không tranh luận, không để cậu ở một mình với nguy hiểm.
+6. Không biến mọi câu chuyện thành bài giảng. Chỉ dùng danh sách hoặc giải pháp học tập khi thật sự hữu ích.
+`;
+
+  let activeSpace = "school";
+  // Lịch sử chat chỉ sống trong phiên hiện tại: F5 là bắt đầu lại từ đầu.
+  const spaceChatHistories = { school: [], english: [] };
+  let chatHistory = spaceChatHistories.school;
+  localStorage.removeItem("khkt_chat_history");
+  localStorage.removeItem("english_chat_history");
+  let learningPreferences = JSON.parse(localStorage.getItem("ai-learning-preferences")) || { detail: "" };
+  let learnerProfile = JSON.parse(localStorage.getItem("ai-learner-profile")) || {
+    totalQuestions: 0,
+    confusedCount: 0,
+    diagnosisCount: 0,
+    arenaCount: 0,
+    recentSignals: []
+  };
+  let learningMode = "normal";
+  let selectedImageBase64 = null;
+  let selectedImageMimeType = null;
+  let voiceModeEnabled = false;
+  let speechRecognition = null;
+  let voiceRestartTimer = null;
+  let microphonePermissionStatus = localStorage.getItem("english-microphone-permission") || "unknown";
+  let speechOutputEnabled = true;
+  let speechOutputToken = 0;
+  let availableEnglishVoices = [];
+  let isSendingMessage = false;
+
+  function toggleSettings() {
+    document.getElementById("settingsPanel").classList.toggle("open");
+  }
+
+  function closeSettings() {
+    document.getElementById("settingsPanel").classList.remove("open");
+  }
+
+  function setGlassStrength(value) {
+    const strength = Math.max(0, Math.min(100, Number(value) || 0));
+    document.documentElement.style.setProperty("--glass-strength", (strength / 100).toFixed(2));
+    const slider = document.getElementById("glassStrength");
+    if (slider && slider.value !== String(strength)) slider.value = String(strength);
+    document.getElementById("glassStrengthValue").textContent = `${strength}%`;
+    localStorage.setItem("ai-glass-strength", String(strength));
+  }
+
+  function setupGlassSelects() {
+    document.querySelectorAll(".glass-select").forEach(shell => {
+      const select = shell.querySelector("select");
+      const menu = shell.querySelector(".glass-select-menu");
+      const trigger = shell.querySelector(".glass-select-trigger");
+      if (!select || !menu || !trigger) return;
+
+      [...select.options].forEach(option => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "glass-select-option";
+        item.dataset.value = option.value;
+        item.setAttribute("role", "option");
+        item.textContent = option.textContent;
+        item.addEventListener("click", () => {
+          select.value = option.value;
+          select.dispatchEvent(new Event("change", { bubbles: true }));
+          updateGlassSelectLabel(select.id);
+          closeGlassSelects();
+        });
+        menu.appendChild(item);
+      });
+
+      trigger.addEventListener("click", () => {
+        const shouldOpen = !shell.classList.contains("open");
+        closeGlassSelects();
+        if (shouldOpen) {
+          shell.classList.add("open");
+          trigger.setAttribute("aria-expanded", "true");
+        }
+      });
+      updateGlassSelectLabel(select.id);
+    });
+
+    document.addEventListener("click", event => {
+      if (!event.target.closest(".glass-select")) closeGlassSelects();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") closeGlassSelects();
+    });
+  }
+
+  function updateGlassSelectLabel(selectId) {
+    const select = document.getElementById(selectId);
+    const shell = select?.closest(".glass-select");
+    if (!select || !shell) return;
+    const selectedOption = select.options[select.selectedIndex];
+    const trigger = shell.querySelector(".glass-select-trigger");
+    const label = trigger?.querySelector(".glass-select-label");
+    if (label && selectedOption) label.textContent = selectedOption.textContent;
+    shell.querySelectorAll(".glass-select-option").forEach(option => {
+      const selected = option.dataset.value === select.value;
+      option.classList.toggle("selected", selected);
+      option.setAttribute("aria-selected", String(selected));
+    });
+  }
+
+  function closeGlassSelects() {
+    document.querySelectorAll(".glass-select.open").forEach(shell => {
+      shell.classList.remove("open");
+      shell.querySelector(".glass-select-trigger")?.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  function setupImageDropAndPaste() {
+    const inputRow = document.getElementById("inputRow");
+    if (!inputRow) return;
+
+    ["dragenter", "dragover"].forEach(eventName => inputRow.addEventListener(eventName, event => {
+      if ([...(event.dataTransfer?.types || [])].includes("Files")) {
+        event.preventDefault();
+        inputRow.classList.add("image-drop-active");
+      }
+    }));
+    ["dragleave", "drop"].forEach(eventName => inputRow.addEventListener(eventName, event => {
+      if (eventName === "drop") event.preventDefault();
+      inputRow.classList.remove("image-drop-active");
+    }));
+    inputRow.addEventListener("drop", event => {
+      const image = [...(event.dataTransfer?.files || [])].find(file => file.type.startsWith("image/"));
+      if (image) loadImageFile(image);
+    });
+    document.addEventListener("paste", event => {
+      const imageItem = [...(event.clipboardData?.items || [])].find(item => item.type.startsWith("image/"));
+      const image = imageItem?.getAsFile();
+      if (!image) return;
+      event.preventDefault();
+      loadImageFile(image);
+    });
+  }
+
+  function setUiTheme(theme) {
+    document.body.classList.toggle("dark-theme", theme === "dark");
+    localStorage.setItem("ai-theme", theme);
+  }
+
+  function setUiAccent(color) {
+    document.documentElement.style.setProperty("--ui-accent", color);
+    localStorage.setItem("ai-accent", color);
+  }
+
+  function setLayoutMode(mode) {
+    const isPhone = mode === "phone";
+    document.body.classList.toggle("phone-mode", isPhone);
+    document.getElementById("layoutToggle").textContent = isPhone ? "🖥️ PC" : "📱 Phone";
+    localStorage.setItem("ai-layout", mode);
+  }
+
+  function toggleLayoutMode() {
+    setLayoutMode(document.body.classList.contains("phone-mode") ? "pc" : "phone");
+  }
+
+  setUiTheme(localStorage.getItem("ai-theme") || "light");
+  setUiAccent(localStorage.getItem("ai-accent") || "#5b7cff");
+  setLayoutMode(localStorage.getItem("ai-layout") || "pc");
+  setupGlassSelects();
+  setupImageDropAndPaste();
+  setGlassStrength(localStorage.getItem("ai-glass-strength") ?? 58);
+  loadEnglishVoices();
+
+  function getHistoryKey() {
+    return activeSpace === "english" ? "english" : "school";
+  }
+
+  function saveActiveChatHistory() {
+    spaceChatHistories[getHistoryKey()] = chatHistory;
+  }
+
+  function setLearningSpace(space) {
+    if (activeSpace === space) return;
+    saveActiveChatHistory();
+    activeSpace = space;
+    chatHistory = spaceChatHistories[getHistoryKey()];
+    document.getElementById("aiMode").value = space === "english" ? "english" : "student";
+    updateGlassSelectLabel("aiMode");
+    document.getElementById("englishModeBtn").classList.toggle("active", space === "english");
+    document.getElementById("msgContainer").innerHTML = "";
+    if (space === "english") {
+      document.body.classList.add("english-mode");
+      document.getElementById("msgContainer").innerHTML = `<div class="msg bot" id="welcomeMsg">Hi! I’m your English practice partner. Tell me about your day, or ask me anything in English. I’ll help you improve step by step. 😊</div>`;
+      renderSavedHistory();
+    } else {
+      document.body.classList.remove("english-mode");
+      document.getElementById("msgContainer").innerHTML = `<div class="msg bot" id="welcomeMsg">Chào cậu nhé! Tớ là Trợ lý AI dành cho Học sinh. Cậu có bài tập hay thắc mắc gì cần gợi mở hôm nay không? 😊</div>`;
+      renderSavedHistory();
+    }
+  }
+
+  function toggleEnglishMode() {
+    const nextMode = activeSpace === "english" ? "student" : "english";
+    document.getElementById("aiMode").value = nextMode;
+    switchMode();
+  }
+
+  function renderSavedHistory() {
+    chatHistory.forEach(message => {
+      const text = message.parts?.find(part => part.text)?.text || "";
+      if (!text) return;
+      const className = message.role === "user" ? "user" : "bot";
+      const content = className === "user"
+        ? escapeHtml(text)
+        : renderAnimationInChat(marked.parse(fixLatexFormat(stripManimCode(text))));
+      document.getElementById("msgContainer").innerHTML += `<div class="msg ${className}">${content}</div>`;
+    });
+  }
+
+  function saveLearnerProfile(signal, detail = "") {
+    if (signal === "question") learnerProfile.totalQuestions += 1;
+    if (signal === "confused") learnerProfile.confusedCount += 1;
+    if (signal === "diagnosis") learnerProfile.diagnosisCount += 1;
+    if (signal === "arena") learnerProfile.arenaCount += 1;
+    if (signal !== "question") {
+      learnerProfile.recentSignals.unshift({ signal, detail: detail.slice(0, 180) });
+      learnerProfile.recentSignals = learnerProfile.recentSignals.slice(0, 8);
+    }
+    localStorage.setItem("ai-learner-profile", JSON.stringify(learnerProfile));
+  }
+
+  function getLearnerContext() {
+    const recentSignals = learnerProfile.recentSignals
+      .map(item => `${item.signal}: ${item.detail}`)
+      .join(" | ");
+    return `
+[HỒ SƠ HỌC TẬP TÍCH LŨY]:
+- Tổng lượt hỏi: ${learnerProfile.totalQuestions}
+- Số lần cần giải thích lại: ${learnerProfile.confusedCount}
+- Số lần dùng Bắt Mạch Lỗi Sai: ${learnerProfile.diagnosisCount}
+- Số lần luyện HSG: ${learnerProfile.arenaCount}
+- Tín hiệu gần đây: ${recentSignals || "chưa có"}
+[QUY TẮC DÙNG HỒ SƠ]: Chỉ dùng để điều chỉnh cách dạy, không được nhắc đến dữ liệu nội bộ.`;
+  }
+
+  // HÀM CHUYỂN ĐỔI CHUẨN HÓA LATEX
+  function fixLatexFormat(text) {
+    if (!text) return "";
+    let cleaned = text
+      .replace(/\\\[/g, "$$")
+      .replace(/\\\]/g, "$$")
+      .replace(/\\\(/g, "$")
+      .replace(/\\\)/g, "$");
+
+    // Chuẩn hóa riêng phần công thức, không đụng vào dấu câu của văn bản thường.
+    cleaned = cleaned.replace(/(\$\$[\s\S]*?\$\$|\$(?!\$)[\s\S]*?\$(?!\$))/g, mathBlock => {
+      const isDisplayMath = mathBlock.startsWith("$$");
+      const delimiter = isDisplayMath ? "$$" : "$";
+      const innerMath = mathBlock.slice(delimiter.length, -delimiter.length)
+        .replace(/;/g, " ")
+        .replace(/(\d+)\.(\d+)/g, "$1{,}$2")
+        .replace(/\s+,/g, ",")
+        .replace(/[ \t]{2,}/g, " ")
+        .trim();
+      return delimiter + innerMath + delimiter;
+    });
+
+    return cleaned;
+  }
+
+  function switchMode() {
+    const mode = document.getElementById("aiMode").value;
+    if (mode === "english") {
+      setLearningSpace("english");
+      document.getElementById("userInput").placeholder = "Say something in English...";
+      return;
+    }
+    setLearningSpace("school");
+    document.getElementById("englishModeBtn").classList.remove("active");
+    const welcomeMsg = document.getElementById("welcomeMsg");
+    if (welcomeMsg) {
+      if (mode === "teacher") {
+        welcomeMsg.innerText = "Kính chào Thầy/Cô! Em là Trợ lý AI Giảng dạy. Em có thể hỗ trợ Thầy/Cô soạn giáo án, thiết kế đề thi phân hóa hoặc số hóa tài liệu qua ảnh ạ!";
+      } else if (mode === "talkshow") {
+        welcomeMsg.innerText = "Tớ đang ở đây để lắng nghe cậu. Cậu muốn kể tớ nghe chuyện gì hôm nay?";
+      } else {
+        welcomeMsg.innerText = "Chào cậu nhé! Tớ là Trợ lý AI dành cho Học sinh. Cậu có bài tập hay thắc mắc gì cần gợi mở hôm nay không? 😊";
+      }
+    }
+  }
+
+  function buildActivePrompt() {
+    const mode = document.getElementById("aiMode").value;
+    if (mode === "english") {
+      const level = document.getElementById("englishLevel").value;
+      return `
+You are a patient, warm English conversation coach for a Vietnamese high-school student. The learner's selected CEFR level is ${level}; this level is a hard output constraint, not background information.
+Use the following level rules:
+- A1: use very common words, short sentences, simple present/basic past, and one question at a time. Give Vietnamese explanations when needed.
+- A2: use everyday vocabulary and short connected sentences. Introduce only one useful grammar pattern at a time.
+- B1: use natural everyday English, moderate sentence length, and explain common grammar or word-choice errors briefly.
+- B2: use natural, varied English, phrasal verbs or nuance when appropriate, and explain why a more precise expression is better.
+Never use vocabulary, grammar explanations, correction density, or response length far above ${level}. If the learner is below the selected level, simplify your reply instead of showing off.
+Reply mainly in English, with Vietnamese only for concise explanations that improve understanding.
+When the learner makes a meaningful mistake, include a short section exactly titled "Small correction" with: Original, Better, and one brief explanation appropriate for ${level}. Correct at most two important mistakes per turn; do not correct every tiny typo.
+Ask exactly one natural follow-up question so the conversation continues. Keep the normal response to 3-6 short sentences unless the learner asks for detailed grammar.
+If the learner writes in Vietnamese, answer briefly in Vietnamese and invite them to try the key sentence in English.
+`;
+    }
+    const detailLevel = document.getElementById("detailMode").value;
+    let activePrompt = mode === "teacher"
+      ? PROMPT_TEACHER
+      : mode === "talkshow" ? PROMPT_TALKSHOW : PROMPT_STUDENT;
+
+    if (detailLevel === "detailed") {
+      activePrompt += "\n[YÊU CẦU GIẢI CHI TIẾT]: Bắt buộc phải giải thích TẠI SAO lại có công thức đó, nguồn gốc biến đổi từ đâu trước khi ra kết quả.";
+    }
+    if (learningPreferences.detail) {
+      activePrompt += `\n[ƯU TIÊN ĐÃ HỌC TỪ PHẢN HỒI TRƯỚC]: ${learningPreferences.detail}`;
+    }
+    activePrompt += getLearnerContext();
+    if (mode !== "talkshow") activePrompt += MANIM_SYSTEM_PROMPT;
+    activePrompt += `
+  [QUY TẮC MINH HỌA]: Tự đánh giá liệu chuyển động, đồ thị, hình học, mô hình vật lý, quá trình hóa học hoặc biến đổi theo thời gian có giúp người học hiểu bản chất hơn không. Nếu có, bắt buộc thêm đúng marker [[DRAW_DIAGRAM]] ở cuối câu trả lời để hệ thống dựng animation Manim. Marker này là lệnh nội bộ và sẽ được ẩn khỏi người học. Không thêm marker khi hình/animation không mang thêm giá trị học tập.`;
+    if (learningMode === "diagnose") {
+      activePrompt += `
+[CHẾ ĐỘ MÌNH SAI Ở ĐÂU - ƯU TIÊN CAO NHẤT]: Tập trung vào chẩn đoán lỗi hoặc đưa ra tất cả các lỗi mà số đông người học hay bị mắc, không biến câu trả lời thành lời giải bài mới. Đọc chính xác câu hỏi, bài làm, ảnh hoặc bước người dùng đưa ra.
+- Tóm tắt ngắn vấn đề và xác định bước đầu tiên còn đúng.
+- Liệt kê các lỗi sai phổ biến nhất liên quan trực tiếp đến vấn đề, ưu tiên lỗi có khả năng xảy ra trong dữ liệu người dùng. Với mỗi lỗi, ghi dấu hiệu nhận biết, vì sao sai về bản chất, một ví dụ hoặc phản ví dụ ngắn, và cách tự kiểm tra.
+- Phân biệt lỗi chắc chắn thấy trong bài làm với lỗi chỉ là khả năng thường gặp. Không gán lỗi nếu ảnh hoặc dữ kiện chưa đủ rõ.
+- Nếu có lỗi cụ thể, chỉ ra đúng bước sai đầu tiên, giải thích chi tiết và sửa lại bước đó. Nói rõ lỗi này làm các bước sau sai như thế nào.
+- Kết thúc bằng bảng kiểm 3-5 mục để người học tự rà lại và một câu hỏi ngắn yêu cầu họ sửa bước sai. Chỉ đưa lời giải hoàn chỉnh nếu người dùng yêu cầu rõ.
+- Nếu ảnh không đủ rõ, nói chính xác phần cần chụp lại và gắn nhãn "có thể gặp" cho các lỗi giả thuyết.`;
+    } else if (learningMode === "arena") {
+      activePrompt += `
+[CHẾ ĐỘ LUYỆN THI HỌC SINH GIỎI - ƯU TIÊN CAO NHẤT]: Đây là mode luyện tư duy cho bài khó, không phải mode trả lời mẹo hoặc giải tắt.
+- Phân tích đề trước khi biến đổi: mục tiêu, dữ kiện mạnh, điều kiện ẩn, cấu trúc và điểm khó thật sự.
+- Phải tìm ra ít nhất một chiến lược khó phù hợp với bài, ưu tiên các chiến lược HSG đã học, sự sáng tạo của Toán học phải được ưu tiên. Nếu có hai chiến lược khó, hãy so sánh và chỉ triển khai một chiến lược trong lượt hiện tại.
+- Tìm và so sánh các ý tưởng nâng cao phù hợp như bất biến, đối xứng, cực trị, đơn điệu, đánh giá chặn, phản chứng, quy nạp, đổi biến, phản ví dụ, song ánh, tọa độ hóa hoặc biến đổi hình học.
+- Giải thích vì sao một chiến lược phù hợp và vì sao hướng tự nhiên khác có thể bế tắc.
+- Mỗi lượt chỉ giao một checkpoint có thể kiểm chứng và một gợi ý đủ sắc để người học tự triển khai. Khi người học trả lời, phải kiểm tra từng điều kiện và cầu nối logic.`;
+    }
+    activePrompt += `
+  [BỘ KIỂM SOÁT CHẤT LƯỢNG BẮT BUỘC]:
+  - Trước hết xác định người dùng đang cần kiến thức, tính toán, phân tích ảnh, sửa lỗi hay lập kế hoạch.
+  - Nếu là bài giải: Dữ kiện -> Mục tiêu -> Phương pháp -> Các bước -> Kết quả -> Kiểm tra.
+  - Nếu là câu hỏi khái niệm: Nêu ý chính, giải thích trực giác, ví dụ, rồi chỉ ra giới hạn hoặc trường hợp dễ nhầm.
+  - Nếu sửa bài: Tìm bước sai đầu tiên, giải thích nguyên nhân, sau đó mới đưa cách sửa.
+  - Nếu thiếu dữ kiện: dừng ở phần có thể kết luận và hỏi đúng thông tin còn thiếu; không đoán.
+  - Cuối câu trả lời, tự rà soát độ đúng, điều kiện áp dụng và sự phù hợp với trình độ người học trước khi gửi.
+  `;
+    if (learningMode === "arena") {
+      activePrompt += `
+[ƯU TIÊN CAO NHẤT - LUẬT HSG]: Các luật này ghi đè yêu cầu giải đầy đủ ở trên.
+- Đây là chế độ luyện thi tương tác, không phải chế độ đưa đáp án.
+- Chỉ trả lời vừa đủ trong lượt hiện tại, ưu tiên lập luận sắc và rõ hơn là kéo dài. Có thể dùng tối đa 10 câu nếu cần phân tích một chiến lược khó.
+- Không được trình bày lời giải hoàn chỉnh, đáp số cuối, hoặc toàn bộ các bước biến đổi.
+- Hãy nêu: (1) nhận xét hướng tư duy hoặc dữ kiện đáng chú ý, (2) cấu trúc/chiến lược khó phù hợp, (3) đúng MỘT checkpoint, (4) đúng MỘT gợi ý đủ sắc, (5) yêu cầu người học tự làm bước đó.
+- Kết thúc bằng một câu hỏi yêu cầu người học trả lời checkpoint. Sau đó dừng, không đưa thêm gợi ý dự phòng.
+- Nếu người học đã trả lời checkpoint trước đó, chỉ đánh giá bước vừa trả lời và đưa checkpoint kế tiếp, vẫn không nhảy đến đáp án cuối.
+`;
+    } else {
+      activePrompt += `
+[CHẾ ĐỘ HỌC TẬP - ƯU TIÊN CAO NHẤT]: Đây là mode giải bài chi tiết, dễ hiểu. Với bài đủ dữ kiện, bắt buộc trình bày Dữ kiện -> Mục tiêu -> Nhận diện dạng -> Ý tưởng -> Công thức/định lý và điều kiện áp dụng -> Biến đổi từng bước -> Kết luận -> Kiểm tra.
+- Mỗi bước phải có câu giải thích vì sao làm bước này, không nhảy từ đề bài đến đáp án.
+- Ưu tiên cách giải chắc, sáng sủa và phù hợp THPT. Nếu có cách nâng cao ngắn hơn, nêu sau lời giải chính với nhãn "Cách nhìn khác".
+- Với câu hỏi khái niệm, dùng trực giác, ví dụ đúng và trường hợp dễ nhầm thay vì ép thành lời giải bài toán.
+- Được phép trình bày lời giải đầy đủ, đáp số và phần kiểm tra khi đề đã đủ dữ kiện.
+`;
+    }
+    return activePrompt;
+  }
+
+  function startErrorDiagnosis() {
+    learningMode = "diagnose";
+    saveLearnerProfile("diagnosis", "Người học muốn tìm bước sai và nguyên nhân tư duy.");
+    document.getElementById("diagnoseBtn").classList.add("active");
+    document.getElementById("arenaBtn").classList.remove("active");
+    const inputField = document.getElementById("userInput");
+    if (selectedImageBase64) {
+      sendMessage("Mình sai ở đâu trong bài làm này? Hãy bắt mạch lỗi tư duy, đừng đưa ngay đáp án.");
+      return;
+    }
+    inputField.placeholder = "Chụp ảnh bài làm dở dang hoặc mô tả bước cậu nghi là sai...";
+    inputField.focus();
+  }
+
+  function toggleArenaMode() {
+    learningMode = learningMode === "arena" ? "normal" : "arena";
+    if (learningMode === "arena") saveLearnerProfile("arena", "Người học bật chế độ luyện thi HSG.");
+    document.getElementById("arenaBtn").classList.toggle("active", learningMode === "arena");
+    document.getElementById("diagnoseBtn").classList.toggle("active", learningMode === "diagnose");
+    document.getElementById("userInput").placeholder = learningMode === "arena"
+      ? "Nhập bài để bắt đầu thử thách..."
+      : "Nhập câu hỏi...";
+  }
+
+  async function sendMessage(overrideText = null) {
+    const inputField = document.getElementById("userInput");
+    const msgContainer = document.getElementById("msgContainer");
+    const chatBox = document.getElementById("chatBox");
+    
+    if (isSendingMessage) return;
+
+    const text = overrideText ? overrideText : inputField.value.trim();
+    if (!text && !selectedImageBase64) return;
+    isSendingMessage = true;
+
+    const userParts = [];
+    let userMsgHtml = "";
+
+    if (selectedImageBase64) {
+      userParts.push({ inline_data: { mime_type: selectedImageMimeType, data: selectedImageBase64 } });
+      userMsgHtml += `<img src="data:${selectedImageMimeType};base64,${selectedImageBase64}">`;
+    }
+
+    const textPrompt = text || "Giải bài tập trong ảnh giúp tớ nhé!";
+    userParts.push({ text: textPrompt });
+    userMsgHtml += `<div>${escapeHtml(textPrompt)}</div>`;
+
+    msgContainer.innerHTML += `<div class="msg user">${userMsgHtml}</div>`;
+    const hasImage = selectedImageBase64 !== null;
+    inputField.value = "";
+    removeSelectedImage();
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    chatHistory.push({ role: "user", parts: userParts });
+    saveLearnerProfile("question", textPrompt);
+
+    const mode = document.getElementById("aiMode").value;
+    const thinkingLevel = document.getElementById("thinkingMode").value;
+    const activePrompt = buildActivePrompt();
+
+    const selectedGeminiModel = thinkingLevel === "talking"
+      ? GEMINI_TALKING_MODEL
+      : GEMINI_STUDY_MODEL;
+    const selectedTemperature = learningMode === "arena"
+      ? 0.3
+      : mode === "talkshow"
+      ? 0.65
+      : mode === "english"
+        ? 0.45
+        : thinkingLevel === "talking" ? 0.25 : 0.2;
+    const loadingId = "loading-" + Date.now();
+
+    const engineLabel = "Gemini 3.6 Flash";
+    msgContainer.innerHTML += `<div class="msg bot typing-message" id="${loadingId}"><span class="typing-dots" aria-label="AI đang soạn trả lời"><span></span><span></span><span></span></span><span class="typing-label">AI đang suy nghĩ...</span></div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+      const engineName = learningMode === "arena"
+        ? "Gemini Flash · HSG"
+        : hasImage ? "Gemini Flash (ảnh)" : engineLabel;
+      const replySuccess = await callGeminiApi(loadingId, activePrompt, selectedGeminiModel, engineName, selectedTemperature);
+
+      if (!replySuccess) {
+        document.getElementById(loadingId).innerHTML = "⚠️ Gemini đang bận hoặc các API key đều không khả dụng. Cậu thử lại sau vài giây nhé!";
+        chatHistory.pop();
+        saveActiveChatHistory();
+      }
+    } finally {
+      isSendingMessage = false;
+    }
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  // GỌI GEMINI API - TỰ CHUYỂN ĐỔI CHUẨN GEMINI FORMAT
+  async function callGeminiApi(loadingId, activePrompt, modelName, engineLabel, temperature) {
+    if (!GEMINI_KEYS || GEMINI_KEYS.length === 0) return false;
+
+    const modelCandidates = modelName.includes("lite") ? GEMINI_TALKING_MODELS : GEMINI_STUDY_MODELS;
+    let attempts = 0;
+    while (attempts < GEMINI_KEYS.length) {
+      attempts++;
+      const apiKey = getNextGeminiKey();
+      if (!apiKey) continue;
+
+      for (const candidateModel of modelCandidates) try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${candidateModel}:generateContent?key=${apiKey}`;
+
+        // TẠO MẢNG CONTENTS RIÊNG CHUẨN GEMINI
+        const currentMode = document.getElementById("aiMode").value;
+        const historyLimit = currentMode === "english" ? 8 : 10;
+        const maxOutputTokens = currentMode === "english"
+          ? 700
+          : candidateModel.includes("lite") ? 1800 : 5000;
+
+        const geminiContents = chatHistory.slice(-historyLimit).map(msg => {
+          const role = (msg.role === "user") ? "user" : "model";
+          let parts = [];
+
+          if (Array.isArray(msg.parts)) {
+            parts = msg.parts;
+          } else if (typeof msg.content === "string") {
+            parts = [{ text: msg.content }];
+          } else {
+            parts = [{ text: "" }];
+          }
+
+          const validParts = parts.filter(part =>
+            (typeof part.text === "string" && part.text.trim())
+            || (part.inline_data?.data && part.inline_data?.mime_type)
+          );
+          return validParts.length > 0 ? { role, parts: validParts } : null;
+        }).filter(Boolean);
+
+        // Gemini yêu cầu lượt hội thoại hợp lệ và không nhận hai lượt model liên tiếp.
+        const normalizedContents = [];
+        geminiContents.forEach(message => {
+          const previous = normalizedContents[normalizedContents.length - 1];
+          if (previous && previous.role === message.role) {
+            previous.parts.push(...message.parts);
+          } else {
+            normalizedContents.push({ role: message.role, parts: [...message.parts] });
+          }
+        });
+        if (normalizedContents[0]?.role !== "user") normalizedContents.shift();
+        if (!normalizedContents.length) continue;
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: activePrompt }] },
+            contents: normalizedContents,
+            generationConfig: {
+              temperature: temperature,
+              maxOutputTokens,
+              thinkingConfig: { thinkingBudget: 0 }
+            }
+          })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.error) {
+          const status = response.status || 0;
+          console.warn(`Gemini lỗi HTTP ${status}:`, data.error?.message || data.error?.status || "");
+          // 429/5xx (gồm 503 "quá tải") là lỗi tạm thời: nghỉ ngắn rồi thử model/key khác.
+          if (status === 429 || status >= 500) await sleep(400);
+          continue;
+        }
+
+        const responseParts = data.candidates?.[0]?.content?.parts || [];
+        const botReply = responseParts
+          .map(part => typeof part.text === "string" ? part.text : "")
+          .join("")
+          .trim();
+        if (botReply) {
+          renderBotResponse(loadingId, botReply, engineLabel, "engine-gemini");
+          return true;
+        }
+      } catch (err) {
+        console.error(`Lỗi kết nối Gemini lượt ${attempts}:`, err);
+      }
+    }
+    return false;
+  }
+
+  // HÀM RENDER ĐÃ ĐƯỢC FIX LỖI LATEX VÀ TRÌNH BÀY
+  function renderBotResponse(elemId, replyText, engineName, badgeClass) {
+    const botMsgElem = document.getElementById(elemId);
+    const responseTarget = document.getElementById(`${elemId}-group`)
+      || botMsgElem.closest(".response-group")
+      || botMsgElem;
+    
+    const drawMarkerFound = /\[\[DRAW_DIAGRAM\]\]/i.test(replyText);
+    const visibleReplyText = stripManimCode(replyText.replace(/\s*\[\[DRAW_DIAGRAM\]\]\s*/gi, "\n")).trim();
+
+    // 1. CHUẨN HÓA LATEX VỀ DẠNG $ VÀ $$
+    const cleanedText = fixLatexFormat(visibleReplyText);
+
+    // 2. CHUYỂN DỔI MARKDOWN THÀNH HTML
+    const renderedContent = renderAnimationInChat(marked.parse(cleanedText));
+
+    // 3. THÊM NÚT FEEDBACK
+    const speechButtonMarkup = activeSpace === "english"
+      ? `<button class="speech-toggle-btn" onclick="toggleSpeechOutput(this)" aria-label="${speechOutputEnabled ? "Tắt đọc câu trả lời" : "Bật đọc câu trả lời"}">${speechOutputEnabled ? "🔊 Đang đọc" : "🔇 Chỉ chữ"}</button>`
+      : "";
+    const feedbackButtons = `
+      <div class="feedback-actions">
+        ${speechButtonMarkup}
+        ${activeSpace !== "english" ? `<button class="illustration-btn" onclick="requestIllustration('${elemId}-group')" title="Chỉ tạo hình khi cậu cần hình dung">🖼 Vẽ hình minh họa</button>` : ""}
+        <button class="feedback-btn understand" onclick="handleFeedback(this, 'understand')">👍 Đã hiểu</button>
+        <button class="feedback-btn confused" onclick="handleFeedback(this, 'confused')">❓ Chưa hiểu lắm</button>
+      </div>
+    `;
+
+    // GHÉP GIAO DIỆN
+    responseTarget.outerHTML = `<div class="response-group" id="${elemId}-group"><div class="msg bot" id="${elemId}"><div class="bot-text">${renderedContent}</div></div><div class="response-meta"><span class="engine-badge ${badgeClass}">Engine: ${engineName}</span>${feedbackButtons}</div></div>`;
+    const renderedGroup = document.getElementById(`${elemId}-group`);
+    const sourceQuestion = [...chatHistory].reverse().find(message => message.role === "user")?.parts
+      ?.find(part => typeof part.text === "string")?.text || "";
+    renderedGroup.dataset.illustrationQuestion = sourceQuestion;
+    renderedGroup.dataset.illustrationAnswer = visibleReplyText;
+
+    // 4. KÍCH HOẠT MATHJAX VẼ CÔNG THỨC TOÁN
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([document.getElementById(elemId)]).catch(err => console.error("MathJax Error:", err));
+    }
+
+    chatHistory.push({ role: "model", parts: [{ text: visibleReplyText }] });
+    saveActiveChatHistory();
+    const speechControlButton = document.querySelector(`#${elemId}-group .speech-toggle-btn`);
+    if (speechControlButton) speechControlButton.dataset.speechText = visibleReplyText;
+    if (activeSpace === "english" && speechOutputEnabled) speakEnglishReply(visibleReplyText);
+    if (drawMarkerFound || shouldDrawFromText(sourceQuestion)) {
+      window.setTimeout(() => requestIllustration(`${elemId}-group`), 120);
+    }
+  }
+
+  function renderAnimationInChat(rawMessageText) {
+    const animationRegex = /<canvas-animation>([\s\S]*?)<\/canvas-animation>/gi;
+
+    return String(rawMessageText || "").replace(animationRegex, (match, code) => {
+      const cleanCode = code
+        .replace(/```(?:javascript|js|html)?/gi, "")
+        .replace(/```/g, "")
+        .trim();
+      if (!cleanCode) return "";
+
+      const iframeContent = `<!doctype html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box;margin:0;padding:0}html,body{width:100%;height:100%;overflow:hidden;background:#0f172a}canvas{width:100%;height:100%;display:block}</style></head><body><canvas id="animCanvas"></canvas><script>
+const canvas = document.getElementById("animCanvas");
+const ctx = canvas.getContext("2d");
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.floor(window.innerWidth * dpr));
+  canvas.height = Math.max(1, Math.floor(window.innerHeight * dpr));
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = window.innerHeight + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener("resize", resize);
+resize();
+try {
+${cleanCode}
+} catch (error) {
+  ctx.fillStyle = "#fca5a5";
+  ctx.font = "14px system-ui, sans-serif";
+  ctx.fillText("Animation error: " + error.message, 12, 24);
+}
+<\/script></body></html>`;
+
+      return `<div class="animation-container"><iframe srcdoc="${escapeAttribute(iframeContent)}" title="Mô phỏng Canvas do AI tạo" sandbox="allow-scripts"></iframe></div>`;
+    });
+  }
+
+  function stripManimCode(text) {
+    return String(text || "")
+      .replace(/<manim_code>[\s\S]*?<\/manim_code>/gi, "")
+      .replace(/```(?:python|py)\s*[\s\S]*?```/gi, "")
+      .trim();
+  }
+
+  function shouldDrawFromText(text) {
+    return /vẽ|hình\s+minh\s+họa|sơ\s+đồ|đồ\s+thị/i.test(text || "");
+  }
+
+  async function requestIllustration(groupId) {
+    const responseGroup = document.getElementById(groupId);
+    const button = responseGroup?.querySelector(".illustration-btn");
+    if (!responseGroup || !button || button.disabled) return;
+
+    const existingPanel = responseGroup.querySelector(".illustration-panel");
+    if (existingPanel) {
+      existingPanel.remove();
+      button.textContent = "🖼 Vẽ hình minh họa";
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "⏳ Đang dựng animation...";
+    const panel = document.createElement("div");
+    panel.className = "illustration-panel";
+    panel.innerHTML = `<div class="typing-label">AI đang dựng animation ngắn...</div>`;
+    responseGroup.querySelector(".msg.bot")?.appendChild(panel);
+
+    const latestAnswer = responseGroup.dataset.illustrationAnswer || responseGroup.querySelector(".bot-text")?.innerText || "";
+    const latestQuestion = responseGroup.dataset.illustrationQuestion || "";
+    const prompt = `Bạn là chuyên gia dựng animation giáo dục bằng Manim Community phong cách 3Blue1Brown, đồng thời là giáo viên Toán/Lý/Hóa chính xác và khách quan.
+Câu hỏi: ${latestQuestion}
+Lời giải: ${latestAnswer}
+
+YÊU CẦU ĐẦU RA:
+- Trả về DUY NHẤT một khối <manim_code> chứa mã Python Manim Community; không viết gì ngoài khối này.
+- Mã bắt buộc có: from manim import *, class DynamicScene(Scene) và def construct(self).
+
+NỘI DUNG - ĐÚNG BẢN CHẤT KHOA HỌC (bắt buộc):
+- Animation phải thể hiện ĐÚNG bản chất khái niệm, công thức và quan hệ của môn học trong lời giải; không minh họa sai lệch, không chỉ làm chữ nhấp nháy.
+- Toán: hình/đồ thị đúng tính chất (parabol y=x^2 mở lên, đạo hàm là hệ số góc tiếp tuyến, tích phân là diện tích dưới đường cong, tỉ lệ trục hợp lý).
+- Lý: chuyển động và vec-tơ đúng quy luật (dao động điều hòa dạng sin, lực cùng hướng gia tốc, đúng chiều và đúng độ lớn tương đối); không vẽ ngược chiều vật lý.
+- Hóa: phương trình/phân tử phải cân bằng đúng số nguyên tử và đúng công thức; không bịa chất hay hệ số.
+- Trung lập, khách quan, KHÔNG thiên vị hay chen quan điểm cá nhân; chỉ dùng dữ kiện trong câu hỏi và lời giải, không bịa số liệu.
+- Nhãn và công thức hiển thị phải khớp chính xác với lời giải.
+
+THỜI LƯỢNG:
+- Tổng khoảng 7 đến 11 giây: mỗi self.play run_time 1.2 đến 2.5, kết thúc bằng self.wait(1 đến 1.5); không dài hơn 12 giây.
+- Chia thành 4 đến 6 nhịp rõ ràng (dựng hình -> biến đổi/ chuyển động -> nhấn mạnh kết quả) để người học kịp theo dõi, mỗi nhịp thêm một chi tiết mới.
+
+KỸ THUẬT để code CHẮC CHẮN chạy (hạn chế tối đa sai sót):
+- Chỉ dùng đối tượng/animation phổ biến: Text, MathTex, Tex, VGroup, Dot, Line, Arrow, Circle, Rectangle, Axes, NumberLine, Create, Write, FadeIn, FadeOut, Transform, ReplacementTransform, MoveAlongPath, Indicate, GrowArrow.
+- Công thức toán dùng MathTex hoặc Tex trong chuỗi raw, ví dụ MathTex(r"\\frac{a}{b}"); không nhét ký tự Unicode toán học vào MathTex.
+- KHÔNG viết chữ giải thích hay chữ tiếng Việt vào video: LaTeX thiếu glyph dấu nên chữ Việt rất hay thành ô vuông lỗi font. Ưu tiên tuyệt đối chỉ hiển thị kí hiệu và công thức toán bằng MathTex/Tex (chuỗi raw).
+- Nếu bắt buộc cần nhãn ngắn, chỉ dùng kí hiệu không dấu (O, x, y, t, A, B, v, m, s...) hoặc chữ tiếng Anh không dấu qua Text(); không dùng Text() chứa tiếng Việt có dấu.
+- Bố cục gọn trong khung hình, không chồng lấn hay tràn; giãn bằng .to_edge / .shift / .next_to với khoảng cách hợp lý.
+- Mã ngắn (tối đa khoảng 60 dòng); không chuỗi nhiều dòng, không đọc file hay ảnh ngoài, không thư viện lạ, không f-string chứa ngoặc nhọn.
+- Mọi biến phải được định nghĩa trước khi dùng; không gọi hàm hay thuộc tính không tồn tại trong Manim.`;
+
+    let manimCode = "";
+    try {
+      manimCode = extractManimCode(await callGeminiIllustration(prompt));
+      if (!manimCode) throw new Error("AI không trả về mã Manim hợp lệ.");
+    } catch (error) {
+      console.error("Lỗi tạo mã Manim:", error);
+      panel.innerHTML = `<div class="illustration-note">Không tạo được mã Manim: ${escapeHtml(error.message)}</div>`;
+      button.disabled = false;
+      button.textContent = "🖼 Vẽ hình minh họa";
+      return;
+    }
+    try {
+      let data = null;
+      let lastError = null;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+          const response = await fetch("http://localhost:8000/api/render-manim", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ manim_code: manimCode, fallback_code: buildSafeManimFallback() })
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok || !result.video_url) throw new Error(result.detail || `Server Manim trả về HTTP ${response.status}.`);
+          data = result;
+          break;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      if (!data) throw lastError || new Error("Không nhận được video Manim.");
+
+      // Mã AI chưa chạy được (phải dùng bản dự phòng): nhờ Gemini tự sửa 1 lần
+      // dựa trên lỗi render thực tế để video vẫn đúng bản chất bài giảng.
+      if (data.fallback_used && data.render_error) {
+        try {
+          const repairPrompt = `Mã Manim dưới đây bị lỗi khi render. Hãy SỬA ĐÚNG LỖI nhưng GIỮ NGUYÊN ý nghĩa khoa học, công thức và thời lượng 7 đến 11 giây.
+LỖI RENDER THỰC TẾ:
+${data.render_error}
+
+MÃ GỐC:
+${manimCode}
+
+Trả về DUY NHẤT một khối <manim_code> chứa mã đã sửa, đủ from manim import *, class DynamicScene(Scene) và def construct(self). Chỉ dùng đối tượng/animation phổ biến của Manim Community.`;
+          const repairedCode = extractManimCode(await callGeminiIllustration(repairPrompt));
+          if (repairedCode) {
+            const repairResponse = await fetch("http://localhost:8000/api/render-manim", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ manim_code: repairedCode, fallback_code: buildSafeManimFallback() })
+            });
+            const repairResult = await repairResponse.json().catch(() => ({}));
+            if (repairResponse.ok && repairResult.video_url && !repairResult.fallback_used) data = repairResult;
+          }
+        } catch (repairError) {
+          console.warn("Tự sửa mã Manim không thành công, giữ bản dự phòng:", repairError);
+        }
+      }
+
+      const videoUrl = /^https?:\/\//i.test(data.video_url)
+        ? data.video_url
+        : `http://localhost:8000${data.video_url.startsWith("/") ? "" : "/"}${data.video_url}`;
+      panel.innerHTML = `<video class="manim-video" controls playsinline preload="metadata" src="${escapeAttribute(videoUrl)}"></video><div class="illustration-note">${data.fallback_used ? "Mã AI chưa chạy được, hệ thống đã dùng animation Manim dự phòng." : "Video được render bằng Manim Community."}</div>`;
+    } catch (error) {
+      console.error("Lỗi render Manim:", error);
+      const isServerDown = /Failed to fetch|NetworkError|refused|ERR_CONNECTION/i.test(String(error && error.message));
+      const note = isServerDown
+        ? "Không kết nối được máy chủ render (localhost:8000) — server chưa chạy. Cậu bấm đúp file KhoDongAI.bat trên Desktop để mở server kèm AI rồi bấm nút vẽ lại nhé. Nếu máy vừa khởi động, chờ vài giây cho server kịp bật."
+        : `Render Manim thất bại: ${escapeHtml(error.message)}`;
+      panel.innerHTML = `<div class="illustration-note">${note}</div>`;
+    }
+    button.disabled = false;
+    button.textContent = "Ẩn animation";
+  }
+
+  function buildSafeManimFallback() {
+    return `from manim import *
+
+class DynamicScene(Scene):
+    def construct(self):
+        formula = MathTex(r"f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}", font_size=32)
+        formula.to_edge(UP)
+        axes = Axes(x_range=[-3, 3, 1], y_range=[-2, 3, 1], color=GREY)
+        curve = axes.plot(lambda x: 0.4 * x ** 2 - 0.5, color=BLUE)
+        point = Dot(color=YELLOW)
+        self.play(Create(axes), run_time=1.5)
+        self.play(Create(curve), run_time=2)
+        self.play(Write(formula), run_time=1.6)
+        self.play(MoveAlongPath(point, curve), run_time=3)
+        self.play(Indicate(formula), run_time=1.2)
+        self.wait(1.2)
+`;
+  }
+
+  function extractManimCode(rawText) {
+    const source = String(rawText || "")
+      .replace(/&lt;/gi, "<")
+      .replace(/&gt;/gi, ">")
+      .replace(/&amp;/gi, "&")
+      .replace(/\r/g, "")
+      .trim();
+    const taggedMatch = source.match(/<manim_code\s*>\s*([\s\S]*?)(?:<\/manim_code\s*>|$)/i);
+    const fencedMatch = source.match(/```(?:python|py)?\s*([\s\S]*?)```/i);
+    const rawCandidate = taggedMatch?.[1] || fencedMatch?.[1] || source;
+    const codeStart = rawCandidate.search(/(?:^|\n)\s*from\s+manim\s+import\s+.+/m);
+    const candidate = codeStart >= 0 ? rawCandidate.slice(codeStart) : rawCandidate;
+    const code = candidate
+      .replace(/^\s*```(?:python|py)?\s*/i, "")
+      .replace(/\s*```\s*$/i, "")
+      .trim();
+    return /^\s*from\s+manim\s+import\s+.+/m.test(code)
+      && /^\s*class\s+DynamicScene\s*\(\s*Scene\s*\)\s*:/m.test(code)
+      && /^\s*def\s+construct\s*\(\s*self\s*\)\s*:/m.test(code)
+      ? code
+      : "";
+  }
+
+  function buildHarmonicMotionPython() {
+    return String.raw`import math
+
+cx, cy, radius = 360, 226, 132
+theta = -math.pi / 4
+mx = cx + radius * math.cos(theta)
+my = cy + radius * math.sin(theta)
+svg = []
+svg.append('<svg viewBox="0 0 720 440" role="img" aria-label="Dao dong dieu hoa">')
+svg.append('<style>.c{fill:none;stroke:#f23f9b;stroke-width:3}.a{stroke:#9aa3b2;stroke-width:2}.p{fill:#f23f9b}.t{fill:#f0f2f5;font:14px sans-serif}.h{fill:#f0f2f5;font:700 18px sans-serif}</style>')
+svg.append('<text class="h" x="40" y="32">Mo phong dao dong dieu hoa</text>')
+svg.append(f'<circle class="c" cx="{cx}" cy="{cy}" r="{radius}"/>')
+svg.append(f'<line class="a" x1="{cx-radius-42}" y1="{cy}" x2="{cx+radius+58}" y2="{cy}"/>')
+svg.append(f'<line class="c" x1="{cx}" y1="{cy}" x2="{mx:.2f}" y2="{my:.2f}"/>')
+svg.append(f'<line class="c" x1="{mx:.2f}" y1="{my:.2f}" x2="{mx:.2f}" y2="{cy}"/>')
+svg.append(f'<circle class="p" cx="{mx:.2f}" cy="{my:.2f}" r="6"><animateMotion dur="4s" repeatCount="indefinite" path="M 0,0 A {radius},{radius} 0 1,1 0,0 A {radius},{radius} 0 1,1 0,0"/></circle>')
+svg.append(f'<circle class="p" cx="{cx}" cy="{cy}" r="5"/><circle class="p" cx="{mx:.2f}" cy="{cy}" r="5"/>')
+svg.append(f'<text class="t" x="{cx-12}" y="{cy+24}">O</text><text class="t" x="{mx+10:.2f}" y="{my-10:.2f}">M</text><text class="t" x="{mx+10:.2f}" y="{cy+24}">P</text>')
+svg.append(f'<text class="t" x="{cx+radius+18}" y="{cy+24}">A</text><text class="t" x="{cx-radius-34}" y="{cy+24}">-A</text>')
+svg.append('<text class="t" x="40" y="414">P la hinh chieu vuong goc cua M len truc dao dong</text></svg>')
+result = ''.join(svg)
+result`;
+  }
+
+  function buildSineGraphPython() {
+    return String.raw`import math
+
+left, top, width, height = 82, 62, 590, 286
+x_max = 4 * math.pi
+def map_x(x): return left + x / x_max * width
+def map_y(y): return top + (1.35 - y) / 2.7 * height
+path = []
+for index in range(241):
+    x = x_max * index / 240
+    path.append(('M' if index == 0 else 'L') + f'{map_x(x):.2f},{map_y(math.sin(x)):.2f}')
+motion_path = ' '.join(
+  ('M' if index == 0 else 'L') + f'{map_x(x_max * index / 240) - left:.2f},{map_y(math.sin(x_max * index / 240)) - map_y(0):.2f}'
+  for index in range(241)
+)
+svg = []
+svg.append('<svg viewBox="0 0 720 440" role="img" aria-label="Do thi ham so y bang sin x">')
+svg.append('<style>.g{stroke:#39404d;stroke-width:1;stroke-dasharray:3 5}.a{stroke:#9aa3b2;stroke-width:2}.s{fill:none;stroke:#f23f9b;stroke-width:4;stroke-linejoin:round}.t{fill:#f0f2f5;font:14px sans-serif}.h{fill:#f0f2f5;font:700 18px sans-serif}</style>')
+svg.append('<text class="h" x="40" y="32">Do thi ham so y = sin(x)</text>')
+for value in (-1, 0, 1):
+    y = map_y(value)
+    svg.append(f'<line class="g" x1="{left}" y1="{y:.2f}" x2="{left+width}" y2="{y:.2f}"/><text class="t" x="{left-14}" y="{y+5:.2f}" text-anchor="end">{value}</text>')
+svg.append(f'<line class="a" x1="{left}" y1="{top-8}" x2="{left}" y2="{top+height+12}"/><line class="a" x1="{left-8}" y1="{map_y(0):.2f}" x2="{left+width+12}" y2="{map_y(0):.2f}"/>')
+svg.append(f'<path class="s" d="{" ".join(path)}"/>')
+svg.append(f'<circle class="p" cx="{left}" cy="{map_y(0):.2f}" r="6"><animateMotion dur="5s" repeatCount="indefinite" path="{motion_path}"/></circle>')
+svg.append('<text class="t" x="40" y="414">Duong cong duoc tinh tu 241 mau cua ham sin(x)</text></svg>')
+result = ''.join(svg)
+result`;
+  }
+
+  function renderHarmonicMotionDiagram() {
+    const centerX = 360;
+    const centerY = 226;
+    const radius = 132;
+    const angle = -Math.PI / 4;
+    const pointX = centerX + radius * Math.cos(angle);
+    const pointY = centerY + radius * Math.sin(angle);
+    const projectionX = pointX;
+    const arcRadius = 38;
+    const arcEndX = centerX + arcRadius * Math.cos(angle);
+    const arcEndY = centerY + arcRadius * Math.sin(angle);
+    return `<svg class="diagram-svg" viewBox="0 0 720 440" role="img" aria-label="Mô phỏng dao động điều hòa bằng hình chiếu chuyển động tròn">
+      <defs><marker id="harmonic-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="currentColor"/></marker></defs>
+      <text class="diagram-title" x="40" y="32">Mo phong dao dong dieu hoa</text>
+      <circle class="diagram-circle" cx="${centerX}" cy="${centerY}" r="${radius}"/>
+      <line class="diagram-axis" x1="${centerX - radius - 42}" y1="${centerY}" x2="${centerX + radius + 58}" y2="${centerY}"/>
+      <line class="diagram-line" x1="${centerX}" y1="${centerY}" x2="${pointX}" y2="${pointY}"/>
+      <line class="diagram-line diagram-arrow" x1="${pointX}" y1="${pointY}" x2="${projectionX}" y2="${centerY}"/>
+      <path class="diagram-line" d="M ${centerX + arcRadius} ${centerY} A ${arcRadius} ${arcRadius} 0 0 0 ${arcEndX} ${arcEndY}"/>
+      <circle class="diagram-point" cx="${pointX}" cy="${pointY}" r="6"/>
+      <circle class="diagram-point" cx="${projectionX}" cy="${centerY}" r="5"/>
+      <circle class="diagram-point" cx="${centerX}" cy="${centerY}" r="5"/>
+      <text class="diagram-label" x="${centerX - 12}" y="${centerY + 24}">O</text>
+      <text class="diagram-label" x="${pointX + 10}" y="${pointY - 10}">M</text>
+      <text class="diagram-label" x="${projectionX + 10}" y="${centerY + 24}">P</text>
+      <text class="diagram-label" x="${centerX + radius + 18}" y="${centerY + 24}">A</text>
+      <text class="diagram-label" x="${centerX - radius - 34}" y="${centerY + 24}">-A</text>
+      <text class="diagram-label" x="${centerX + 44}" y="${centerY - 12}">theta</text>
+      <text class="diagram-note" x="40" y="414">P la hinh chieu vuong goc cua M len truc dao dong</text>
+    </svg>`;
+  }
+
+  function renderSineGraph() {
+    const left = 82;
+    const top = 62;
+    const width = 590;
+    const height = 286;
+    const xMin = 0;
+    const xMax = Math.PI * 4;
+    const yMin = -1.35;
+    const yMax = 1.35;
+    const mapX = x => left + ((x - xMin) / (xMax - xMin)) * width;
+    const mapY = y => top + ((yMax - y) / (yMax - yMin)) * height;
+    const sampleCount = 180;
+    const curve = Array.from({ length: sampleCount + 1 }, (_, index) => {
+      const x = xMin + ((xMax - xMin) * index) / sampleCount;
+      return `${index === 0 ? "M" : "L"}${mapX(x).toFixed(2)},${mapY(Math.sin(x)).toFixed(2)}`;
+    }).join(" ");
+    const yZero = mapY(0);
+    const xTicks = [0, Math.PI / 2, Math.PI, Math.PI * 1.5, Math.PI * 2, Math.PI * 2.5, Math.PI * 3, Math.PI * 3.5, Math.PI * 4];
+    const xLabels = ["0", "π/2", "π", "3π/2", "2π", "5π/2", "3π", "7π/2", "4π"];
+    const tickMarkup = xTicks.map((value, index) => {
+      const x = mapX(value);
+      return `<line class="diagram-grid" x1="${x}" y1="${top}" x2="${x}" y2="${top + height}"/><text class="diagram-label diagram-tick-label" x="${x}" y="${yZero + 24}" text-anchor="middle">${xLabels[index]}</text>`;
+    }).join("");
+    const yMarkup = [-1, 0, 1].map(value => {
+      const y = mapY(value);
+      return `<line class="diagram-grid" x1="${left}" y1="${y}" x2="${left + width}" y2="${y}"/><text class="diagram-label" x="${left - 14}" y="${y + 5}" text-anchor="end">${value}</text>`;
+    }).join("");
+    return `<svg class="diagram-svg" viewBox="0 0 720 440" role="img" aria-label="Đồ thị hàm số y bằng sin x">
+      <defs><marker id="sine-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="currentColor"/></marker></defs>
+      <text class="diagram-title" x="40" y="32">Do thi ham so y = sin(x)</text>
+      ${tickMarkup}${yMarkup}
+      <line class="diagram-axis" x1="${left}" y1="${top - 8}" x2="${left}" y2="${top + height + 12}" marker-end="url(#sine-arrow)"/>
+      <line class="diagram-axis" x1="${left - 8}" y1="${yZero}" x2="${left + width + 12}" y2="${yZero}" marker-end="url(#sine-arrow)"/>
+      <path class="sine-curve" d="${curve}"/>
+      <text class="diagram-label" x="${left + width + 18}" y="${yZero + 5}">x</text>
+      <text class="diagram-label" x="${left - 8}" y="${top - 18}">y</text>
+      <text class="diagram-note" x="40" y="414">Duong cong duoc tinh tu nhieu diem mau cua ham sin(x)</text>
+    </svg>`;
+  }
+
+  function renderKnownIllustrationFallback(isHarmonicMotion, isSineGraph) {
+    if (isHarmonicMotion) return renderHarmonicMotionDiagram();
+    if (isSineGraph) return renderSineGraph();
+    return "";
+  }
+
+  async function renderPythonDiagram(rawCode, requiresAnimation = false, allowGenericAnimation = true) {
+    const pythonCode = extractPythonCode(rawCode);
+    if (!pythonCode || !/\bresult\s*=/.test(pythonCode)) return "";
+    const token = `python-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const frameId = `diagram-${token}`;
+    const srcdoc = `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; connect-src https://cdn.jsdelivr.net blob:; style-src 'unsafe-inline'; img-src data:; font-src data:; worker-src blob:;"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent}svg,canvas{display:block;width:100%;height:100%;max-width:720px;margin:auto}*{box-sizing:border-box}</style></head><body><div id="status">Python đang dựng hình...</div><script src="https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js"><\/script><script>
+      const token = ${JSON.stringify(token)};
+      const pythonCode = ${JSON.stringify(pythonCode)};
+      const send = (ok, output) => parent.postMessage({ type: "python-diagram", token, ok, output }, "*");
+      (async () => {
+        try {
+          const pyodide = await loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.2/full/" });
+          const output = await pyodide.runPythonAsync(pythonCode + "\\nresult");
+          const outputText = output?.toJs ? output.toJs({ dict_converter: Object.fromEntries }) : String(output || "");
+          output?.destroy?.();
+          send(true, String(outputText || ""));
+        } catch (error) {
+          send(false, String(error));
+        }
+      })();
+    <\/script></body></html>`;
+    return await new Promise(resolve => {
+      const frame = document.createElement("iframe");
+      frame.id = frameId;
+      frame.className = "illustration-code-frame";
+      frame.setAttribute("sandbox", "allow-scripts");
+      frame.setAttribute("referrerpolicy", "no-referrer");
+      frame.title = "Hình minh họa Python do AI dựng";
+      const timer = window.setTimeout(() => { cleanup(); resolve(""); }, 30000);
+      const cleanup = () => { window.clearTimeout(timer); window.removeEventListener("message", onMessage); frame.remove(); };
+      const onMessage = event => {
+        if (event.source !== frame.contentWindow || event.data?.type !== "python-diagram" || event.data.token !== token) return;
+        const output = event.data.ok ? event.data.output : "";
+        cleanup();
+        const hasSvg = output && /<svg[\s\S]*<\/svg>/i.test(output);
+        if (!hasSvg) {
+          resolve("");
+          return;
+        }
+        const animatedSvg = ensureAnimatedSvg(output, requiresAnimation, allowGenericAnimation);
+        resolve(animatedSvg ? renderDiagramCode(animatedSvg) : "");
+      };
+      window.addEventListener("message", onMessage);
+      frame.srcdoc = srcdoc;
+      document.body.appendChild(frame);
+    });
+  }
+
+  function extractPythonCode(rawCode) {
+    if (typeof rawCode !== "string") return "";
+    const fencedMatch = rawCode.match(/```(?:python|py)?\s*([\s\S]*?)```/i);
+    const code = (fencedMatch ? fencedMatch[1] : rawCode)
+      .replace(/^\s*python\s*:\s*/i, "")
+      .trim();
+    if (!code || /(^|\n)\s*<(!doctype|html|svg)\b/i.test(code)) return "";
+    return code;
+  }
+
+  function ensureAnimatedSvg(rawSvg, requiresAnimation, allowGenericAnimation) {
+    const svgMatch = String(rawSvg || "").match(/<svg\b[\s\S]*?<\/svg>/i);
+    if (!svgMatch) return "";
+    if (!requiresAnimation || /<(?:animate|animateMotion|animateTransform)\b/i.test(svgMatch[0])) return svgMatch[0];
+    if (!allowGenericAnimation) return "";
+    const viewBoxMatch = svgMatch[0].match(/\bviewBox\s*=\s*["']\s*[-\d.]+\s+[-\d.]+\s+([-\d.]+)\s+([-\d.]+)\s*["']/i);
+    const width = Number(viewBoxMatch?.[1]) || 720;
+    const height = Number(viewBoxMatch?.[2]) || 440;
+    const startX = Math.max(24, width * 0.14);
+    const endX = Math.max(startX + 40, width * 0.86);
+    const centerY = height * 0.5;
+    const marker = `<circle cx="${startX}" cy="${centerY}" r="7" fill="#f97316" aria-label="Điểm đang chuyển động"><animateMotion dur="3s" repeatCount="indefinite" path="M 0,0 L ${endX - startX},0 L 0,0"/></circle>`;
+    return svgMatch[0].replace(/<\/svg>\s*$/i, `${marker}</svg>`);
+  }
+
+  function renderDiagramCode(rawCode) {
+    if (!rawCode) return "";
+    const code = rawCode.replace(/^```(?:html|svg|javascript|js)?\s*/i, "").replace(/\s*```$/i, "").trim();
+    if (!/<(svg|canvas|html|div|main|body)\b/i.test(code)) return "";
+    const srcdoc = `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent}svg,canvas{display:block;width:100%;height:100%;max-width:720px;margin:auto}*{box-sizing:border-box}</style></head><body>${code}</body></html>`;
+    return `<iframe class="illustration-code-frame" sandbox="allow-scripts" referrerpolicy="no-referrer" title="Hình minh họa do AI dựng" srcdoc="${escapeAttribute(srcdoc)}"></iframe>`;
+  }
+
+  function escapeAttribute(value) {
+    return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function parseDiagramSpec(rawText) {
+    if (!rawText) return null;
+    const jsonText = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+    try {
+      const parsed = JSON.parse(jsonText);
+      if (!parsed || typeof parsed !== "object") return null;
+      return {
+        title: typeof parsed.title === "string" ? parsed.title.slice(0, 100) : "Hình minh họa",
+        points: Array.isArray(parsed.points) ? parsed.points : [],
+        segments: Array.isArray(parsed.segments) ? parsed.segments : [],
+        circles: Array.isArray(parsed.circles) ? parsed.circles : [],
+        arrows: Array.isArray(parsed.arrows) ? parsed.arrows : [],
+        labels: Array.isArray(parsed.labels) ? parsed.labels : [],
+        axes: parsed.axes && typeof parsed.axes === "object" ? parsed.axes : {},
+        animation: parsed.animation && typeof parsed.animation === "object" ? parsed.animation : { type: "none" },
+        note: typeof parsed.note === "string" ? parsed.note.slice(0, 180) : ""
+      };
+    } catch (error) {
+      console.warn("Không đọc được cấu trúc hình minh họa:", error);
+      return null;
+    }
+  }
+
+  function renderDiagramSpec(spec) {
+    if (!spec) return "";
+    const escapeXml = value => String(value ?? "").replace(/[<>&'"]/g, character => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[character]));
+    const pointMap = new Map(spec.points.filter(point => point && typeof point.id === "string").map(point => [point.id, point]));
+    const coordinate = point => Number.isFinite(Number(point?.x)) && Number.isFinite(Number(point?.y))
+      ? { x: Math.max(24, Math.min(696, Number(point.x))), y: Math.max(34, Math.min(400, Number(point.y))) }
+      : null;
+    const line = (from, to, className = "diagram-line", marker = "") => {
+      const start = coordinate(pointMap.get(from));
+      const end = coordinate(pointMap.get(to));
+      if (!start || !end) return "";
+      return `<line class="${className}" x1="${start.x}" y1="${start.y}" x2="${end.x}" y2="${end.y}"${marker ? ` marker-end="url(#${marker})"` : ""}/>`;
+    };
+    const pointMarkup = spec.points.map(point => {
+      const position = coordinate(point);
+      if (!position) return "";
+      const isAnimated = spec.animation.type === "pulse-point" && spec.animation.point === point.id;
+      const pulse = isAnimated ? `<animate attributeName="r" values="4;7;4" dur="${Math.max(700, Math.min(4000, Number(spec.animation.duration) || 1600))}ms" repeatCount="indefinite"/>` : "";
+      return `<circle class="diagram-point${isAnimated ? " diagram-animated" : ""}" cx="${position.x}" cy="${position.y}" r="4">${pulse}</circle><text class="diagram-label" x="${position.x + 8}" y="${position.y - 8}">${escapeXml(point.id)}</text>`;
+    }).join("");
+    const segments = spec.segments.map(segment => `${line(segment.from, segment.to)}${segment.label ? `<text class="diagram-label" x="${coordinate(pointMap.get(segment.from))?.x || 0}" y="${(coordinate(pointMap.get(segment.from))?.y || 0) - 10}">${escapeXml(segment.label)}</text>` : ""}`).join("");
+    const arrows = spec.arrows.map(arrow => line(arrow.from, arrow.to, "diagram-line diagram-arrow", "arrowhead")).join("");
+    const circles = spec.circles.map(circle => {
+      const cx = Math.max(30, Math.min(690, Number(circle.cx)));
+      const cy = Math.max(40, Math.min(390, Number(circle.cy)));
+      const radius = Math.max(8, Math.min(180, Number(circle.r)));
+      if (![cx, cy, radius].every(Number.isFinite)) return "";
+      return `<circle class="diagram-circle" cx="${cx}" cy="${cy}" r="${radius}"/>${circle.label ? `<text class="diagram-label" x="${cx + 8}" y="${cy - radius - 8}">${escapeXml(circle.label)}</text>` : ""}`;
+    }).join("");
+    const labels = spec.labels.map(label => {
+      const position = coordinate(label);
+      return position && label.text ? `<text class="diagram-label" x="${position.x}" y="${position.y}">${escapeXml(label.text)}</text>` : "";
+    }).join("");
+    const axes = spec.axes.x || spec.axes.y
+      ? `<line class="diagram-axis" x1="60" y1="360" x2="660" y2="360"${spec.axes.x ? " marker-end=\"url(#arrowhead)\"" : ""}/><line class="diagram-axis" x1="60" y1="360" x2="60" y2="60"${spec.axes.y ? " marker-end=\"url(#arrowhead)\"" : ""}/>`
+      : "";
+    const animation = spec.animation || { type: "none" };
+    const fromPoint = coordinate(pointMap.get(animation.from));
+    const toPoint = coordinate(pointMap.get(animation.to));
+    const movingPoint = coordinate(pointMap.get(animation.point));
+    const moveAnimation = animation.type === "move-point" && fromPoint && toPoint && movingPoint
+      ? `<circle class="diagram-point diagram-animated" cx="${movingPoint.x}" cy="${movingPoint.y}" r="6"><animateMotion dur="${Math.max(700, Math.min(5000, Number(animation.duration) || 1800))}ms" repeatCount="indefinite" path="M ${fromPoint.x - movingPoint.x} ${fromPoint.y - movingPoint.y} L ${toPoint.x - movingPoint.x} ${toPoint.y - movingPoint.y}"/></circle>`
+      : "";
+    return `<svg class="diagram-svg" viewBox="0 0 720 440" role="img" aria-label="${escapeXml(spec.title)}"><defs><marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="currentColor"/></marker></defs><text class="diagram-title" x="40" y="30">${escapeXml(spec.title)}</text>${axes}${circles}${segments}${arrows}${pointMarkup}${moveAnimation}${labels}${spec.note ? `<text class="diagram-note" x="40" y="420">${escapeXml(spec.note)}</text>` : ""}</svg>`;
+  }
+
+  function sanitizeIllustration(rawSvg) {
+    const match = rawSvg.match(/<svg[\s\S]*?<\/svg>/i);
+    if (!match) return "";
+    const parsed = new DOMParser().parseFromString(match[0], "image/svg+xml");
+    const svg = parsed.documentElement;
+    if (!svg || svg.nodeName.toLowerCase() !== "svg" || parsed.querySelector("parsererror")) return "";
+    svg.querySelectorAll("script, foreignObject, iframe, object, image, animate, set").forEach(node => node.remove());
+    svg.querySelectorAll("*").forEach(node => [...node.attributes].forEach(attribute => {
+      if (/^on/i.test(attribute.name) || /javascript:/i.test(attribute.value)) node.removeAttribute(attribute.name);
+    }));
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", "Hình minh họa mô phỏng");
+    return svg.outerHTML;
+  }
+
+  async function callGeminiIllustration(prompt) {
+    const modelCandidates = GEMINI_STUDY_MODELS;
+    let attempts = 0;
+    while (attempts < GEMINI_KEYS.length) {
+      attempts += 1;
+      const apiKey = getNextGeminiKey();
+      if (!apiKey) continue;
+      for (const candidateModel of modelCandidates) try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${candidateModel}:generateContent?key=${apiKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: prompt }] },
+            contents: [{ role: "user", parts: [{ text: "Người học đã yêu cầu vẽ. Hãy trả về đúng một khối <manim_code> chứa mã Manim Community hợp lệ với class DynamicScene." }] }],
+            generationConfig: { temperature: 0.15, maxOutputTokens: 5000, thinkingConfig: { thinkingBudget: 0 } }
+          })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.error) {
+          const status = response.status || 0;
+          const message = data.error?.message || data.error?.status || `HTTP ${status}`;
+          console.warn("Gemini không tạo được mã Manim:", message);
+          if (status === 429 || status >= 500) await sleep(400);
+          continue;
+        }
+        const result = (data.candidates?.[0]?.content?.parts || [])
+          .map(part => typeof part.text === "string" ? part.text : "").join("").trim();
+        if (!result) throw new Error("Gemini trả về phản hồi rỗng.");
+        return result;
+      } catch (error) {
+        console.error("Lỗi dựng hình minh họa:", error);
+      }
+    }
+    return "";
+  }
+
+  function toggleSpeechOutput(button) {
+    speechOutputEnabled = !speechOutputEnabled;
+    speechOutputToken += 1;
+    if (!speechOutputEnabled && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    document.querySelectorAll(".speech-toggle-btn").forEach(item => {
+      item.textContent = speechOutputEnabled ? "🔊 Đang đọc" : "🔇 Chỉ chữ";
+      item.setAttribute("aria-label", speechOutputEnabled ? "Tắt đọc câu trả lời" : "Bật đọc câu trả lời");
+    });
+  }
+
+  function toggleVoiceMode() {
+    if (activeSpace !== "english") {
+      document.getElementById("voiceStatus").textContent = "Hãy bật Mode English trước để dùng micro luyện nói.";
+      return;
+    }
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      document.getElementById("voiceStatus").textContent = "Trình duyệt này chưa hỗ trợ nhận giọng nói. Hãy dùng Chrome hoặc Edge.";
+      return;
+    }
+
+    voiceModeEnabled = !voiceModeEnabled;
+    const button = document.getElementById("voiceModeBtn");
+    button.classList.toggle("active", voiceModeEnabled);
+    button.setAttribute("aria-label", voiceModeEnabled ? "Tắt micro" : "Bật micro");
+    document.getElementById("voiceStatus").textContent = voiceModeEnabled
+      ? "Đang xin quyền microphone..."
+      : "Nhắn tin hoặc bật voice mode để luyện nói.";
+
+    if (voiceModeEnabled) {
+      if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
+      requestMicrophoneAndListen();
+    } else {
+      if (speechRecognition) {
+        try { speechRecognition.stop(); } catch (error) {}
+      }
+      if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      speechRecognition = null;
+    }
+  }
+
+  async function requestMicrophoneAndListen() {
+    if (microphonePermissionStatus === "denied") {
+      document.getElementById("voiceStatus").textContent = "Micro đang bị từ chối. Hãy bật lại quyền microphone trong cài đặt trình duyệt.";
+      voiceModeEnabled = false;
+      document.getElementById("voiceModeBtn").classList.remove("active");
+      return;
+    }
+    startVoiceInput();
+  }
+
+  function startVoiceInput() {
+    if (!voiceModeEnabled) return;
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) {
+      document.getElementById("voiceStatus").textContent = "Trình duyệt này chưa hỗ trợ nhận giọng nói. Hãy dùng Chrome hoặc Edge.";
+      return;
+    }
+
+    if (speechRecognition) {
+      try { speechRecognition.stop(); } catch (error) {}
+    }
+
+    speechRecognition = new Recognition();
+    speechRecognition.lang = "en-US";
+    speechRecognition.interimResults = false;
+    // Một lần bấm chỉ nhận một lượt nói; quyền đã cấp vẫn được trình duyệt giữ.
+    speechRecognition.continuous = false;
+    speechRecognition.maxAlternatives = 3;
+    speechRecognition.onstart = () => {
+      microphonePermissionStatus = "granted";
+      localStorage.setItem("english-microphone-permission", microphonePermissionStatus);
+      document.getElementById("voiceStatus").textContent = "Đang nghe... Hãy nói bằng tiếng Anh.";
+    };
+    speechRecognition.onresult = event => {
+      const transcript = Array.from(event.results)
+        .slice(event.resultIndex)
+        .map(result => result[0]?.transcript || "")
+        .join(" ")
+        .trim();
+      if (transcript) {
+        voiceModeEnabled = false;
+        document.getElementById("voiceModeBtn").classList.remove("active");
+        try { speechRecognition.stop(); } catch (error) {}
+        document.getElementById("userInput").value = transcript;
+        sendMessage();
+      }
+    };
+    speechRecognition.onerror = event => {
+      speechRecognition.__hasError = true;
+      if (["not-allowed", "service-not-allowed"].includes(event.error)) {
+        microphonePermissionStatus = "denied";
+        localStorage.setItem("english-microphone-permission", microphonePermissionStatus);
+      }
+      const errorMessages = {
+        "not-allowed": "Micro bị từ chối. Ứng dụng sẽ không hỏi lại; hãy bật quyền trong cài đặt trình duyệt nếu muốn dùng.",
+        "service-not-allowed": "Dịch vụ nhận giọng nói bị chặn. Ứng dụng sẽ không hỏi lại; hãy kiểm tra quyền trong trình duyệt.",
+        "audio-capture": "Không tìm thấy microphone. Hãy kiểm tra tai nghe hoặc thiết bị âm thanh.",
+        "network": "Nhận giọng nói cần kết nối mạng ổn định.",
+        "no-speech": "Mình chưa nghe thấy tiếng nói. Hãy bấm micro và nói rõ bằng tiếng Anh."
+      };
+      document.getElementById("voiceStatus").textContent = errorMessages[event.error] || "Micro chưa hoạt động. Hãy thử lại nhé.";
+      if (["not-allowed", "service-not-allowed", "audio-capture"].includes(event.error)) {
+        voiceModeEnabled = false;
+        document.getElementById("voiceModeBtn").classList.remove("active");
+      }
+    };
+    speechRecognition.onend = () => {
+      if (voiceModeEnabled && !speechRecognition?.__hasError) {
+        document.getElementById("voiceStatus").textContent = "Micro đã dừng. Bấm mic để nói tiếp.";
+      }
+      speechRecognition = null;
+    };
+    try {
+      speechRecognition.__hasError = false;
+      speechRecognition.start();
+    } catch (error) {
+      document.getElementById("voiceStatus").textContent = "Micro đang bận. Hãy chờ một chút rồi thử lại.";
+      voiceModeEnabled = false;
+      document.getElementById("voiceModeBtn").classList.remove("active");
+    }
+  }
+
+  function speakEnglishReply(text) {
+    if (!("speechSynthesis" in window)) return;
+    if (!speechOutputEnabled || activeSpace !== "english") return;
+    window.speechSynthesis.cancel();
+    const currentSpeechToken = ++speechOutputToken;
+    const spokenText = text
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/[*_#`$]/g, "")
+      .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+      .replace(/\n+/g, ". ")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+    if (!spokenText) return;
+
+    const chunks = spokenText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [spokenText];
+    chunks.reduce((promise, chunk) => promise.then(() => queueSpeechChunk(chunk.trim(), currentSpeechToken)), Promise.resolve());
+  }
+
+  function loadEnglishVoices() {
+    if (!("speechSynthesis" in window)) return;
+    const updateVoices = () => {
+      availableEnglishVoices = window.speechSynthesis.getVoices()
+        .filter(voice => /^en(-|_)/i.test(voice.lang))
+        .sort((first, second) => {
+          const firstPreferred = /Google|Microsoft|Samantha|Daniel/i.test(first.name);
+          const secondPreferred = /Google|Microsoft|Samantha|Daniel/i.test(second.name);
+          return Number(secondPreferred) - Number(firstPreferred);
+        });
+    };
+    updateVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", updateVoices);
+  }
+
+  function queueSpeechChunk(text, currentSpeechToken) {
+    return new Promise(resolve => {
+      if (!text || activeSpace !== "english" || !speechOutputEnabled || currentSpeechToken !== speechOutputToken) {
+        resolve();
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(text);
+      const femaleVoice = availableEnglishVoices.find(voice => /female|samantha|zira|aria|jenny|eva|susan|karen|moira|google us english/i.test(voice.name))
+        || availableEnglishVoices.find(voice => /en-US/i.test(voice.lang) && /google|microsoft/i.test(voice.name));
+      const selectedVoice = femaleVoice
+        || availableEnglishVoices.find(voice => /en-US/i.test(voice.lang))
+        || availableEnglishVoices[0];
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang;
+      } else {
+        utterance.lang = "en-US";
+      }
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      utterance.onend = resolve;
+      utterance.onerror = resolve;
+      window.speechSynthesis.speak(utterance);
+    });
+  }
+
+  async function handleFeedback(btnElement, type) {
+    const parentContainer = btnElement.parentElement;
+    const responseGroup = parentContainer.closest(".response-group");
+    const responseElement = responseGroup ? responseGroup.querySelector(".msg.bot") : null;
+    if (type === 'understand') {
+      const detailLevel = document.getElementById("detailMode").value;
+      learningPreferences.detail = detailLevel === "detailed"
+        ? "Hãy tiếp tục ưu tiên cách giải từng bước, giải thích bản chất và lý do của mỗi bước."
+        : "Hãy ưu tiên cách giải ngắn gọn, rõ ý và đi thẳng vào trọng tâm.";
+      localStorage.setItem("ai-learning-preferences", JSON.stringify(learningPreferences));
+      saveLearnerProfile("understood", learningPreferences.detail);
+      parentContainer.innerHTML = `<span class="feedback-status understood">Đã ghi nhận cách giải này cho các câu hỏi sau.</span>`;
+    } else if (type === 'confused') {
+      if (!responseElement || !responseGroup) return;
+      saveLearnerProfile("confused", "Người học chưa nắm được cách giải ở lượt gần nhất.");
+      const lastModelIndex = chatHistory.map(item => item.role).lastIndexOf("model");
+      if (lastModelIndex >= 0) chatHistory.splice(lastModelIndex, 1);
+      responseElement.innerHTML = `<span class="typing-dots" aria-label="AI đang viết lại"><span></span><span></span><span></span></span><span class="typing-label">AI đang viết lại...</span>`;
+      const retryPrompt = buildActivePrompt() + `
+    [PHẢN HỒI ÂM THẦM]: Câu trả lời vừa rồi chưa giúp người dùng hiểu. Hãy viết lại từ đầu bằng một cách giải thích khác hẳn, không lặp lại cấu trúc và câu chữ cũ. Bắt buộc dùng ít nhất một ví dụ thực tế, phép so sánh trực quan hoặc phản ví dụ phù hợp; sau đó kiểm tra lại bằng một câu hỏi ngắn để biết người học đã nắm ý chưa. Không nhắc đến phản hồi nội bộ này.`;
+      const thinkingLevel = document.getElementById("thinkingMode").value;
+      const modelName = thinkingLevel === "talking" ? GEMINI_TALKING_MODEL : GEMINI_STUDY_MODEL;
+      const currentMode = document.getElementById("aiMode").value;
+      const temperature = learningMode === "arena"
+        ? 0.3
+        : currentMode === "talkshow"
+          ? 0.65
+          : currentMode === "english"
+            ? 0.45
+            : thinkingLevel === "talking" ? 0.25 : 0.2;
+      const engineName = learningMode === "arena" ? "Gemini Flash · HSG" : "Gemini 3.6 Flash";
+      const success = await callGeminiApi(responseElement.id, retryPrompt, modelName, engineName, temperature);
+      if (!success) responseElement.innerHTML = "⚠️ Chưa thể viết lại lúc này. Cậu thử bấm gửi lại câu hỏi sau nhé!";
+    }
+  }
+
+  function loadImageFile(file) {
+    if (!file?.type?.startsWith("image/")) return false;
+    selectedImageMimeType = file.type;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      selectedImageBase64 = evt.target.result.split(",")[1];
+      document.getElementById("imagePreview").src = evt.target.result;
+      document.getElementById("imageName").innerText = file.name || "Ảnh đã dán";
+      document.getElementById("imagePreviewContainer").style.display = "flex";
+    };
+    reader.readAsDataURL(file);
+    return true;
+  }
+
+  function handleImageSelect(e) {
+    loadImageFile(e.target.files[0]);
+  }
+
+  function removeSelectedImage() {
+    selectedImageBase64 = null;
+    selectedImageMimeType = null;
+    document.getElementById("imageInput").value = "";
+    document.getElementById("imagePreviewContainer").style.display = "none";
+  }
+
+  function clearChat() {
+    if (confirm("Xóa toàn bộ lịch sử trò chuyện?")) {
+      chatHistory = [];
+      saveActiveChatHistory();
+      const welcomeText = activeSpace === "english"
+        ? "Your English practice history is clear. Ready for a new conversation? 😊"
+        : "Lịch sử trò chuyện đã được làm sạch! 😊";
+      document.getElementById("msgContainer").innerHTML = `<div class="msg bot" id="welcomeMsg">${welcomeText}</div>`;
+    }
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+</script>
+
+</body>
+</html>
