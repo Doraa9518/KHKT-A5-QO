@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Hệ Thống Trợ Lý AI Giáo Dục THPT - Hybrid Engine Edition</title>
 
   <!-- 1. MARKED.JS -->
@@ -65,7 +65,7 @@
       background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--ui-accent) 16%, transparent), var(--ui-bg-1) 58%);
       margin: 0;
       padding: 20px;
-      min-height: 100vh;
+      min-height: 100dvh;
       width: 100vw;
       display: flex;
       justify-content: center;
@@ -77,7 +77,7 @@
     .chat-card {
       position: relative;
       width: min(100%, 1400px);
-      height: 90vh;
+      height: min(90dvh, calc(var(--vvh, 100dvh) - 40px));
       background: rgba(7, 11, 18, 0.52);
       border: 1px solid var(--ui-line);
       border-radius: 28px;
@@ -326,6 +326,14 @@
     .illustration-btn { padding: 5px 10px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--ui-accent) 45%, var(--ui-line)); background: color-mix(in srgb, var(--ui-accent) 10%, transparent); color: var(--ui-text); font-size: 12px; cursor: pointer; }
     .illustration-btn:hover { background: color-mix(in srgb, var(--ui-accent) 22%, transparent); }
     .illustration-btn:disabled { opacity: 0.65; cursor: wait; }
+    .anim-stage { position: relative; width: 100%; max-width: 720px; margin: 0 auto; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: radial-gradient(circle at 28% 18%, #17233f 0%, #0b1120 72%); box-shadow: inset 0 0 0 1px rgba(148,163,184,0.16); }
+    .anim-canvas { display: block; width: 100%; height: 100%; }
+    .anim-labels { position: absolute; inset: 0; pointer-events: none; font-size: 15px; }
+    .anim-label { position: absolute; left: 50%; top: 30px; opacity: 0; white-space: nowrap; color: #e8eefb; text-shadow: 0 2px 10px rgba(0,0,0,0.6); will-change: transform, opacity; }
+    .anim-label mjx-container { color: #e8eefb; }
+    .anim-replay { position: absolute; right: 10px; bottom: 10px; padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(226,232,240,0.32); background: rgba(15,23,42,0.62); color: #e2e8f0; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .anim-replay:hover { background: rgba(15,23,42,0.85); }
+    body.phone-mode .anim-labels { font-size: 12px; }
     .illustration-panel { margin-top: 14px; padding: 14px; border: 1px solid var(--ui-line); border-radius: 18px; background: color-mix(in srgb, var(--ui-panel) 82%, transparent); overflow: hidden; animation: illustrationEnter 0.45s cubic-bezier(.2,.8,.2,1) both; }
     .illustration-panel svg { display: block; width: min(100%, 620px); max-height: 420px; margin: 0 auto; filter: drop-shadow(0 12px 18px rgba(15,23,42,0.14)); }
     .illustration-code-frame { display: block; width: min(100%, 720px); height: 440px; margin: 0 auto; border: 0; border-radius: 12px; background: var(--ui-bg-1); }
@@ -352,7 +360,7 @@
     .learning-tool-btn.active { background: rgba(91,124,255,0.18); border-color: rgba(91,124,255,0.5); color: #dfe9ff; }
     .english-tools { display: none; gap: 8px; align-items: center; flex-wrap: wrap; }
     body.english-mode .english-tools { display: flex; }
-    body.english-mode .learning-tools { display: none; }
+    body.english-mode .learning-tools, body.english-mode .mode-ribbon { display: none; }
     body.english-mode .upload-btn,
     body.english-mode .image-preview-container { display: none !important; }
     .english-level { width: auto; min-width: 150px; padding: 8px 11px; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-panel); color: var(--ui-text); font-size: 12px; font-weight: 700; }
@@ -380,22 +388,34 @@
       min-height: 56px;
     }
     input[type="text"]:focus { border-color: rgba(91,124,255,0.8); box-shadow: 0 0 0 4px rgba(91,124,255,0.18); }
-    button.send-btn { min-height:56px; padding:0 26px; border:none; background: var(--ui-accent); color:white; border-radius:26px; cursor:pointer; font-weight:600; font-size:15px; box-shadow: 0 8px 20px color-mix(in srgb, var(--ui-accent) 24%, transparent); }
+    button.send-btn { min-height:56px; padding:0 26px; border:none; background: var(--ui-accent); color:white; border-radius:26px; cursor:pointer; font-weight:600; font-size:15px; box-shadow: 0 8px 20px color-mix(in srgb, var(--ui-accent) 24%, transparent); flex: 0 0 auto; }
     button, .upload-btn, .clear-btn, .layout-btn, .gear-btn { transition: transform 0.2s ease, filter 0.2s ease, background 0.2s ease; }
-    button:hover, .upload-btn:hover, .clear-btn:hover, .layout-btn:hover, .gear-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
-
-    body.phone-mode { padding: 14px; }
-    body.phone-mode .chat-card { width: min(100%, 430px); height: 92vh; padding: 12px; }
-    body.phone-mode .header { align-items: flex-start; flex-direction: column; }
-    body.phone-mode .header-left { width: 100%; gap: 6px; }
-    body.phone-mode .header h3 { width: 100%; }
-    body.phone-mode .ui-tools { width: 100%; justify-content: flex-end; }
-    body.phone-mode .chat-box { padding: 11px; }
-    body.phone-mode .msg { max-width: 92%; }
-    body.phone-mode .response-meta { width: 92%; }
-    body.phone-mode .input-row { gap: 7px; }
-    body.phone-mode .upload-btn { width: 44px; height: 44px; }
-    body.phone-mode button.send-btn { padding: 0 17px; }
+    @media (hover: hover) and (pointer: fine) {
+      button:hover, .upload-btn:hover, .clear-btn:hover, .layout-btn:hover, .gear-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+    }
+    button:active, .upload-btn:active { transform: translateY(1px) scale(0.985); }
+    @media (hover: none), (pointer: coarse) {
+      .mode-select:hover, .thinking-select:hover, .detail-select:hover, .glass-select-trigger:hover { transform: none; }
+      input[type="text"] { font-size: 16px; }
+    }
+    button, .upload-btn, .learning-tool-btn, .feedback-btn, .glass-select-trigger { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    .btn-ico { display: none; }
+    .btn-ico + .btn-txt { margin-left: 6px; }
+    .layout-btn .btn-ico, .clear-btn .btn-ico, .english-mode-btn .btn-ico { display: inline; }
+    .send-btn.busy { opacity: 0.55; cursor: progress; }
+    .mode-ribbon { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: min(100%, 980px); margin: 0 auto; padding: 9px 12px; border: 1px solid color-mix(in srgb, var(--ui-accent) 32%, var(--glass-border)); border-radius: 18px; background: color-mix(in srgb, var(--ui-accent) 10%, var(--ui-panel)); color: var(--ui-text); font-size: 12.5px; font-weight: 600; }
+    .mode-ribbon[hidden] { display: none; }
+    .mode-ribbon .ribbon-hint { color: var(--ui-muted); font-weight: 600; }
+    .mode-ribbon .ribbon-spacer { flex: 1 1 auto; }
+    .mode-ribbon .ribbon-chip { padding: 5px 10px; border-radius: 999px; background: rgba(255,255,255,0.18); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .mode-ribbon .ribbon-btn { border: 1px solid var(--glass-border); border-radius: 999px; padding: 7px 12px; min-height: 34px; background: rgba(255,255,255,0.16); color: var(--ui-text); font: inherit; cursor: pointer; white-space: nowrap; }
+    .mode-ribbon .ribbon-btn.primary { background: var(--ui-accent); border-color: transparent; color: #fff; }
+    .mode-ribbon select.ribbon-select { border: 1px solid var(--glass-border); border-radius: 12px; padding: 6px 9px; background: rgba(255,255,255,0.18); color: var(--ui-text); font: inherit; }
+    .upload-btn.pulse { animation: uploadPulse 1.3s ease-in-out 3; }
+    @keyframes uploadPulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ui-accent) 55%, transparent); } 45% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--ui-accent) 0%, transparent); } }
+    body.phone-mode .mode-ribbon { width: 100%; font-size: 12px; border-radius: 15px; gap: 6px; }
+    .input-row.nudge { animation: composerNudge 0.34s ease; }
+    @keyframes composerNudge { 0%, 100% { transform: translateX(0); } 22% { transform: translateX(-6px); } 55% { transform: translateX(5px); } 80% { transform: translateX(-2px); } }
 
     /* Chống tràn ngang: công thức MathJax / bảng / code dài cuộn trong bong bóng */
     .msg, .bot-text, .response-group { min-width: 0; }
@@ -420,7 +440,7 @@
 
     @media (max-width: 600px) {
       body { padding: 14px; }
-      .chat-card { height: 92vh; padding: 12px; }
+      .chat-card { height: min(92dvh, calc(var(--vvh, 100dvh) - 24px)); padding: 12px; }
       .header { align-items: flex-start; }
       .header-left { gap: 6px; }
       .header h3 { width: 100%; }
@@ -435,7 +455,7 @@
     }
     .chat-card {
       width: 100%;
-      height: 100vh;
+      height: min(100dvh, var(--vvh, 100dvh));
       max-width: none;
       padding: 16px 24px 22px;
       border: 0;
@@ -557,7 +577,7 @@
         radial-gradient(circle at 16% 18%, rgba(124, 196, 255, 0.22), transparent 20%),
         radial-gradient(circle at 76% 12%, rgba(170, 136, 255, 0.18), transparent 22%),
         radial-gradient(circle at 60% 78%, rgba(255, 163, 118, 0.12), transparent 24%),
-        linear-gradient(180deg, var(--ui-bg-1) 0%, var(--ui-bg-2) 46%, #f5f8fc 100%);
+        linear-gradient(180deg, var(--ui-bg-1) 0%, var(--ui-bg-2) 46%, color-mix(in srgb, var(--ui-bg-2) 88%, white) 100%);
       transition: background 0.35s ease, color 0.25s ease;
     }
 
@@ -595,7 +615,7 @@
 
     .chat-card {
       width: min(100%, 1350px);
-      height: 100vh;
+      height: min(100dvh, var(--vvh, 100dvh));
       margin: 0 auto;
       padding: 18px 20px 20px;
       border: 1px solid var(--glass-border);
@@ -673,7 +693,7 @@
     @media (max-width: 820px) { .header { flex-wrap: wrap; justify-content: center; } .header-left, .ui-tools { width: 100%; justify-content: center; } }
     @media (max-width: 600px) {
       body { padding: 0; }
-      .chat-card { width: 100%; height: 100vh; border-radius: 0; padding: 12px 12px 16px; }
+      .chat-card { width: 100%; height: min(100dvh, var(--vvh, 100dvh)); border-radius: 0; padding: 12px 12px 16px; }
       .header h3 { width: 100%; text-align: center; }
       .chat-box { padding-left: 6px; padding-right: 6px; }
       .msg { max-width: 92%; font-size: 14px; }
@@ -828,6 +848,66 @@
       -webkit-backdrop-filter: blur(8px);
     }
     @media (max-width: 600px) { .glass-select-menu { max-height: 190px; } }
+
+    /* ============= CHẾ ĐỘ ĐIỆN THOẠI: bố cục native, khác hẳn bản PC ============= */
+    body.phone-mode { padding: 0; align-items: stretch; }
+    body.phone-mode .chat-card {
+      width: 100%; max-width: none;
+      height: min(100dvh, var(--vvh, 100dvh));
+      border: 0; border-radius: 0; box-shadow: none;
+      padding: calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+    }
+    body.phone-mode .header {
+      width: 100%; flex-direction: row; align-items: center; flex-wrap: nowrap;
+      gap: 8px; margin: 0 0 6px; padding: 0 0 8px;
+    }
+    body.phone-mode .header-left { flex: 1 1 auto; min-width: 0; }
+    body.phone-mode .header h3 {
+      display: block; width: auto; max-width: 100%;
+      font-size: 15px; padding: 8px 12px; border-radius: 14px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;
+    }
+    body.phone-mode .h3-extra { display: none; }
+    body.phone-mode .ui-tools { width: auto; flex: 0 0 auto; gap: 6px; }
+    body.phone-mode .layout-btn .btn-txt,
+    body.phone-mode .clear-btn .btn-txt,
+    body.phone-mode .english-mode-btn .btn-txt,
+    body.phone-mode .send-btn .btn-txt { display: none; }
+    body.phone-mode .send-btn .btn-ico,
+    body.phone-mode .layout-btn .btn-ico,
+    body.phone-mode .clear-btn .btn-ico,
+    body.phone-mode .english-mode-btn .btn-ico { display: inline; }
+    body.phone-mode .layout-btn, body.phone-mode .clear-btn, body.phone-mode .english-mode-btn {
+      min-height: 38px; height: 38px; width: 38px; padding: 0; border-radius: 50%; font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    body.phone-mode .gear-btn { width: 38px; height: 38px; }
+    body.phone-mode .settings-panel {
+      top: auto; left: 0; right: 0; bottom: 0; width: 100%;
+      max-height: min(76dvh, 620px);
+      border-radius: 26px 26px 0 0; border-left: 0; border-right: 0; border-bottom: 0;
+      padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+    }
+    body.phone-mode .chat-box { width: 100%; margin: 0 0 8px; padding: 6px 0 10px; }
+    body.phone-mode .msg-container { max-width: 100%; }
+    body.phone-mode .msg { max-width: 96%; padding: 12px 14px; font-size: 15px; border-radius: 18px; }
+    body.phone-mode .user { max-width: 90%; }
+    body.phone-mode .response-meta { width: 100%; }
+    body.phone-mode .learning-tools, body.phone-mode .english-tools {
+      width: 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+      -webkit-overflow-scrolling: touch; padding-bottom: 2px;
+    }
+    body.phone-mode .learning-tools::-webkit-scrollbar, body.phone-mode .english-tools::-webkit-scrollbar { display: none; }
+    body.phone-mode .learning-tool-btn { flex: 0 0 auto; height: 38px; font-size: 13px; }
+    body.phone-mode .input-wrapper { width: 100%; gap: 8px; }
+    body.phone-mode .input-row { min-height: 60px; gap: 8px; padding: 7px 8px; border-radius: 28px; }
+    body.phone-mode .upload-btn, body.phone-mode .voice-btn { width: 44px; height: 44px; flex-basis: 44px; font-size: 20px; }
+    body.phone-mode input[type="text"] { font-size: 16px; min-height: 46px; padding: 12px 12px; }
+    body.phone-mode button.send-btn {
+      width: 46px; height: 46px; min-height: 46px; padding: 0; flex: 0 0 46px;
+      border-radius: 50%; font-size: 19px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
   </style>
 </head>
 <body>
@@ -835,14 +915,14 @@
 <div class="chat-card">
   <div class="header">
     <div class="header-left">
-      <h3>🧠 Trợ Lý AI Giáo Dục THPT</h3>
+      <h3>🧠 Trợ Lý AI<span class="h3-extra"> Giáo Dục THPT</span></h3>
     </div>
 
     <div class="ui-tools">
-      <button class="layout-btn" id="layoutToggle" onclick="toggleLayoutMode()" title="Chuyển bố cục Phone hoặc PC">📱 Phone</button>
-      <button class="english-mode-btn" id="englishModeBtn" onclick="toggleEnglishMode()" title="Chuyển sang không gian luyện tiếng Anh">🇬🇧 Mode English</button>
+      <button class="layout-btn" id="layoutToggle" onclick="toggleLayoutMode()" title="Chuyển bố cục Phone hoặc PC"><span class="btn-ico" aria-hidden="true">📱</span><span class="btn-txt">Phone</span></button>
+      <button class="english-mode-btn" id="englishModeBtn" onclick="toggleEnglishMode()" title="Chuyển sang không gian luyện tiếng Anh"><span class="btn-ico" aria-hidden="true">🇬🇧</span><span class="btn-txt">Mode English</span></button>
       <button class="gear-btn" onclick="toggleSettings()" title="Cài đặt giao diện">⚙️</button>
-      <button class="clear-btn" onclick="clearChat()">🗑️ Xóa Chat</button>
+      <button class="clear-btn" onclick="clearChat()" title="Xóa toàn bộ chat"><span class="btn-ico" aria-hidden="true">🗑️</span><span class="btn-txt">Xóa Chat</span></button>
     </div>
   </div>
 
@@ -934,6 +1014,7 @@
   </div>
 
   <div class="input-wrapper">
+    <div class="mode-ribbon" id="modeRibbon" hidden></div>
     <div class="learning-tools" aria-label="Công cụ học tập">
       <button class="learning-tool-btn" id="diagnoseBtn" onclick="startErrorDiagnosis()">🩺 Mình sai ở đâu?</button>
       <button class="learning-tool-btn" id="arenaBtn" onclick="toggleArenaMode()">🏆 Luyện thi HSG</button>
@@ -952,8 +1033,8 @@
         <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
       </label>
       <button class="voice-btn" id="voiceModeBtn" onclick="toggleVoiceMode()" title="Bấm để nói bằng tiếng Anh" aria-label="Bật micro">🎙️</button>
-      <input type="text" id="userInput" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter') sendMessage()">
-      <button class="send-btn" onclick="sendMessage()">Gửi</button>
+      <input type="text" id="userInput" placeholder="Nhập câu hỏi..." enterkeyhint="send" autocomplete="off" onkeydown="handleComposerKey(event)">
+      <button class="send-btn" id="sendBtn" type="button" onclick="sendMessage()" aria-label="Gửi câu hỏi"><span class="btn-txt">Gửi</span><span class="btn-ico" aria-hidden="true">➤</span></button>
     </div>
   </div>
 </div>
@@ -974,23 +1055,17 @@
   const GEMINI_TALKING_MODEL = GEMINI_TALKING_MODELS[0];
   const GEMINI_STUDY_MODEL = GEMINI_STUDY_MODELS[0];
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-  const MANIM_SYSTEM_PROMPT = `
+  const DIAGRAM_SYSTEM_PROMPT = `
 **System Prompt:**
-Bạn là một trợ lý giáo dục Toán/Lý trực quan theo phong cách 3Blue1Brown.
+Bạn là trợ lý giáo dục Toán/Lý trực quan theo phong cách 3Blue1Brown.
 
 **QUY TẮC BẮT BUỘC:**
-
-1. Trả lời bài giảng bằng văn bản Markdown ngắn gọn, dễ hiểu.
-2. Nếu có mô phỏng, BẮT BUỘC tạo 1 đoạn code Python Manim (Manim Community) và đặt duy nhất trong cặp thẻ:
-<manim_code>
-from manim import *
-class DynamicScene(Scene):
-    def construct(self):
-        # Code animation ở đây
-</manim_code>
-3. Tên class chính BẮT BUỘC là DynamicScene.
-4. KHÔNG viết bất kỳ dòng code Python nào ra ngoài cặp thẻ <manim_code>.
+1. Trả lời bài giảng bằng Markdown ngắn gọn, dễ hiểu.
+2. KHÔNG viết code Python, Manim hay bất kỳ đoạn mã mô phỏng nào trong câu trả lời; hệ thống tự dựng animation bằng engine riêng.
+3. Nếu (và chỉ nếu) chuyển động, đồ thị, hình học hay mô phỏng vật lý giúp người học hiểu bản chất hơn, thêm đúng marker nội bộ [[DRAW_DIAGRAM]] ở dòng cuối câu trả lời. Marker bị ẩn với người học, không được nhắc tới hay giải thích.
+4. Không thêm marker khi câu trả lời chỉ cần chữ.
 `;
+
   // SYSTEM PROMPT BẮT BỤC DÙNG DẤU $ CHO CÔNG THỨC TOÁN
   const PROMPT_STUDENT = `
 Bạn là Trợ lý Học tập AI Sư phạm dành cho học sinh THPT.
@@ -1005,7 +1080,11 @@ Bạn là Trợ lý Học tập AI Sư phạm dành cho học sinh THPT.
 9. KIỂM CHỨNG: Với bài tính, hãy kiểm tra bằng cách thay ngược kết quả, xét điều kiện xác định và đơn vị nếu có. Nếu có nhiều cách giải, ưu tiên cách ngắn và chắc nhất, có thể nêu cách thứ hai khi nó giúp hiểu bản chất.
 10. PHÂN LOẠI: Tự nhận diện câu hỏi là kiến thức, bài tính, phân tích ảnh, sửa lỗi, khái niệm hay lập kế hoạch học tập để chọn cách trả lời tương ứng.
 11. ĐỘ TIN CẬY: Nếu đề thiếu dữ kiện, ảnh không rõ hoặc có nhiều cách hiểu, phải nói chính xác điểm chưa chắc và hỏi lại. Tuyệt đối không tự bịa số liệu, công thức, nguồn, định lý hoặc đáp án.
-${MANIM_SYSTEM_PROMPT}
+12. VÀO THẲNG VẤN ĐỀ: Không chép lại đề, không chào hỏi dài dòng, không "như đã nói ở trên", không xin lỗi. Câu mở đầu tối đa 1 dòng nêu hướng làm. Mỗi đoạn văn tối đa 3 dòng; danh sách chỉ dùng khi thật sự cần liệt kê và tối đa 1 cấp thụt lề (điện thoại đọc khó).
+13. CÔNG THỨC DỄ ĐỌC: Công thức quan trọng đặt một dòng riêng dạng $$...$$, không nhúng công thức dài giữa câu văn. Số có đơn vị luôn kèm đơn vị ở kết quả. Không dùng bảng markdown quá 4 cột.
+14. KẾT LUẬN RÕ RÀNG: Kết thúc bằng đúng một dòng "**Đáp số:** ..." (hoặc "**Kết luận:** ...") ghi kết quả cuối kèm đơn vị và điều kiện nếu có. Bài nhiều phần phải trả lời đủ và gắn nhãn (a), (b), (c) cho từng phần.
+15. TỰ THỬ LẠI TRƯỚC KHI HIỆN KẾT QUẢ: chọn một phép thử phù hợp (thế kết quả vào phương trình, kiểm thứ nguyên/đơn vị, xét trường hợp đặc biệt hoặc miền giá trị). Nếu phép thử không đạt, im lặng làm lại và chỉ trình bày lời giải đã đúng; không đưa đáp số rồi đính chính.
+${DIAGRAM_SYSTEM_PROMPT}
 `;
 
   const PROMPT_TEACHER = `
@@ -1014,7 +1093,7 @@ Bạn là Trợ lý Sư phạm Cao cấp hỗ trợ Giáo viên THPT.
 2. NHIỆM VỤ CHÍNH: Xây dựng Giáo án, Kế hoạch bài dạy (KHBD), Đề thi phân hóa 4 mức độ.
 3. ĐỊNH DẠNG CÔNG THỨC TOÁN: Sử dụng dấu $ công thức $ hoặc $$ công thức $$. KHÔNG DÙNG \\( \\) HOẶC \\[ \\]. Trong công thức không dùng dấu chấm phẩy; số thập phân viết dạng $9{,}11$, không dùng $9.11$.
 4. Với nội dung chuyên môn, phân loại nhiệm vụ trước khi làm, kiểm tra dữ kiện, điều kiện, đơn vị và tính nhất quán của kết quả. Không khẳng định chắc chắn khi tài liệu đầu vào chưa đủ rõ.
-${MANIM_SYSTEM_PROMPT}
+${DIAGRAM_SYSTEM_PROMPT}
 `;
 
   const PROMPT_TALKSHOW = `
@@ -1047,6 +1126,8 @@ Bạn là 1 người bạn thân, luôn luôn lắng nghe, đồng cảm và chi
   let voiceModeEnabled = false;
   let speechRecognition = null;
   let voiceRestartTimer = null;
+  let voiceTranscript = "";
+  let voiceInterimTranscript = "";
   let microphonePermissionStatus = localStorage.getItem("english-microphone-permission") || "unknown";
   let speechOutputEnabled = true;
   let speechOutputToken = 0;
@@ -1171,10 +1252,19 @@ Bạn là 1 người bạn thân, luôn luôn lắng nghe, đồng cảm và chi
     localStorage.setItem("ai-accent", color);
   }
 
+  function isTouchDevice() {
+    const coarsePointer = window.matchMedia?.("(pointer: coarse)").matches === true;
+    const smallScreen = Math.min(window.innerWidth, window.innerHeight) <= 820;
+    return coarsePointer || (navigator.maxTouchPoints > 0 && smallScreen);
+  }
+
   function setLayoutMode(mode) {
     const isPhone = mode === "phone";
     document.body.classList.toggle("phone-mode", isPhone);
-    document.getElementById("layoutToggle").textContent = isPhone ? "🖥️ PC" : "📱 Phone";
+    const toggle = document.getElementById("layoutToggle");
+    toggle.querySelector(".btn-ico").textContent = isPhone ? "🖥️" : "📱";
+    toggle.querySelector(".btn-txt").textContent = isPhone ? "PC" : "Phone";
+    toggle.title = isPhone ? "Chuyển sang bố cục PC" : "Chuyển sang bố cục điện thoại";
     localStorage.setItem("ai-layout", mode);
   }
 
@@ -1184,11 +1274,32 @@ Bạn là 1 người bạn thân, luôn luôn lắng nghe, đồng cảm và chi
 
   setUiTheme(localStorage.getItem("ai-theme") || "light");
   setUiAccent(localStorage.getItem("ai-accent") || "#5b7cff");
-  setLayoutMode(localStorage.getItem("ai-layout") || "pc");
+  setLayoutMode(localStorage.getItem("ai-layout") || (isTouchDevice() ? "phone" : "pc"));
   setupGlassSelects();
   setupImageDropAndPaste();
   setGlassStrength(localStorage.getItem("ai-glass-strength") ?? 58);
   loadEnglishVoices();
+  setupKeyboardAwareLayout();
+
+  // Bàn phím mobile: co khung chat theo vùng nhìn thấy thật (kiểu app ChatGPT/Gemini)
+  function setupKeyboardAwareLayout() {
+    const viewport = window.visualViewport;
+    if (viewport) {
+      const applyViewportHeight = () => {
+        document.documentElement.style.setProperty("--vvh", `${viewport.height}px`);
+      };
+      viewport.addEventListener("resize", applyViewportHeight);
+      viewport.addEventListener("scroll", applyViewportHeight);
+      applyViewportHeight();
+    }
+    document.getElementById("userInput").addEventListener("focus", () => {
+      window.setTimeout(() => {
+        document.querySelector(".input-row")?.scrollIntoView({ block: "end", behavior: "smooth" });
+        const chatBox = document.getElementById("chatBox");
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, 250);
+    });
+  }
 
   function getHistoryKey() {
     return activeSpace === "english" ? "english" : "school";
@@ -1231,7 +1342,7 @@ Bạn là 1 người bạn thân, luôn luôn lắng nghe, đồng cảm và chi
       const className = message.role === "user" ? "user" : "bot";
       const content = className === "user"
         ? escapeHtml(text)
-        : renderAnimationInChat(marked.parse(fixLatexFormat(stripManimCode(text))));
+        : renderAnimationInChat(marked.parse(fixLatexFormat(stripDiagramCode(text))));
       document.getElementById("msgContainer").innerHTML += `<div class="msg ${className}">${content}</div>`;
     });
   }
@@ -1338,26 +1449,28 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
       activePrompt += `\n[ƯU TIÊN ĐÃ HỌC TỪ PHẢN HỒI TRƯỚC]: ${learningPreferences.detail}`;
     }
     activePrompt += getLearnerContext();
-    if (mode !== "talkshow") activePrompt += MANIM_SYSTEM_PROMPT;
+    if (mode !== "talkshow") activePrompt += DIAGRAM_SYSTEM_PROMPT;
     activePrompt += `
-  [QUY TẮC MINH HỌA]: Tự đánh giá liệu chuyển động, đồ thị, hình học, mô hình vật lý, quá trình hóa học hoặc biến đổi theo thời gian có giúp người học hiểu bản chất hơn không. Nếu có, bắt buộc thêm đúng marker [[DRAW_DIAGRAM]] ở cuối câu trả lời để hệ thống dựng animation Manim. Marker này là lệnh nội bộ và sẽ được ẩn khỏi người học. Không thêm marker khi hình/animation không mang thêm giá trị học tập.`;
+  [QUY TẮC MINH HỌA]: Tự đánh giá liệu chuyển động, đồ thị, hình học, mô hình vật lý, quá trình hóa học hoặc biến đổi theo thời gian có giúp người học hiểu bản chất hơn không. Nếu có, bắt buộc thêm đúng marker [[DRAW_DIAGRAM]] ở cuối câu trả lời để hệ thống dựng animation ngay trong trình duyệt. Marker này là lệnh nội bộ và sẽ được ẩn khỏi người học. Không thêm marker khi hình/animation không mang thêm giá trị học tập.`;
     if (learningMode === "diagnose") {
       activePrompt += `
-[CHẾ ĐỘ MÌNH SAI Ở ĐÂU - ƯU TIÊN CAO NHẤT]: Tập trung vào chẩn đoán lỗi hoặc đưa ra tất cả các lỗi mà số đông người học hay bị mắc, không biến câu trả lời thành lời giải bài mới. Đọc chính xác câu hỏi, bài làm, ảnh hoặc bước người dùng đưa ra.
-- Tóm tắt ngắn vấn đề và xác định bước đầu tiên còn đúng.
-- Liệt kê các lỗi sai phổ biến nhất liên quan trực tiếp đến vấn đề, ưu tiên lỗi có khả năng xảy ra trong dữ liệu người dùng. Với mỗi lỗi, ghi dấu hiệu nhận biết, vì sao sai về bản chất, một ví dụ hoặc phản ví dụ ngắn, và cách tự kiểm tra.
-- Phân biệt lỗi chắc chắn thấy trong bài làm với lỗi chỉ là khả năng thường gặp. Không gán lỗi nếu ảnh hoặc dữ kiện chưa đủ rõ.
-- Nếu có lỗi cụ thể, chỉ ra đúng bước sai đầu tiên, giải thích chi tiết và sửa lại bước đó. Nói rõ lỗi này làm các bước sau sai như thế nào.
-- Kết thúc bằng bảng kiểm 3-5 mục để người học tự rà lại và một câu hỏi ngắn yêu cầu họ sửa bước sai. Chỉ đưa lời giải hoàn chỉnh nếu người dùng yêu cầu rõ.
-- Nếu ảnh không đủ rõ, nói chính xác phần cần chụp lại và gắn nhãn "có thể gặp" cho các lỗi giả thuyết.`;
+[CHẾ ĐỘ MÌNH SAI Ở ĐÂU - ƯU TIÊN CAO NHẤT]: Đây là chế độ CHỮA BÀI của chính người học, không phải chế độ giải lại bài mới. Tuyệt đối không trình bày lời giải hoàn chỉnh khi chưa chỉ ra lỗi.
+- BƯỚC 1 (bắt buộc): chép lại trung thực bài làm của người học thành danh sách đánh số "Bước 1, Bước 2, ...". Với ảnh, đọc đúng chữ tay và ký hiệu của các em, ghi rõ dòng nào không đọc được. Không tự thêm bước các em chưa viết.
+- BƯỚC 2: nêu ranh giới đúng/sai — "Bước k là bước còn đúng cuối cùng", giải thích ngắn vì sao nó còn đúng.
+- BƯỚC 3: ở bước sai đầu tiên, chỉ ra đúng một nhóm lỗi: (a) sai khái niệm/định lí, (b) sai điều kiện áp dụng, (c) sai biến đổi đại số, (d) sai đơn vị/đổi hệ, (e) sai dấu hoặc miền giá trị, (f) đọc/ghi đề thiếu dữ kiện, (g) thiếu trường hợp. Với mỗi lỗi ghi: dấu hiệu nhận biết, bản chất bị sai, một phản ví dụ hoặc phép thử nhanh phát hiện ra lỗi, và hậu quả lan tới bước nào phía sau.
+- BƯỚC 4: sửa đúng một bước đó rồi dừng lại, yêu cầu người học tự viết tiếp bước kế tiếp. Chỉ mở rộng sửa nhiều bước nếu người học đòi.
+- BƯỚC 5: kết thúc bằng bảng kiểm 3-5 mục "tự rà lại trước khi thi" và một câu hỏi ngắn bắt người học tự sửa.
+- Nếu bài làm có chỗ nhìn không rõ: nói chính xác cần chụp lại góc nào, và gắn nhãn "lỗi có thể gặp" cho suy đoán. Nếu người học chưa gửi bài làm mà chỉ hỏi chung: chuyển sang mode "lỗi số đông hay mắc" của dạng bài đó, nhưng phải nói rõ là chưa thấy bài làm cụ thể.`;
     } else if (learningMode === "arena") {
       activePrompt += `
-[CHẾ ĐỘ LUYỆN THI HỌC SINH GIỎI - ƯU TIÊN CAO NHẤT]: Đây là mode luyện tư duy cho bài khó, không phải mode trả lời mẹo hoặc giải tắt.
+[CHẾ ĐỘ LUYỆN THI HỌC SINH GIỎI - ƯU TIÊN CAO NHẤT]: Bối cảnh phiên luyện: môn ${arenaSession.subject}, độ khó "${arenaSession.level}", đề số ${arenaSession.problems}, thời gian người học đã dùng ${formatArenaTime(arenaSession.seconds)}. Đây là mode luyện tư duy cho bài khó, không phải mode trả lời mẹo hoặc giải tắt.
 - Phân tích đề trước khi biến đổi: mục tiêu, dữ kiện mạnh, điều kiện ẩn, cấu trúc và điểm khó thật sự.
-- Phải tìm ra ít nhất một chiến lược khó phù hợp với bài, ưu tiên các chiến lược HSG đã học, sự sáng tạo của Toán học phải được ưu tiên. Nếu có hai chiến lược khó, hãy so sánh và chỉ triển khai một chiến lược trong lượt hiện tại.
-- Tìm và so sánh các ý tưởng nâng cao phù hợp như bất biến, đối xứng, cực trị, đơn điệu, đánh giá chặn, phản chứng, quy nạp, đổi biến, phản ví dụ, song ánh, tọa độ hóa hoặc biến đổi hình học.
+- Phải tìm ra ít nhất một chiến lược khó phù hợp với bài, ưu tiên các chiến lược HSG đã học, sự sáng tạo của ${arenaSession.subject} phải được ưu tiên. Nếu có hai chiến lược khó, hãy so sánh và chỉ triển khai một chiến lược trong lượt hiện tại.
+- Tìm và so sánh các ý tưởng nâng cao phù hợp như bất biến, đối xứng, cực trị, đơn điệu, đánh giá chặn, phản chứng, quy nạp, đổi biến, phản ví dụ, song ánh, tọa độ hóa, dựng hình phụ, hoặc (với Hóa) bảo toàn electron - bảo toàn nguyên tố - cân bằng theo hệ số.
 - Giải thích vì sao một chiến lược phù hợp và vì sao hướng tự nhiên khác có thể bế tắc.
-- Mỗi lượt chỉ giao một checkpoint có thể kiểm chứng và một gợi ý đủ sắc để người học tự triển khai. Khi người học trả lời, phải kiểm tra từng điều kiện và cầu nối logic.`;
+- Mỗi lượt chỉ giao một checkpoint có thể kiểm chứng và một gợi ý đủ sắc để người học tự triển khai. Khi người học trả lời, phải kiểm tra từng điều kiện và cầu nối logic.
+- Khi người học nộp một bước giải hoặc checkpoint: mở đầu phần nhận xét bằng đúng một dòng "Điểm checkpoint: X/10" (X là số nguyên 0-10, trừ điểm đúng vào bản chất lỗi), rồi mới nhận xét và giao bước tiếp theo.
+- Mức độ khó phải đúng với "${arenaSession.level}": nếu đề đưa ra quá dễ so với mức đó, tự nâng mức khó ở đề sau.`;
     }
     activePrompt += `
   [BỘ KIỂM SOÁT CHẤT LƯỢNG BẮT BUỘC]:
@@ -1366,7 +1479,11 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
   - Nếu là câu hỏi khái niệm: Nêu ý chính, giải thích trực giác, ví dụ, rồi chỉ ra giới hạn hoặc trường hợp dễ nhầm.
   - Nếu sửa bài: Tìm bước sai đầu tiên, giải thích nguyên nhân, sau đó mới đưa cách sửa.
   - Nếu thiếu dữ kiện: dừng ở phần có thể kết luận và hỏi đúng thông tin còn thiếu; không đoán.
-  - Cuối câu trả lời, tự rà soát độ đúng, điều kiện áp dụng và sự phù hợp với trình độ người học trước khi gửi.
+  - Mỗi khẳng định định lượng phải có nguồn từ đề, từ sách giáo khoa hoặc từ bước biến đổi hiển thị ở trên; không đưa số "chừng khoảng" không căn cứ.
+  - Ưu tiên lập luận liền mạch, ngắn hơn nhưng đủ ý; xóa mọi câu lặp lại lời hỏi, câu cảm thán hoặc câu dẫn không mang thông tin.
+  - Cuối câu trả lời, tự rà soát độ đúng, điều kiện áp dụng, đơn vị và sự phù hợp với trình độ người học trước khi gửi.
+  - Ưu tiên cách giải chuẩn chương trình THPT; nếu dùng kiến thức ngoài chương trình, ghi rõ nhãn "nâng cao ngoài SGK".
+  - Kết quả cuối cùng phải nằm trong một dòng "**Đáp số:**" hoặc "**Kết luận:**" để người học tìm lại dễ trên điện thoại.
   `;
     if (learningMode === "arena") {
       activePrompt += `
@@ -1377,6 +1494,8 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
 - Hãy nêu: (1) nhận xét hướng tư duy hoặc dữ kiện đáng chú ý, (2) cấu trúc/chiến lược khó phù hợp, (3) đúng MỘT checkpoint, (4) đúng MỘT gợi ý đủ sắc, (5) yêu cầu người học tự làm bước đó.
 - Kết thúc bằng một câu hỏi yêu cầu người học trả lời checkpoint. Sau đó dừng, không đưa thêm gợi ý dự phòng.
 - Nếu người học đã trả lời checkpoint trước đó, chỉ đánh giá bước vừa trả lời và đưa checkpoint kế tiếp, vẫn không nhảy đến đáp án cuối.
+- NGOẠI LỆ DUY NHẤT: khi tin nhắn của người học có chứa "xin xem lời giải", được phép trình bày lời giải đầy đủ theo đúng bốn phần họ yêu cầu (lời giải -> bước quyết định họ hay bỏ sót -> 2 kỹ năng cần luyện -> 1 bài tương tự nhẹ hơn). Sau đó vẫn tiếp tục giữ luật không giải trước cho đề mới.
+- Khi người học hỏi "gợi ý": chỉ nêu hướng, tuyệt đối không biến đổi thay họ.
 `;
     } else {
       activePrompt += `
@@ -1390,28 +1509,204 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
     return activePrompt;
   }
 
-  function startErrorDiagnosis() {
-    learningMode = "diagnose";
-    saveLearnerProfile("diagnosis", "Người học muốn tìm bước sai và nguyên nhân tư duy.");
-    document.getElementById("diagnoseBtn").classList.add("active");
-    document.getElementById("arenaBtn").classList.remove("active");
-    const inputField = document.getElementById("userInput");
-    if (selectedImageBase64) {
-      sendMessage("Mình sai ở đâu trong bài làm này? Hãy bắt mạch lỗi tư duy, đừng đưa ngay đáp án.");
+  const ARENA_SUBJECTS = ["Toán", "Vật lí", "Hóa học"];
+  const ARENA_LEVELS = ["Vận dụng", "Vận dụng cao", "HSG vòng tỉnh", "HSG vòng quốc gia"];
+  let arenaSession = { subject: "Toán", level: "Vận dụng cao", startedAt: 0, seconds: 0, timerId: null, problems: 0, scores: [] };
+
+  function ribbonNode(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function formatArenaTime(totalSeconds) {
+    const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+    const seconds = String(totalSeconds % 60).padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  }
+
+  function stopArenaTimer() {
+    if (arenaSession.timerId) window.clearInterval(arenaSession.timerId);
+    arenaSession.timerId = null;
+  }
+
+  function startArenaTimer() {
+    stopArenaTimer();
+    arenaSession.startedAt = Date.now();
+    arenaSession.seconds = 0;
+    arenaSession.timerId = window.setInterval(() => {
+      arenaSession.seconds = Math.round((Date.now() - arenaSession.startedAt) / 1000);
+      const chip = document.getElementById("arenaTimerChip");
+      if (chip) chip.textContent = `⏱ ${formatArenaTime(arenaSession.seconds)}`;
+    }, 1000);
+  }
+
+  function arenaAverageLabel() {
+    if (!arenaSession.scores.length) return "Điểm: chưa có checkpoint";
+    const avg = arenaSession.scores.reduce((sum, value) => sum + value, 0) / arenaSession.scores.length;
+    return `Điểm TB: ${avg.toFixed(1)}/10 · ${arenaSession.scores.length} checkpoint`;
+  }
+
+  function renderModeRibbon() {
+    const ribbon = document.getElementById("modeRibbon");
+    if (!ribbon) return;
+    ribbon.replaceChildren();
+    if (learningMode === "normal") { ribbon.hidden = true; return; }
+    ribbon.hidden = false;
+
+    if (learningMode === "diagnose") {
+      ribbon.append(ribbonNode("strong", null, "🩺 Chẩn đoán lỗi bài làm"));
+      ribbon.append(ribbonNode("span", "ribbon-hint", selectedImageBase64
+        ? "Tớ sẽ đọc từng bước cậu đã làm, chỉ ra bước sai đầu tiên và vì sao sai — chưa đưa lời giải đầy đủ."
+        : "Gắn ảnh bài làm (chép rõ từng bước) hoặc gõ lại các bước cậu đã làm. Không có bài làm thì tớ chỉ nêu lỗi thường gặp."));
+      ribbon.append(ribbonNode("span", "ribbon-spacer"));
+      const pick = ribbonNode("button", "ribbon-btn primary", "📷 Chọn ảnh bài làm");
+      pick.type = "button";
+      pick.onclick = () => document.getElementById("imageInput").click();
+      ribbon.append(pick);
+      const off = ribbonNode("button", "ribbon-btn", "Tắt");
+      off.type = "button";
+      off.onclick = () => setLearningMode("normal");
+      ribbon.append(off);
       return;
     }
-    inputField.placeholder = "Chụp ảnh bài làm dở dang hoặc mô tả bước cậu nghi là sai...";
-    inputField.focus();
+
+    ribbon.append(ribbonNode("strong", null, "🏆 Luyện thi HSG"));
+    const subject = ribbonNode("select", "ribbon-select");
+    subject.setAttribute("aria-label", "Môn luyện");
+    ARENA_SUBJECTS.forEach((name) => {
+      const opt = ribbonNode("option", null, name);
+      opt.value = name;
+      opt.selected = name === arenaSession.subject;
+      subject.append(opt);
+    });
+    subject.onchange = () => { arenaSession.subject = subject.value; };
+    ribbon.append(subject);
+
+    const level = ribbonNode("select", "ribbon-select");
+    level.setAttribute("aria-label", "Độ khó");
+    ARENA_LEVELS.forEach((name) => {
+      const opt = ribbonNode("option", null, name);
+      opt.value = name;
+      opt.selected = name === arenaSession.level;
+      level.append(opt);
+    });
+    level.onchange = () => { arenaSession.level = level.value; };
+    ribbon.append(level);
+
+    const timerChip = ribbonNode("span", "ribbon-chip", `⏱ ${formatArenaTime(arenaSession.seconds)}`);
+    timerChip.id = "arenaTimerChip";
+    ribbon.append(timerChip);
+    ribbon.append(ribbonNode("span", "ribbon-chip", arenaAverageLabel()));
+    ribbon.append(ribbonNode("span", "ribbon-spacer"));
+
+    const deal = ribbonNode("button", "ribbon-btn primary", arenaSession.problems ? "🎲 Đề mới" : "🎲 Ra đề");
+    deal.type = "button";
+    deal.onclick = requestArenaProblem;
+    ribbon.append(deal);
+
+    const hint = ribbonNode("button", "ribbon-btn", "💡 Gợi ý");
+    hint.type = "button";
+    hint.disabled = !arenaSession.timerId;
+    hint.onclick = requestArenaHint;
+    ribbon.append(hint);
+
+    const reveal = ribbonNode("button", "ribbon-btn", "✅ Xem lời giải");
+    reveal.type = "button";
+    reveal.disabled = !arenaSession.timerId;
+    reveal.onclick = requestArenaReveal;
+    ribbon.append(reveal);
+
+    const off = ribbonNode("button", "ribbon-btn", "Tắt");
+    off.type = "button";
+    off.onclick = () => setLearningMode("normal");
+    ribbon.append(off);
+  }
+
+  function setLearningMode(mode) {
+    if (learningMode === "arena" && mode !== "arena") {
+      stopArenaTimer();
+      arenaSession.seconds = 0;
+      arenaSession.problems = 0;
+      arenaSession.scores = [];
+    }
+    learningMode = mode;
+    document.getElementById("diagnoseBtn").classList.toggle("active", mode === "diagnose");
+    document.getElementById("arenaBtn").classList.toggle("active", mode === "arena");
+    document.getElementById("userInput").placeholder = mode === "diagnose"
+      ? "Dán lại từng bước cậu đã làm hoặc gắn ảnh bài làm..."
+      : mode === "arena"
+        ? "Bấm 🎲 Ra đề, hoặc gõ bài cậu muốn tự giải..."
+        : "Nhập câu hỏi...";
+    renderModeRibbon();
+  }
+
+  function requestArenaProblem() {
+    if (isSendingMessage) { nudgeComposer(); return; }
+    arenaSession.problems += 1;
+    startArenaTimer();
+    renderModeRibbon();
+    sendMessage(`[Luyện thi HSG · đề ${arenaSession.problems}] Ra cho tớ ĐÚNG một bài ${arenaSession.subject} bồi dưỡng học sinh giỏi cấp THPT, độ khó "${arenaSession.level}". Chỉ ghi đề bài cùng dữ kiện, chưa gợi ý, chưa lời giải, chưa đáp số. Cuối đề thêm dòng "Thời gian tự làm gợi ý: ... phút" và câu hỏi "Điểm then chốt của bài này nằm ở đâu?".`);
+  }
+
+  function requestArenaHint() {
+    if (isSendingMessage) { nudgeComposer(); return; }
+    sendMessage("Tớ đang bí ở đề hiện tại. Cho tớ ĐÚNG một gợi ý: nêu hướng khai thác (chiến lược, đối tượng cần đặt ẩn/bất biến) nhưng KHÔNG biến đổi tiếp, KHÔNG đưa đáp số. Kết thúc bằng câu hỏi buộc tớ tự viết bước tiếp theo.");
+  }
+
+  function requestArenaReveal() {
+    if (isSendingMessage) { nudgeComposer(); return; }
+    stopArenaTimer();
+    const spent = formatArenaTime(arenaSession.seconds);
+    renderModeRibbon();
+    sendMessage(`Tớ xin xem lời giải đề hiện tại (tớ đã tự làm ${spent}). Hãy: (1) trình bày lời giải đầy đủ, (2) chỉ rõ bước quyết định mà tớ có thể đã bỏ sót, (3) chốt 2 kỹ năng tớ cần luyện từ bài này, (4) ra 1 bài tương tự nhưng nhẹ hơn để tớ tự làm lại.`);
+  }
+
+  function startErrorDiagnosis() {
+    if (learningMode === "diagnose") { setLearningMode("normal"); return; }
+    saveLearnerProfile("diagnosis", "Người học muốn tìm bước sai và nguyên nhân tư duy.");
+    setLearningMode("diagnose");
+    if (selectedImageBase64) {
+      sendMessage("Mình sai ở đâu trong bài làm này? Đọc lại từng bước tớ đã viết, chỉ ra bước sai đầu tiên và vì sao sai về bản chất, chưa đưa lời giải đầy đủ.");
+      return;
+    }
+    const upload = document.querySelector(".upload-btn");
+    if (upload) {
+      upload.classList.remove("pulse");
+      void upload.offsetWidth;
+      upload.classList.add("pulse");
+    }
+    document.getElementById("userInput").focus();
   }
 
   function toggleArenaMode() {
-    learningMode = learningMode === "arena" ? "normal" : "arena";
+    setLearningMode(learningMode === "arena" ? "normal" : "arena");
     if (learningMode === "arena") saveLearnerProfile("arena", "Người học bật chế độ luyện thi HSG.");
-    document.getElementById("arenaBtn").classList.toggle("active", learningMode === "arena");
-    document.getElementById("diagnoseBtn").classList.toggle("active", learningMode === "diagnose");
-    document.getElementById("userInput").placeholder = learningMode === "arena"
-      ? "Nhập bài để bắt đầu thử thách..."
-      : "Nhập câu hỏi...";
+  }
+
+  function setSendBusy(busy) {
+    const btn = document.getElementById("sendBtn");
+    if (!btn) return;
+    btn.classList.toggle("busy", busy);
+    btn.setAttribute("aria-busy", busy ? "true" : "false");
+  }
+
+  function nudgeComposer() {
+    const row = document.getElementById("inputRow");
+    if (!row) return;
+    row.classList.remove("nudge");
+    void row.offsetWidth;
+    row.classList.add("nudge");
+    window.setTimeout(() => row.classList.remove("nudge"), 420);
+  }
+
+  // Enter trên điện thoại / bộ gõ tiếng Việt: chỉ gửi khi đã hoàn tất tổ hợp phím
+  function handleComposerKey(event) {
+    if (event.key !== "Enter") return;
+    if (event.isComposing || event.keyCode === 229) return;
+    event.preventDefault();
+    sendMessage();
   }
 
   async function sendMessage(overrideText = null) {
@@ -1419,11 +1714,12 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
     const msgContainer = document.getElementById("msgContainer");
     const chatBox = document.getElementById("chatBox");
     
-    if (isSendingMessage) return;
+    if (isSendingMessage) { nudgeComposer(); return; }
 
     const text = overrideText ? overrideText : inputField.value.trim();
-    if (!text && !selectedImageBase64) return;
+    if (!text && !selectedImageBase64) { nudgeComposer(); inputField.focus(); return; }
     isSendingMessage = true;
+    setSendBusy(true);
 
     const userParts = [];
     let userMsgHtml = "";
@@ -1479,6 +1775,7 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
       }
     } finally {
       isSendingMessage = false;
+      setSendBusy(false);
     }
 
     chatBox.scrollTop = chatBox.scrollHeight;
@@ -1561,12 +1858,16 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
         }
 
         const responseParts = data.candidates?.[0]?.content?.parts || [];
+        const finishReason = data.candidates?.[0]?.finishReason || "";
         const botReply = responseParts
           .map(part => typeof part.text === "string" ? part.text : "")
           .join("")
           .trim();
         if (botReply) {
-          renderBotResponse(loadingId, botReply, engineLabel, "engine-gemini");
+          const finishedText = finishReason === "MAX_TOKENS"
+            ? `${botReply}\n\n> ⏳ Câu trả lời dài nên bị cắt ở đây. Cậu gõ **"tiếp"** để tớ viết nốt phần còn lại.`
+            : botReply;
+          renderBotResponse(loadingId, finishedText, engineLabel, "engine-gemini");
           return true;
         }
       } catch (err) {
@@ -1579,12 +1880,19 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
   // HÀM RENDER ĐÃ ĐƯỢC FIX LỖI LATEX VÀ TRÌNH BÀY
   function renderBotResponse(elemId, replyText, engineName, badgeClass) {
     const botMsgElem = document.getElementById(elemId);
+    if (learningMode === "arena") {
+      const scoreMatch = replyText.match(/Điểm checkpoint:\s*(\d{1,2})\s*\/\s*10/i);
+      if (scoreMatch) {
+        arenaSession.scores.push(Math.min(10, Math.max(0, Number(scoreMatch[1]))));
+        renderModeRibbon();
+      }
+    }
     const responseTarget = document.getElementById(`${elemId}-group`)
       || botMsgElem.closest(".response-group")
       || botMsgElem;
     
     const drawMarkerFound = /\[\[DRAW_DIAGRAM\]\]/i.test(replyText);
-    const visibleReplyText = stripManimCode(replyText.replace(/\s*\[\[DRAW_DIAGRAM\]\]\s*/gi, "\n")).trim();
+    const visibleReplyText = stripDiagramCode(replyText.replace(/\s*\[\[DRAW_DIAGRAM\]\]\s*/gi, "\n")).trim();
 
     // 1. CHUẨN HÓA LATEX VỀ DẠNG $ VÀ $$
     const cleanedText = fixLatexFormat(visibleReplyText);
@@ -1664,8 +1972,9 @@ ${cleanCode}
     });
   }
 
-  function stripManimCode(text) {
+  function stripDiagramCode(text) {
     return String(text || "")
+      .replace(/<anim_code>[\s\S]*?<\/anim_code>/gi, "")
       .replace(/<manim_code>[\s\S]*?<\/manim_code>/gi, "")
       .replace(/```(?:python|py)\s*[\s\S]*?```/gi, "")
       .trim();
@@ -1673,6 +1982,1054 @@ ${cleanCode}
 
   function shouldDrawFromText(text) {
     return /vẽ|hình\s+minh\s+họa|sơ\s+đồ|đồ\s+thị/i.test(text || "");
+  }
+
+  // ==================== ANIM ENGINE: animation phong cách Manim/3Blue1Brown chạy ngay trong trang ====================
+  const ANIM_W = 720;
+  const ANIM_H = 405;
+  const ANIM_PAD = 48;
+  const ANIM_COLORS = ["#5b8cff", "#ff5b6e", "#3ddc97", "#ffb020", "#c084fc", "#38bdf8"];
+  const ANIM_MATH_FN = {
+    sin: Math.sin, cos: Math.cos, tan: Math.tan, asin: Math.asin, acos: Math.acos, atan: Math.atan,
+    atan2: Math.atan2, sinh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh, sqrt: Math.sqrt, cbrt: Math.cbrt,
+    abs: Math.abs, exp: Math.exp, ln: Math.log, log: Math.log10, log2: Math.log2, floor: Math.floor,
+    ceil: Math.ceil, round: Math.round, sign: Math.sign, min: Math.min, max: Math.max, pow: Math.pow
+  };
+
+  // Trình biên dịch biểu thức toán an toàn (không dùng eval): chỉ nhận số, x/t, +-*/^ (), hàm và hằng cho phép.
+  function compileMathExpr(expr, allowedVars) {
+    const src = String(expr).replace(/\s+/g, "");
+    const allowed = new Set(allowedVars);
+    if (!src) throw new Error(`Bieu thuc "${expr}" rong`);
+    let pos = 0;
+    const fail = (msg) => { throw new Error(`Bieu thuc "${expr}" ${msg}`); };
+
+    function parseAddSub() {
+      let left = parseMulDiv();
+      while (src[pos] === "+" || src[pos] === "-") {
+        const op = src[pos++];
+        const right = parseMulDiv();
+        const first = left;
+        left = op === "+" ? (v) => first(v) + right(v) : (v) => first(v) - right(v);
+      }
+      return left;
+    }
+    function parseMulDiv() {
+      let left = parseUnary();
+      for (;;) {
+        const ch = src[pos] || "";
+        if (ch === "*" || ch === "/") {
+          pos += 1;
+          const right = parseUnary();
+          const first = left;
+          left = ch === "*" ? (v) => first(v) * right(v) : (v) => first(v) / right(v);
+        } else if (ch === "(" || /^[A-Za-z_]$/.test(ch)) {
+          const right = parseUnary();
+          const first = left;
+          left = (v) => first(v) * right(v);
+        } else break;
+      }
+      return left;
+    }
+    function parseUnary() {
+      if (src[pos] === "-") { pos += 1; const inner = parseUnary(); return (v) => -inner(v); }
+      if (src[pos] === "+") { pos += 1; return parseUnary(); }
+      return parsePower();
+    }
+    function parsePower() {
+      const base = parseAtom();
+      if (src[pos] === "^") {
+        pos += 1;
+        const exponent = parseUnary();
+        return (v) => Math.pow(base(v), exponent(v));
+      }
+      return base;
+    }
+    function parseAtom() {
+      if (src[pos] === "(") {
+        pos += 1;
+        const inner = parseAddSub();
+        if (src[pos] !== ")") fail("thieu dong ngoac");
+        pos += 1;
+        return inner;
+      }
+      const num = /^\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/.exec(src.slice(pos));
+      if (num) { pos += num[0].length; const value = Number(num[0]); return () => value; }
+      const name = /^[A-Za-z_][A-Za-z_0-9]*/.exec(src.slice(pos));
+      if (name) {
+        const key = name[0].toLowerCase();
+        pos += name[0].length;
+        if (key === "pi") return () => Math.PI;
+        if (key === "tau") return () => Math.PI * 2;
+        if (key === "e") return () => Math.E;
+        if (allowed.has(key)) return (v) => v[key];
+        const fn = ANIM_MATH_FN[key];
+        if (fn) {
+          if (src[pos] !== "(") fail(`can "(" sau ${key}`);
+          pos += 1;
+          const args = [parseAddSub()];
+          while (src[pos] === ",") { pos += 1; args.push(parseAddSub()); }
+          if (src[pos] !== ")") fail(`thieu ")" cho ${key}`);
+          pos += 1;
+          return (v) => fn(...args.map((arg) => arg(v)));
+        }
+        fail(`khong ho tro ky hieu "${name[0]}"`);
+      }
+      fail("khong doc duoc bieu thuc");
+    }
+
+    const tree = parseAddSub();
+    if (pos < src.length) fail("con ky tu thua");
+    return tree;
+  }
+
+  function animNum(value, fallback, min, max) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return fallback;
+    return Math.min(max, Math.max(min, num));
+  }
+  function animPair(value) {
+    if (!Array.isArray(value) || value.length < 2) return null;
+    const a = Number(value[0]);
+    const b = Number(value[1]);
+    return Number.isFinite(a) && Number.isFinite(b) ? [a, b] : null;
+  }
+  function animColor(value, fallback) {
+    return /^#[0-9a-fA-F]{6}$/.test(String(value || "")) ? String(value) : fallback;
+  }
+  function animAxisLabel(value, index, key) {
+    const raw = String(value ?? "").trim();
+    if (!raw) throw new Error(`Buoc ${index + 1}: "axes" bat buoc co "${key}" la ten dai luong that (x, y, t, F, v, E, Q...).`);
+    const clean = raw.replace(/[^\x20-\x7E]/g, "").slice(0, 8).trim();
+    if (!clean) throw new Error(`Buoc ${index + 1}: "${key}" khong duoc dung tieng Viet co dau; hay dung ky hieu vat ly (t, x, F, v, E).`);
+    return clean;
+  }
+
+  function compileAnimFn(value, stepIndex, label) {
+    const text = String(value ?? "");
+    if (!text.trim()) throw new Error(`Buoc ${stepIndex + 1}: thieu "${label}".`);
+    if (text.length > 120) throw new Error(`Buoc ${stepIndex + 1}: "${label}" qua dai.`);
+    try {
+      return compileMathExpr(text, ["x", "t"]);
+    } catch (error) {
+      throw new Error(`Buoc ${stepIndex + 1}: ${error.message}`);
+    }
+  }
+
+  function normalizeAnimStep(step, index, ids) {
+    if (!step || typeof step !== "object") throw new Error(`Buoc ${index + 1}: khong phai object hop le.`);
+    const known = ["axes", "plot", "param", "tangent", "area", "segment", "arrow", "dot", "circle", "orbit", "polygon", "angle", "text", "move", "fade", "pulse", "trace", "wait"];
+    if (!known.includes(step.do)) throw new Error(`Buoc ${index + 1}: khong ho tro "do":"${String(step.do).slice(0, 20)}".`);
+    const copy = { ...step };
+    copy.do = step.do;
+    copy.id = typeof step.id === "string" ? step.id.slice(0, 16) : "";
+    if (copy.id) ids.add(copy.id);
+    copy.axes = typeof step.axes === "string" ? step.axes.slice(0, 16) : "";
+    copy.color = animColor(step.color, ANIM_COLORS[index % ANIM_COLORS.length]);
+
+    switch (step.do) {
+      case "axes": {
+        const x = animPair(step.x) || [-5, 5];
+        const y = animPair(step.y) || [-3.2, 3.2];
+        if (x[1] <= x[0] || y[1] <= y[0]) throw new Error(`Buoc ${index + 1}: "axes" can x=[min,max] va y=[min,max] voi max > min.`);
+        copy.x = [Math.max(-1000, x[0]), Math.min(1000, x[1])];
+        copy.y = [Math.max(-1000, y[0]), Math.min(1000, y[1])];
+        copy.xlabel = animAxisLabel(step.xlabel, index, "xlabel");
+        copy.ylabel = animAxisLabel(step.ylabel, index, "ylabel");
+        copy.equal = step.equal === true;
+        copy.t = animNum(step.t, 1.3, 0.3, 4);
+        break;
+      }
+      case "plot":
+        copy.fn = compileAnimFn(step.fn, index, "fn");
+        copy.width = animNum(step.width, 3, 1, 8);
+        copy.t = animNum(step.t, 1.8, 0.3, 4);
+        break;
+      case "param": {
+        copy.fx = compileAnimFn(step.fx, index, "fx");
+        copy.fy = compileAnimFn(step.fy, index, "fy");
+        const span = animPair(step.tspan) || [0, 6.283];
+        if (span[1] <= span[0]) throw new Error(`Buoc ${index + 1}: "tspan" can [min,max] voi max > min.`);
+        copy.tspan = [Math.max(-100, span[0]), Math.min(100, span[1])];
+        copy.width = animNum(step.width, 3, 1, 8);
+        copy.t = animNum(step.t, 2, 0.3, 4);
+        break;
+      }
+      case "tangent":
+        copy.curve = String(step.curve ?? "").slice(0, 16);
+        copy.at = animNum(step.at, 0, -1000, 1000);
+        copy.t = animNum(step.t, 1.2, 0.3, 4);
+        break;
+      case "area": {
+        copy.curve = String(step.curve ?? "").slice(0, 16);
+        const from = animPair(step.from);
+        if (!from || from[1] <= from[0]) throw new Error(`Buoc ${index + 1}: "area" can "from":[x0,x1] voi x1 > x0.`);
+        copy.from = [Math.max(-1000, from[0]), Math.min(1000, from[1])];
+        copy.t = animNum(step.t, 1.2, 0.3, 4);
+        break;
+      }
+      case "segment":
+      case "arrow": {
+        const from = animPair(step.from);
+        const to = animPair(step.to);
+        if (!from || !to) throw new Error(`Buoc ${index + 1}: "${step.do}" can "from":[x,y] va "to":[x,y].`);
+        copy.from = from;
+        copy.to = to;
+        copy.width = animNum(step.width, step.do === "arrow" ? 3.5 : 2.5, 1, 10);
+        copy.t = animNum(step.t, 1, 0.3, 4);
+        break;
+      }
+      case "dot": {
+        const at = animPair(step.at);
+        if (!at) throw new Error(`Buoc ${index + 1}: "dot" can "at":[x,y].`);
+        copy.at = at;
+        copy.r = animNum(step.r, 6, 2, 16);
+        copy.t = animNum(step.t, 0.6, 0.2, 4);
+        break;
+      }
+      case "circle": {
+        const center = animPair(step.center);
+        const radius = Number(step.radius);
+        if (!center || !Number.isFinite(radius) || radius <= 0) throw new Error(`Buoc ${index + 1}: "circle" can "center":[x,y] va "radius">0.`);
+        copy.center = center;
+        copy.radius = Math.min(radius, 2000);
+        copy.t = animNum(step.t, 1.2, 0.3, 4);
+        break;
+      }
+      case "orbit": {
+        if (!copy.id) throw new Error(`Buoc ${index + 1}: "orbit" can "id" cua diem da tao bang buoc "dot".`);
+        const center = animPair(step.center) || [0, 0];
+        const radius = Number(step.radius);
+        copy.center = center;
+        copy.radius = Number.isFinite(radius) && radius > 0 ? Math.min(radius, 2000) : null;
+        copy.omega = animNum(step.omega, 1, -12, 12);
+        copy.phase = step.phase === undefined ? null : animNum(step.phase, 0, -100, 100);
+        copy.radiusLine = step.radiusLine !== false;
+        copy.dropLine = step.dropLine !== false;
+        copy.t = animNum(step.t, 6.3, 1, 9);
+        break;
+      }
+      case "polygon": {
+        const points = Array.isArray(step.points) ? step.points.map(animPair).filter(Boolean).slice(0, 12) : [];
+        if (points.length < 3) throw new Error(`Buoc ${index + 1}: "polygon" can it nhat 3 diem trong "points".`);
+        copy.points = points;
+        copy.t = animNum(step.t, 1.2, 0.3, 4);
+        break;
+      }
+      case "angle": {
+        const vertex = animPair(step.vertex);
+        const a = animPair(step.a);
+        const b = animPair(step.b);
+        if (!vertex || !a || !b) throw new Error(`Buoc ${index + 1}: "angle" can "vertex", "a", "b" la [x,y].`);
+        copy.vertex = vertex;
+        copy.a = a;
+        copy.b = b;
+        copy.t = animNum(step.t, 0.8, 0.3, 4);
+        break;
+      }
+      case "text": {
+        copy.latex = String(step.latex ?? step.text ?? "").slice(0, 120).trim();
+        if (!copy.latex) throw new Error(`Buoc ${index + 1}: "text" can "latex".`);
+        if (/[\u00C0-\u024F\u1E00-\u1EFF]/.test(copy.latex)) throw new Error(`Buoc ${index + 1}: nhan "latex" khong duoc co tieng Viet co dau; dung cong thuc LaTeX hoac ky hieu khong dau.`);
+        const at = animPair(step.at);
+        copy.at = at;
+        copy.anchor = at ? "" : (["top", "bottom", "left", "right"].includes(step.anchor) ? step.anchor : "top");
+        copy.t = animNum(step.t, 0.9, 0.3, 4);
+        break;
+      }
+      case "move": {
+        if (!copy.id) throw new Error(`Buoc ${index + 1}: "move" can "id" cua diem.`);
+        copy.along = typeof step.along === "string" ? step.along.slice(0, 16) : "";
+        if (copy.along) {
+          copy.fromFrac = animNum(step.from, 0, 0, 1);
+          copy.toFrac = animNum(step.to, 1, 0, 1);
+        } else {
+          const to = animPair(step.to);
+          if (!to) throw new Error(`Buoc ${index + 1}: "move" can "along":"<id duong cong>" hoac "to":[x,y].`);
+          copy.toPoint = to;
+        }
+        copy.t = animNum(step.t, 2.5, 0.3, 6);
+        break;
+      }
+      case "fade":
+        if (!copy.id) throw new Error(`Buoc ${index + 1}: "fade" can "id".`);
+        copy.t = animNum(step.t, 0.8, 0.3, 4);
+        break;
+      case "pulse":
+        if (!copy.id) throw new Error(`Buoc ${index + 1}: "pulse" can "id".`);
+        copy.t = animNum(step.t, 1, 0.3, 4);
+        break;
+      case "trace":
+        if (!copy.id) throw new Error(`Buoc ${index + 1}: "trace" can "id" cua diem.`);
+        copy.on = step.on !== false;
+        copy.t = 0.05;
+        break;
+      default:
+        copy.t = animNum(step.t, 1, 0.2, 4);
+    }
+    return copy;
+  }
+
+  const ANIM_FREE_NUMBERS = new Set([0, 1, 2, 3, 0.5, 1.5, 3.1416, 1.571, 0.785, 6.283, 6.28]);
+  const ANIM_SEMANTIC_FIELDS = ["fn", "fx", "fy", "radius", "at", "center", "from", "to", "points", "vertex", "a", "b", "omega", "phase"];
+
+  function animCollectNumbers(node, bucket) {
+    if (typeof node === "number") {
+      if (Number.isFinite(node)) bucket.push(Math.abs(node));
+      return bucket;
+    }
+    if (typeof node === "string") {
+      (node.match(/\d+(?:[.,]\d+)?/g) || []).forEach((token) => bucket.push(Math.abs(Number(token.replace(",", ".")))));
+      return bucket;
+    }
+    if (Array.isArray(node)) node.forEach((item) => animCollectNumbers(item, bucket));
+    return bucket;
+  }
+
+  // Kiem chong gian di: moi con so mang y nghia ly/thi phai co goc trong loi giai, chi so phuc vu khung hinh duoc mien.
+  function findUnanchoredNumbers(scene, answerText) {
+    const answerNumbers = (String(answerText).match(/\d+(?:[.,]\d+)?/g) || []).map((token) => Math.abs(Number(token.replace(",", "."))));
+    const declared = new Set(animCollectNumbers(Object.values(scene?.basis || {}), []));
+    const used = [];
+    (Array.isArray(scene?.steps) ? scene.steps : []).forEach((step) => {
+      if (!step || typeof step !== "object") return;
+      ANIM_SEMANTIC_FIELDS.forEach((key) => {
+        if (step[key] === undefined) return;
+        if ((key === "from" || key === "to") && step.do === "move") return;
+        animCollectNumbers(step[key], used);
+      });
+    });
+    const near = (a, b) => Math.abs(a - b) <= Math.max(1e-9, Math.abs(a) * 0.02);
+    const unitShift = (a, b) => {
+      if (!(a > 0 && b > 0)) return false;
+      const ratio = Math.log10(a / b);
+      return Math.abs(ratio - Math.round(ratio)) < 1e-6;
+    };
+    return [...new Set(used)].filter((value) => {
+      if (ANIM_FREE_NUMBERS.has(value) || declared.has(value)) return false;
+      return !answerNumbers.some((answer) => near(value, answer) || unitShift(value, answer));
+    });
+  }
+
+  function validateAnimScene(scene, answerText) {
+    if (scene?.no_draw === true) {
+      return { steps: [], noDraw: true, note: String(scene.reason ?? "").replace(/[^\x20-\x7E]/g, "").slice(0, 180), unanchored: [] };
+    }
+    const steps = Array.isArray(scene?.steps) ? scene.steps : [];
+    if (steps.length < 3 || steps.length > 16) throw new Error("Can tu 3 den 16 buoc trong key \"steps\".");
+    const ids = new Set();
+    const normalized = steps.map((step, index) => normalizeAnimStep(step, index, ids));
+    // Duong tron, goc, da giac, vong tron luong giac phai co ti le 1:1 neu khong se bi bien dang thanh elip.
+    if (normalized.some((step) => ["circle", "angle", "polygon", "orbit"].includes(step.do))) {
+      normalized.forEach((step) => { if (step.do === "axes") step.equal = true; });
+    }
+    const spinning = new Set(normalized.filter((step) => step.do === "orbit").map((step) => step.id));
+    normalized.forEach((step, index) => {
+      if (step.do === "move" && spinning.has(step.id)) {
+        throw new Error(`Buoc ${index + 1}: diem "${step.id}" da quay theo "orbit" thi khong duoc dung "move" nua.`);
+      }
+    });
+    return { steps: normalized, noDraw: false, note: "", unanchored: findUnanchoredNumbers(scene, answerText) };
+  }
+
+  function extractAnimScene(rawText) {
+    const source = String(rawText || "")
+      .replace(/&lt;/gi, "<")
+      .replace(/&gt;/gi, ">")
+      .replace(/&amp;/gi, "&")
+      .replace(/\r/g, "")
+      .trim();
+    const tagged = source.match(/<anim_code\s*>([\s\S]*?)(?:<\/anim_code\s*>|$)/i);
+    const fenced = source.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    const candidate = (tagged?.[1] || fenced?.[1] || source).trim();
+    const start = candidate.indexOf("{");
+    const end = candidate.lastIndexOf("}");
+    if (start < 0 || end <= start) return null;
+    try {
+      return JSON.parse(candidate.slice(start, end + 1));
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // equal=true: 1 don vi truc ngang = 1 don vi truc dung, tu mo rong truc con lai de khong mat range.
+  function animAxesFrame(xRange, yRange, equal) {
+    const availW = ANIM_W - 2 * ANIM_PAD;
+    const availH = ANIM_H - 2 * ANIM_PAD;
+    let x = [xRange[0], xRange[1]];
+    let y = [yRange[0], yRange[1]];
+    if (equal) {
+      const k = Math.min(availW / (x[1] - x[0]), availH / (y[1] - y[0]));
+      const midX = (x[0] + x[1]) / 2;
+      const midY = (y[0] + y[1]) / 2;
+      x = [midX - availW / k / 2, midX + availW / k / 2];
+      y = [midY - availH / k / 2, midY + availH / k / 2];
+    }
+    const kx = availW / (x[1] - x[0]);
+    const ky = availH / (y[1] - y[0]);
+    return {
+      x,
+      y,
+      k: Math.min(kx, ky),
+      sx: (wx) => ANIM_PAD + ((wx - x[0]) / (x[1] - x[0])) * availW,
+      sy: (wy) => ANIM_H - ANIM_PAD - ((wy - y[0]) / (y[1] - y[0])) * availH,
+    };
+  }
+
+  function runAnimScene(stage, scene) {
+    const canvas = stage.querySelector(".anim-canvas");
+    const labelLayer = stage.querySelector(".anim-labels");
+    if (!canvas || !labelLayer) return;
+    const ctx = canvas.getContext("2d");
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.round(ANIM_W * dpr);
+    canvas.height = Math.round(ANIM_H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    labelLayer.replaceChildren();
+
+    const objects = new Map();
+    const timeline = [];
+    let autoIndex = 0;
+    let lastAxes = null;
+
+    const register = (obj) => { objects.set(obj.id || `__auto${autoIndex}`, obj); autoIndex += 1; return obj; };
+    const needAxes = (step) => {
+      const found = step.axes ? objects.get(step.axes) : lastAxes;
+      if (!found || found.kind !== "axes") throw new Error(`Buoc "${step.do}" can "axes" hop le; hay tao buoc "axes" truoc.`);
+      return found;
+    };
+    const needKind = (id, step, kind) => {
+      const found = id ? objects.get(id) : null;
+      if (!found || found.kind !== kind) throw new Error(`Buoc "${step.do}" tham chieu id "${id || ""}" khong ton tai hoac sai loai.`);
+      return found;
+    };
+    const safeCall = (fn, value) => {
+      try {
+        const out = fn({ x: value, t: value });
+        return Number.isFinite(out) ? out : NaN;
+      } catch (error) {
+        return NaN;
+      }
+    };
+    const clipY = (ax, wy) => {
+      const margin = (ax.y[1] - ax.y[0]) * 0.15;
+      return Math.max(ax.y[0] - margin, Math.min(ax.y[1] + margin, wy));
+    };
+    const buildPoints = (ax, raw) => raw.map((pt) => (pt ? [ax.sx(pt[0]), ax.sy(clipY(ax, pt[1]))] : null));
+    const pushTrail = (obj) => {
+      if (!obj.ax || !obj.pos) return;
+      obj.trail.push([obj.ax.sx(obj.pos[0]), obj.ax.sy(clipY(obj.ax, obj.pos[1]))]);
+      if (obj.trail.length > 100) obj.trail.shift();
+    };
+
+    for (const step of scene.steps) {
+      if (step.do === "axes") {
+        const frame = animAxesFrame(step.x, step.y, step.equal);
+        const obj = register({
+          kind: "axes", id: step.id, x: frame.x, y: frame.y, k: frame.k, equal: step.equal, grid: step.grid !== false,
+          xlabel: step.xlabel, ylabel: step.ylabel, alpha: 1, progress: 0, visible: true, pulse: 0,
+          sx: frame.sx, sy: frame.sy,
+        });
+        lastAxes = obj;
+        timeline.push({ dur: step.t, frame: (p) => { obj.progress = p; } });
+      } else if (step.do === "plot") {
+        const ax = needAxes(step);
+        const raw = [];
+        for (let i = 0; i <= 240; i += 1) {
+          const wx = ax.x[0] + ((ax.x[1] - ax.x[0]) * i) / 240;
+          const wy = safeCall(step.fn, wx);
+          raw.push(Number.isFinite(wy) ? [wx, wy] : null);
+        }
+        const obj = register({ kind: "curve", id: step.id, ax, raw, pts: buildPoints(ax, raw), color: step.color, width: step.width, fn: step.fn, alpha: 1, progress: 0, visible: true, pulse: 0 });
+        timeline.push({ dur: step.t, frame: (p) => { obj.progress = p; } });
+      } else if (step.do === "param") {
+        const ax = needAxes(step);
+        const raw = [];
+        for (let i = 0; i <= 240; i += 1) {
+          const tv = step.tspan[0] + ((step.tspan[1] - step.tspan[0]) * i) / 240;
+          let wx;
+          let wy;
+          try {
+            wx = step.fx({ x: tv, t: tv });
+            wy = step.fy({ x: tv, t: tv });
+          } catch (error) {
+            wx = NaN;
+            wy = NaN;
+          }
+          raw.push(Number.isFinite(wx) && Number.isFinite(wy) ? [wx, wy] : null);
+        }
+        const obj = register({ kind: "curve", id: step.id, ax, raw, pts: buildPoints(ax, raw), color: step.color, width: step.width, alpha: 1, progress: 0, visible: true, pulse: 0 });
+        timeline.push({ dur: step.t, frame: (p) => { obj.progress = p; } });
+      } else if (step.do === "tangent") {
+        const curve = needKind(step.curve, step, "curve");
+        if (!curve.fn) throw new Error(`Buoc "tangent": duong cong "${step.curve}" khong phai dang y = f(x).`);
+        const ax = curve.ax;
+        const h = (ax.x[1] - ax.x[0]) / 400;
+        const y0 = safeCall(curve.fn, step.at);
+        const up = safeCall(curve.fn, step.at + h);
+        const down = safeCall(curve.fn, step.at - h);
+        const slope = Number.isFinite(y0) && Number.isFinite(up) && Number.isFinite(down) ? (up - down) / (2 * h) : NaN;
+        if (!Number.isFinite(y0) || !Number.isFinite(slope)) throw new Error(`Buoc "tangent": khong tinh duoc ham/dao ham tai x = ${step.at}.`);
+        const dx = (ax.x[1] - ax.x[0]) * 0.26;
+        const obj = register({ kind: "segment", id: step.id, ax, a: [step.at - dx, y0 - slope * dx], b: [step.at + dx, y0 + slope * dx], color: step.color, width: 2.6, head: false, alpha: 1, progress: 0, visible: true, pulse: 0 });
+        timeline.push({ dur: step.t, frame: (p) => { obj.progress = p; } });
+      } else if (step.do === "area") {
+        const curve = needKind(step.curve, step, "curve");
+        if (!curve.fn) throw new Error(`Buoc "area": duong cong "${step.curve}" khong phai dang y = f(x).`);
+        const obj = register({ kind: "area", id: step.id, ax: curve.ax, curve, from: step.from, color: step.color, alpha: 1, progress: 0, visible: true, pulse: 0 });
+        timeline.push({ dur: step.t, frame: (p) => { obj.progress = p; } });
+      } else if (step.do === "segment" || step.do === "arrow") {
+        const ax = needAxes(step);
+        const obj = register({ kind: "segment", id: step.id, ax, a: step.from, b: step.to, color: step.color, width: step.width, head: step.do === "arrow", alpha: 1, progress: 0, visible: true, pulse: 0 });
+        timeline.push({ dur: step.t, frame: (p) => { obj.progress = p; } });
+      } else if (step.do === "dot") {
+        const ax = needAxes(step);
+        const obj = register({ kind: "dot", id: step.id, ax, pos: [step.at[0], step.at[1]], r: step.r, color: step.color, alpha: 1, progress: 0, visible: true, pulse: 0, trail: [], trailOn: false });
+        timeline.push({ dur: step.t, frame: (p) => { obj.progress = p; obj.alpha = p; } });
+      } else if (step.do === "circle") {
+        const ax = needAxes(step);
+        const obj = register({ kind: "circle", id: step.id, ax, center: step.center, radius: step.radius, color: step.color, alpha: 1, progress: 0, visible: true, pulse: 0 });
+        timeline.push({ dur: step.t, frame: (p) => { obj.progress = p; } });
+      } else if (step.do === "orbit") {
+        const obj = needKind(step.id, step, "dot");
+        const ax = obj.ax;
+        const offset = [obj.pos[0] - step.center[0], obj.pos[1] - step.center[1]];
+        const radius = step.radius === null ? Math.hypot(offset[0], offset[1]) : step.radius;
+        if (!(radius > 0)) throw new Error(`Buoc "orbit": diem "${step.id}" nam ngay tam nen ban kinh = 0.`);
+        const startAngle = step.phase === null ? Math.atan2(offset[1], offset[0]) : step.phase;
+        obj.orbit = { ax, center: step.center, radius, startAngle, angle: startAngle, swept: 0, pixStart: null, radiusLine: step.radiusLine, dropLine: step.dropLine };
+        const entry = { dur: step.t, linear: true, frame: null };
+        entry.frame = (p) => {
+          const angle = startAngle + step.omega * (p * entry.dur);
+          obj.pos = [step.center[0] + radius * Math.cos(angle), step.center[1] + radius * Math.sin(angle)];
+          obj.orbit.angle = angle;
+          obj.orbit.swept = angle - startAngle;
+          if (obj.trailOn) pushTrail(obj);
+        };
+        timeline.push(entry);
+      } else if (step.do === "polygon") {
+        const ax = needAxes(step);
+        const obj = register({ kind: "polygon", id: step.id, ax, points: step.points, color: step.color, alpha: 1, progress: 0, visible: true, pulse: 0 });
+        timeline.push({ dur: step.t, frame: (p) => { obj.progress = p; } });
+      } else if (step.do === "angle") {
+        const ax = needAxes(step);
+        const obj = register({ kind: "angle", id: step.id, ax, vertex: step.vertex, a: step.a, b: step.b, color: step.color, alpha: 1, progress: 0, visible: true, pulse: 0 });
+        timeline.push({ dur: step.t, frame: (p) => { obj.progress = p; } });
+      } else if (step.do === "text") {
+        const ax = step.at ? (step.axes ? objects.get(step.axes) : lastAxes) : null;
+        if (step.at && (!ax || ax.kind !== "axes")) throw new Error(`Buoc "text" co "at" can "axes" hop le.`);
+        const el = document.createElement("div");
+        el.className = "anim-label";
+        el.textContent = `\\(${step.latex}\\)`;
+        labelLayer.appendChild(el);
+        if (window.MathJax?.typesetPromise) window.MathJax.typesetPromise([el]).catch(() => {});
+        const obj = register({ kind: "label", id: step.id, ax, at: step.at, anchor: step.anchor || "top", el, alpha: 0, progress: 1, visible: true, pulse: 0 });
+        timeline.push({ dur: step.t, frame: (p) => { obj.alpha = p; } });
+      } else if (step.do === "move") {
+        const obj = needKind(step.id, step, "dot");
+        if (step.along) {
+          const curve = needKind(step.along, step, "curve");
+          const valid = curve.raw.filter((pt) => pt);
+          if (valid.length < 2) throw new Error(`Buoc "move": duong cong "${step.along}" khong du diem hop le.`);
+          timeline.push({
+            dur: step.t,
+            frame: (p) => {
+              const frac = step.fromFrac + (step.toFrac - step.fromFrac) * p;
+              const idx = Math.max(0, Math.min(valid.length - 1, Math.round(frac * (valid.length - 1))));
+              obj.pos = [valid[idx][0], valid[idx][1]];
+              if (obj.trailOn) pushTrail(obj);
+            },
+          });
+        } else {
+          const start = [obj.pos[0], obj.pos[1]];
+          timeline.push({
+            dur: step.t,
+            frame: (p) => {
+              obj.pos = [start[0] + (step.toPoint[0] - start[0]) * p, start[1] + (step.toPoint[1] - start[1]) * p];
+              if (obj.trailOn) pushTrail(obj);
+            },
+          });
+        }
+      } else if (step.do === "fade") {
+        const obj = objects.get(step.id);
+        if (!obj) throw new Error(`Buoc "fade": khong thay id "${step.id}".`);
+        const startAlpha = obj.alpha;
+        timeline.push({ dur: step.t, frame: (p) => { obj.alpha = startAlpha * (1 - p); }, end: () => { obj.visible = false; } });
+      } else if (step.do === "pulse") {
+        const obj = objects.get(step.id);
+        if (!obj) throw new Error(`Buoc "pulse": khong thay id "${step.id}".`);
+        timeline.push({ dur: step.t, frame: (p) => { obj.pulse = Math.sin(Math.PI * p); }, end: () => { obj.pulse = 0; } });
+      } else if (step.do === "trace") {
+        const obj = needKind(step.id, step, "dot");
+        timeline.push({
+          dur: step.t,
+          frame: () => {
+            obj.trailOn = step.on;
+            if (obj.trailOn) pushTrail(obj);
+            else obj.trail = [];
+          },
+        });
+      } else {
+        timeline.push({ dur: step.t, frame: () => {} });
+      }
+    }
+
+    let total = timeline.reduce((sum, entry) => sum + entry.dur, 0);
+    if (total > 12) {
+      const scale = 12 / total;
+      timeline.forEach((entry) => { entry.dur *= scale; });
+      total = 12;
+    }
+    if (total < 6.5) timeline.push({ dur: 6.5 - total, frame: () => {} });
+
+    const niceStep = (range) => {
+      const rough = range / 8;
+      const base = Math.pow(10, Math.floor(Math.log10(rough || 1)));
+      for (const mult of [1, 2, 2.5, 5, 10]) if (rough <= mult * base) return mult * base;
+      return 10 * base;
+    };
+    const fmtTick = (value) => {
+      const rounded = Math.round(value * 100) / 100;
+      return Object.is(rounded, -0) ? "0" : String(rounded);
+    };
+
+    function drawAxes(obj) {
+      const sharedStep = obj.equal ? niceStep(Math.min(obj.x[1] - obj.x[0], obj.y[1] - obj.y[0])) : 0;
+      const stepX = sharedStep || niceStep(obj.x[1] - obj.x[0]);
+      const stepY = sharedStep || niceStep(obj.y[1] - obj.y[0]);
+      const left = obj.sx(obj.x[0]);
+      const right = obj.sx(obj.x[1]);
+      const bottom = obj.sy(obj.y[0]);
+      const top = obj.sy(obj.y[1]);
+      const originX = Math.max(left, Math.min(right, obj.sx(0)));
+      const originY = Math.max(top, Math.min(bottom, obj.sy(0)));
+      ctx.save();
+      ctx.globalAlpha = obj.alpha * Math.min(1, 0.35 + obj.progress);
+      if (obj.grid) {
+        ctx.strokeStyle = "rgba(148,163,184,0.15)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let v = Math.ceil(obj.x[0] / stepX) * stepX; v <= obj.x[1] + 1e-9; v += stepX) {
+          ctx.moveTo(obj.sx(v), top);
+          ctx.lineTo(obj.sx(v), bottom);
+        }
+        for (let v = Math.ceil(obj.y[0] / stepY) * stepY; v <= obj.y[1] + 1e-9; v += stepY) {
+          ctx.moveTo(left, obj.sy(v));
+          ctx.lineTo(right, obj.sy(v));
+        }
+        ctx.stroke();
+      }
+      ctx.strokeStyle = "rgba(203,213,225,0.55)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(left, originY);
+      ctx.lineTo(right, originY);
+      ctx.moveTo(originX, bottom);
+      ctx.lineTo(originX, top);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(203,213,225,0.7)";
+      ctx.font = "12px 'Segoe UI', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      for (let v = Math.ceil(obj.x[0] / stepX) * stepX; v <= obj.x[1] + 1e-9; v += stepX) {
+        if (Math.abs(v) < 1e-9) continue;
+        ctx.fillText(fmtTick(v), obj.sx(v), originY + 6);
+      }
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      for (let v = Math.ceil(obj.y[0] / stepY) * stepY; v <= obj.y[1] + 1e-9; v += stepY) {
+        if (Math.abs(v) < 1e-9) continue;
+        ctx.fillText(fmtTick(v), originX - 7, obj.sy(v));
+      }
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillText(obj.xlabel, right + 4, originY + 4);
+      ctx.fillText(obj.ylabel, originX + 6, top - 4);
+      ctx.restore();
+    }
+
+    function drawCurve(obj) {
+      const upto = Math.max(2, Math.ceil(obj.pts.length * obj.progress));
+      ctx.save();
+      ctx.globalAlpha = obj.alpha;
+      ctx.strokeStyle = obj.color;
+      ctx.lineWidth = obj.width + obj.pulse * 2.4;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.shadowColor = obj.color;
+      ctx.shadowBlur = 10 + obj.pulse * 14;
+      ctx.beginPath();
+      let pen = false;
+      for (let i = 0; i < upto; i += 1) {
+        const pt = obj.pts[i];
+        if (!pt) { pen = false; continue; }
+        if (!pen) { ctx.moveTo(pt[0], pt[1]); pen = true; } else ctx.lineTo(pt[0], pt[1]);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawArea(obj) {
+      const ax = obj.ax;
+      const steps = 90;
+      ctx.save();
+      ctx.globalAlpha = obj.alpha * 0.32 * obj.progress;
+      ctx.fillStyle = obj.color;
+      ctx.beginPath();
+      let started = false;
+      let lastX = obj.from[0];
+      for (let i = 0; i <= steps; i += 1) {
+        const wx = obj.from[0] + ((obj.from[1] - obj.from[0]) * i) / steps;
+        const wy = safeCall(obj.curve.fn, wx);
+        if (!Number.isFinite(wy)) continue;
+        const px = ax.sx(wx);
+        const py = ax.sy(clipY(ax, wy));
+        if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+        lastX = wx;
+      }
+      if (started) {
+        ctx.lineTo(ax.sx(lastX), ax.sy(clipY(ax, 0)));
+        ctx.lineTo(ax.sx(obj.from[0]), ax.sy(clipY(ax, 0)));
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawSegment(obj) {
+      const ax = obj.ax;
+      const a = [ax.sx(obj.a[0]), ax.sy(clipY(ax, obj.a[1]))];
+      const b = [ax.sx(obj.b[0]), ax.sy(clipY(ax, obj.b[1]))];
+      const end = [a[0] + (b[0] - a[0]) * obj.progress, a[1] + (b[1] - a[1]) * obj.progress];
+      ctx.save();
+      ctx.globalAlpha = obj.alpha;
+      ctx.strokeStyle = obj.color;
+      ctx.fillStyle = obj.color;
+      ctx.lineWidth = obj.width + obj.pulse * 2;
+      ctx.lineCap = "round";
+      ctx.shadowColor = obj.color;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.moveTo(a[0], a[1]);
+      ctx.lineTo(end[0], end[1]);
+      ctx.stroke();
+      if (obj.head && obj.progress > 0.06) {
+        const angle = Math.atan2(end[1] - a[1], end[0] - a[0]);
+        const head = 11 + obj.width;
+        ctx.beginPath();
+        ctx.moveTo(end[0], end[1]);
+        ctx.lineTo(end[0] - head * Math.cos(angle - 0.42), end[1] - head * Math.sin(angle - 0.42));
+        ctx.lineTo(end[0] - head * Math.cos(angle + 0.42), end[1] - head * Math.sin(angle + 0.42));
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawCircle(obj) {
+      const ax = obj.ax;
+      const rx = Math.abs(obj.radius) * ax.k;
+      const ry = rx;
+      ctx.save();
+      ctx.globalAlpha = obj.alpha;
+      ctx.strokeStyle = obj.color;
+      ctx.lineWidth = 2.4 + obj.pulse * 2;
+      ctx.shadowColor = obj.color;
+      ctx.shadowBlur = 9;
+      ctx.beginPath();
+      ctx.ellipse(ax.sx(obj.center[0]), ax.sy(clipY(ax, obj.center[1])), rx, ry, 0, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * obj.progress);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawPolygon(obj) {
+      const pts = obj.points.map((pt) => [obj.ax.sx(pt[0]), obj.ax.sy(clipY(obj.ax, pt[1]))]);
+      const segs = pts.length;
+      const done = obj.progress * segs;
+      ctx.save();
+      ctx.globalAlpha = obj.alpha;
+      ctx.strokeStyle = obj.color;
+      ctx.lineWidth = 2.4 + obj.pulse * 2;
+      ctx.lineJoin = "round";
+      ctx.shadowColor = obj.color;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i <= segs; i += 1) {
+        const t = Math.max(0, Math.min(1, done - (i - 1)));
+        if (t <= 0) break;
+        const a = pts[i - 1];
+        const b = pts[i % segs];
+        ctx.lineTo(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawAngle(obj) {
+      const ax = obj.ax;
+      const v = [ax.sx(obj.vertex[0]), ax.sy(clipY(ax, obj.vertex[1]))];
+      const a1 = Math.atan2(ax.sy(obj.a[1]) - v[1], ax.sx(obj.a[0]) - v[0]);
+      const a2 = Math.atan2(ax.sy(obj.b[1]) - v[1], ax.sx(obj.b[0]) - v[0]);
+      let delta = a2 - a1;
+      while (delta > Math.PI) delta -= Math.PI * 2;
+      while (delta < -Math.PI) delta += Math.PI * 2;
+      ctx.save();
+      ctx.globalAlpha = obj.alpha;
+      ctx.strokeStyle = obj.color;
+      ctx.lineWidth = 2 + obj.pulse * 1.5;
+      ctx.beginPath();
+      ctx.arc(v[0], v[1], 30, a1, a1 + delta * obj.progress, delta < 0);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawDot(obj) {
+      const ax = obj.ax;
+      const px = ax.sx(obj.pos[0]);
+      const py = ax.sy(clipY(ax, obj.pos[1]));
+      if (obj.trailOn && obj.trail.length > 1) {
+        ctx.save();
+        ctx.globalAlpha = obj.alpha * 0.45;
+        ctx.strokeStyle = obj.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        obj.trail.forEach((pt, i) => { if (i === 0) ctx.moveTo(pt[0], pt[1]); else ctx.lineTo(pt[0], pt[1]); });
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.save();
+      ctx.globalAlpha = obj.alpha;
+      ctx.fillStyle = obj.color;
+      ctx.shadowColor = obj.color;
+      ctx.shadowBlur = 12 + obj.pulse * 12;
+      ctx.beginPath();
+      ctx.arc(px, py, obj.r * (0.4 + 0.6 * obj.progress) * (1 + obj.pulse * 0.5), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawOrbit(obj) {
+      const o = obj.orbit;
+      const ax = o.ax;
+      const cx = ax.sx(o.center[0]);
+      const cy = ax.sy(clipY(ax, o.center[1]));
+      const px = ax.sx(obj.pos[0]);
+      const py = ax.sy(clipY(ax, obj.pos[1]));
+      const rPx = o.radius * ax.k;
+      if (o.pixStart === null) o.pixStart = Math.atan2(py - cy, px - cx);
+      ctx.save();
+      ctx.globalAlpha = obj.alpha * 0.5;
+      ctx.strokeStyle = "rgba(148,163,184,0.6)";
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = obj.alpha;
+      ctx.strokeStyle = obj.color;
+      ctx.lineWidth = 2.4;
+      ctx.shadowColor = obj.color;
+      ctx.shadowBlur = 9;
+      ctx.beginPath();
+      ctx.arc(cx, cy, rPx, o.pixStart, o.pixStart - o.swept, o.swept > 0);
+      ctx.stroke();
+      if (o.radiusLine) {
+        ctx.lineWidth = 2.6;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(px, py);
+        ctx.stroke();
+      }
+      ctx.shadowBlur = 0;
+      if (o.dropLine) {
+        ctx.globalAlpha = obj.alpha * 0.75;
+        ctx.strokeStyle = "rgba(226,232,240,0.75)";
+        ctx.lineWidth = 1.6;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px, cy);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "rgba(226,232,240,0.9)";
+        ctx.beginPath();
+        ctx.arc(px, cy, 3.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function updateLabel(obj) {
+      let px = ANIM_W / 2;
+      let py = 30;
+      if (obj.at && obj.ax) {
+        px = obj.ax.sx(obj.at[0]);
+        py = obj.ax.sy(clipY(obj.ax, obj.at[1]));
+      } else if (obj.anchor === "bottom") py = ANIM_H - 26;
+      else if (obj.anchor === "left") { px = 74; py = ANIM_H / 2; }
+      else if (obj.anchor === "right") { px = ANIM_W - 74; py = ANIM_H / 2; }
+      obj.el.style.left = `${(px / ANIM_W) * 100}%`;
+      obj.el.style.top = `${(py / ANIM_H) * 100}%`;
+      obj.el.style.opacity = String(Math.max(0, Math.min(1, obj.alpha)));
+      obj.el.style.transform = `translate(-50%, -50%) scale(${1 + obj.pulse * 0.16})`;
+    }
+
+    function drawFrame() {
+      ctx.clearRect(0, 0, ANIM_W, ANIM_H);
+      for (const obj of objects.values()) {
+        if (!obj.visible || obj.alpha <= 0) continue;
+        switch (obj.kind) {
+          case "axes": drawAxes(obj); break;
+          case "curve": drawCurve(obj); break;
+          case "area": drawArea(obj); break;
+          case "segment": drawSegment(obj); break;
+          case "circle": drawCircle(obj); break;
+          case "polygon": drawPolygon(obj); break;
+          case "angle": drawAngle(obj); break;
+          case "dot": if (obj.orbit) drawOrbit(obj); drawDot(obj); break;
+          case "label": updateLabel(obj); break;
+        }
+      }
+    }
+
+    let stepIndex = 0;
+    let stepStart = 0;
+    const ease = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+    function tick(now) {
+      if (!stage.isConnected) return;
+      if (stepIndex >= timeline.length) { drawFrame(); return; }
+      if (!stepStart) stepStart = now;
+      const entry = timeline[stepIndex];
+      const p = Math.min(1, (now - stepStart) / (entry.dur * 1000));
+      entry.frame(entry.linear ? p : ease(p));
+      drawFrame();
+      if (p >= 1) {
+        if (entry.end) entry.end();
+        stepIndex += 1;
+        stepStart = 0;
+      }
+      window.requestAnimationFrame(tick);
+    }
+    window.requestAnimationFrame(tick);
+  }
+
+  function buildSafeAnimFallback() {
+    return {
+      steps: [
+        { do: "axes", id: "ax", x: [-3.5, 3.5], y: [-2, 4], grid: true, xlabel: "x", ylabel: "y", t: 1.2 },
+        { do: "plot", id: "c", axes: "ax", fn: "0.5*x^2-1", color: "#5b8cff", t: 1.8 },
+        { do: "text", latex: "f(x)=\\tfrac{1}{2}x^2-1", anchor: "top", t: 1 },
+        { do: "tangent", id: "tg", axes: "ax", curve: "c", at: 1, color: "#ff5b6e", t: 1.2 },
+        { do: "dot", id: "p", axes: "ax", at: [-2, 1], color: "#ffd54a", t: 0.6 },
+        { do: "trace", id: "p", on: true },
+        { do: "move", id: "p", along: "c", from: 0, to: 1, t: 2.4 },
+        { do: "text", latex: "f'(1)=1", axes: "ax", at: [1.8, 3.1], t: 0.8 },
+        { do: "pulse", id: "tg", t: 0.9 },
+        { do: "wait", t: 1.2 }
+      ]
+    };
+  }
+
+  function buildIllustrationPrompt(question, answer) {
+    return `Bạn là chuyên gia dựng animation toán học phong cách 3Blue1Brown bằng engine "AnimScene" chạy trực tiếp trong trình duyệt (KHÔNG dùng Python hay Manim).
+Câu hỏi: ${question}
+Lời giải: ${answer}
+
+ĐẦU RA: trả về DUY NHẤT một khối <anim_code>{"steps":[...]}</anim_code> và không viết thêm bất cứ gì ngoài khối đó.
+
+MỖI BƯỚC CÓ KEY "do" THUỘC DANH SÁCH SAU ("t" là giây, từ 0.2 đến 4; muốn dùng hệ trục phải tạo bước "axes" trước rồi tham chiếu bằng "axes":"<id>"):
+{"do":"axes","id":"ax","x":[-4,4],"y":[-3,3],"grid":true,"equal":false,"xlabel":"x","ylabel":"y","t":1.3}
+{"do":"plot","id":"c1","axes":"ax","fn":"0.5*x^2-1","color":"#5b8cff","t":1.8}
+{"do":"param","id":"q","axes":"ax","fx":"2*cos(t)","fy":"2*sin(t)","tspan":[0,6.283],"t":2}
+{"do":"tangent","id":"tg","axes":"ax","curve":"c1","at":1,"t":1.3}
+{"do":"area","id":"ar","axes":"ax","curve":"c1","from":[0,2],"color":"#3ddc97","t":1.2}
+{"do":"segment","axes":"ax","from":[-3,0],"to":[3,0],"t":1}
+{"do":"arrow","id":"F","axes":"ax","from":[0,0],"to":[2,1],"color":"#ff5b6e","t":1}
+{"do":"dot","id":"p","axes":"ax","at":[1,-0.5],"color":"#ffd54a","t":0.6}
+{"do":"circle","axes":"ax","center":[0,0],"radius":1.5,"t":1.2}
+{"do":"orbit","id":"p","center":[0,0],"radius":2,"omega":1,"phase":0,"radiusLine":true,"dropLine":true,"t":6.3}
+{"do":"polygon","axes":"ax","points":[[0,0],[2,0],[1,1.7]],"t":1.2}
+{"do":"angle","axes":"ax","vertex":[0,0],"a":[1,0],"b":[0.7,0.7],"t":0.8}
+{"do":"text","latex":"f'(x)=x","anchor":"top","t":1}
+{"do":"text","latex":"P(1;0{,}5)","axes":"ax","at":[1.6,-1.4],"t":1}
+{"do":"move","id":"p","along":"c1","from":0,"to":1,"t":3}
+{"do":"move","id":"p","to":[2,1],"t":2}
+{"do":"trace","id":"p","on":true}
+{"do":"fade","id":"tg","t":0.8}
+{"do":"pulse","id":"c1","t":1}
+{"do":"wait","t":1.2}
+
+RÀNG BUỘC KỸ THUẬT (sai là hệ thống từ chối và dựng thất bại):
+- "fn" là y theo x; "fx"/"fy" theo t. Chỉ được dùng: số, biến x hoặc t, các phép + - * / ^, ngoặc đơn, hàm sin cos tan asin acos atan sqrt cbrt abs exp ln log floor ceil round sign min max pow, hằng số pi và e. Phải viết rõ phép nhân: "2*x" (không viết "2x").
+- Biểu thức chỉ trả ra số: không được gắn đơn vị có chữ (viết "9.8" chứ không "9.8 m").
+- "latex" chỉ chứa LaTeX không dấu; tuyệt đối không có tiếng Việt có dấu.
+- Màu phải là hex 6 chữ số (#rrggbb).
+- Tổng các "t" phải từ 7 đến 11 giây; dùng 6 đến 12 bước; kết thúc bằng "wait" 1 đến 1.5 giây.
+- Để một điểm chạy trên đường cong: tạo "dot" rồi dùng "move" với "along" là id của bước "plot" hoặc "param".
+- "equal":true nghĩa là 1 đơn vị trục ngang = 1 đơn vị trục dọc. Hệ thống TỰ bật equal khi cảnh có "circle", "orbit", "angle" hoặc "polygon", nên không thể vẽ đường tròn trong hệ trục co giãn.
+- "orbit" làm một "dot" đã tạo (khớp "id") quay ĐỀU trên đường tròn thật quanh "center" với "omega" rad/giây không đổi, "phase" là pha đầu; hệ thống tự vẽ bán kính quay và hình chiếu của điểm xuống trục ngang.
+- "axes" BẮT BUỘC có "xlabel" và "ylabel" là tên đại lượng thật ("x","y","t","F","v","E","Q","n"), không dấu tiếng Việt. Trục không có tên là trục vô nghĩa.
+- Một điểm đã quay bằng "orbit" thì không được dùng "move" cho điểm đó nữa.
+- Nếu vẽ hình sẽ dễ gây hiểu nhầm (chủ đề thuần định tính, lời giải thiếu dữ kiện), trả về {"no_draw":true,"reason":"ly do ngan khong dau"} thay vì đoán bừa.
+- Nếu buộc phải phóng to/thu nhỏ hoặc đổi đơn vị để hình vừa khung, khai báo trong "basis", ví dụ {"basis":{"A":"A=4cm trong loi giai, ve ban kinh 2 de de nhin"}}.
+
+KHÔNG BỊA ĐẶT THÔNG TIN (hệ thống kiểm tra tự động và bắt làm lại):
+- Mọi con số trong "fn", "fx", "fy", "radius", "at", "center", "from", "to", "points", "vertex", "omega", "phase" phải lấy NGUYÊN VĂN từ lời giải, hoặc là giá trị đổi đơn vị thập phân của nó (4 cm → 0.04). Chỉ "x", "y", "tspan", "t" được tự chọn để vừa khung hình.
+- Lời giải không cho số thì vẽ ở dạng tổng quát với nhãn ký hiệu ("A", "omega", "F", "v0") rồi khai báo "basis"; tuyệt đối không tự nghĩ ra số liệu.
+- Giá trị suy ra được từ lời giải (đỉnh parabol, tầm bay, chu kỳ, tần số góc, tỉ số) vẫn phải ghi rõ trong "basis" kèm công thức tính, ví dụ {"basis":{"H":"H=v0^2/(2g)=5 m suy ra từ du kien"}}. Hệ thống tự so từng con số trong kịch bản với lời giải và bắt làm lại nếu không có gốc.
+- Không tự thêm lực, thêm chất, thêm vật, thêm điều kiện biên mà lời giải không nói. Không đổi đơn vị ngầm định.
+
+KHUNG CHUẨN BẢN CHẤT DÙNG CHUNG CHO TOÁN – LÝ – HÓA (đây là quy tắc cấu trúc, áp dụng cho mọi chủ đề):
+1. Đồ thị hàm số phải sinh ra từ CHÍNH công thức trong lời giải, không phải "vẽ cho giống": parabol y=ax^2+bx+c có a>0 mở lên, a<0 mở xuống, đỉnh và giao trục tung khớp số liệu; bậc ba đúng số cực trị; sin/cos đúng chu kỳ T=2*pi/omega.
+2. Đồ thị chuyển động: (x,t) thẳng đều là đường thẳng xiên, nhanh dần đều là parabol; (v,t) thẳng đều là đường nằm ngang, nhanh dần đều là đường thẳng xiên. Đổi trục là phải đổi công thức.
+3. Ném ngang / ném xiên: trục đứng là độ cao, quỹ đạo là parabol LỒI XUỐNG (hệ số bậc hai âm), điểm ném và độ cao khớp dữ kiện. Không vẽ quỹ đạo cong ngược.
+4. Chu kỳ / tuần hoàn (dao động, sóng, điện xoay chiều, chuyển động tròn đều): dùng "orbit" (vòng tròn lượng giác) hoặc đồ thị hình sin đúng chu kỳ; không dùng parabol, không dùng elip, không giả chuyển động quay bằng "move".
+5. Đường tròn, góc, đa giác: chỉ xuất hiện khi bản chất đúng là hình đó; "equal" được bật tự động nên độ dài và góc hiển thị đúng tỉ lệ thật.
+6. Vec-tơ (lực, vận tốc, gia tốc, cường độ trường): "arrow" phải đúng hướng và đúng tỉ lệ độ dài giữa các vec-tơ trong cùng một hình; hợp lực theo quy tắc hình bình hành; vật cân bằng thì các vec-tơ phải khép kín.
+7. Quang học: tia tới và tia phản xạ đối nhau QUA PHÁP TUYẾN (không đối qua mặt gương); tia khúc xạ lệch VỀ PHÍA pháp tuyến khi sang môi trường chiết quang hơn.
+8. Hóa học: số nguyên tử mỗi nguyên tố hai vế phải bằng nhau; tỉ lệ hệ số chính là tỉ lệ mol; chất tham gia/sản phẩm đúng danh tính trong lời giải, không tự sinh chất mới.
+9. Tên đại lượng trong "latex" và "xlabel"/"ylabel" phải trùng tên lời giải đã dùng (F, v, x, A, T...), không đổi tên tùy tiện.
+
+BẢNG CHỌN CẢNH CHUẨN CHO CHỦ ĐỀ HAY GẶP Ở CẤP THPT (chọn đúng dòng rồi mới viết bước; không có dòng nào khớp thì suy ra từ công thức trong lời giải theo 9 quy tắc trên):
+- TOÁN Hàm số (bậc hai, trùng phương, bậc ba, phân thức hữu tỉ): trục "x"–"y", "plot" bằng CHÍNH công thức lời giải; đạo hàm thì thêm "tangent"; cực trị là nơi "tangent" nằm ngang; tiệm cận đứng của phân thức là "segment" thẳng đứng, không vẽ đường crosses tại đó.
+- TOÁN Mũ – Logarit: "plot" "a^x" (đi qua (0,1)) hoặc "ln(x)" (đi qua (1,0), chỉ vẽ với x>0 và "x" bắt đầu từ giá trị dương); không vẽ loga cho x ≤ 0.
+- TOÁN Lượng giác: phương trình lượng giác vẽ "plot" "sin(x)" trên trục "x" là radian, giao với đường ngang là nghiệm; chu kỳ đúng 2*pi (cos) hoặc pi (tan). "tan(x)" có tiệm cận, không nối liền qua chúng.
+- TOÁN Hình giải tích: đường tròn "x^2+y^2=R^2" dùng "circle" với đúng R; ELIP THẬT (x^2/a^2 + y^2/b^2 = 1) dùng "param" "a*cos(t)" cùng "b*sin(t)" với a khác b — đây là elip ĐÚNG bản chất, được phép; chỉ bị cấm khi dùng elip để GIẢ đường tròn. Parabol có tiêu điểm, góc, độ dài: bật "equal" và "polygon"/"angle" để giữ tỉ lệ thật.
+- TOÁN Tích phân – diện tích: "plot" rồi "area" với "from" đúng cận lời giải; diện tích chỉ tô giữa đường cong và trục hoành.
+- TOÁN Dãy số – xác suất: chỉ vẽ khi lời giải có mẫu hữu hạn hoặc bảng tần số; dùng "segment"/"dot" rời từng giá trị, KHÔNG nối thành đường cong liên tục vì dãy số rời rạc.
+- LÝ Động học: "x"–"t" hoặc "v"–"t" theo công thức lời giải; thẳng đều trên (v,t) là đường ngang, trên (x,t) là đường xiên; nhanh dần đều trên (x,t) là parabol lồi lên dưới, "area" dưới (v,t) chính là quảng đường.
+- LÝ Ném ngang / ném xiên: "param" "v0*cos(alpha)*t" và "h - 0.5*g*t^2"; quỹ đạo parabol mở xuống, tầm bay lấy từ lời giải.
+- LÝ Dao động điều hòa: bắt buộc "orbit" (vòng tròn lượng giác) như mẫu bên dưới, hoặc "plot" hình sin trên trục "t". Ba đồ thị x, v, a cùng tần số, v sớm pha pi/2 so với x, a ngược pha x.
+- LÝ Sóng cơ: đồ thị theo không gian có "xlabel":"x" và "ylabel":"u", hình sin lặp đúng bước sóng; hai điểm ngược pha cách nhau lambda/2.
+- LÝ Điện xoay chiều: "plot" "u" và "i" cùng trục "t", lệch đúng độ lệch pha lời giải; chu kỳ T = 2*pi/omega.
+- LÝ Lực – cân bằng: "arrow" gốc tại vật, tỉ lệ độ dài đúng tỉ số độ lớn; cân bằng thì các vec-tơ khép kín.
+- LÝ Quang hình: "segment" là gương/mặt phân cách, "segment" nét đứt là pháp tuyến, "arrow" là các tia; góc đo từ pháp tuyến, "angle" đánh dấu góc tới và góc khúc xạ.
+- HÓA Phản ứng: chỉ vẽ khi lời giải cho thấy biến đổi theo thời gian — "plot" nồng độ (mol/lit) hoặc khối lượng theo "t"; số nguyên tử hai vế bằng nhau, bảo toàn electron thể hiện bằng "arrow" có cùng tổng.
+- HÓA Chuẩn độ axit – bazơ: "plot" pH (trục "y" từ 0 đến 14) theo thể tích dung dịch chuẩn; đường cong có bậc nhảy tại điểm tương đương, không vẽ đường thẳng.
+- HÓA Dung dịch – độ tan, cân bằng thuận nghịch: "plot" đơn điệu tiến dần tới giá trị bão hòa/hằng số, không vẽ dao động tuần hoàn.
+
+TRƯỚC KHI TRẢ VỀ, tự kiểm tra 5 điều và sửa lại nếu bất kỳ điều nào sai:
+(1) mỗi con số đều có gốc trong lời giải hoặc đã khai trong "basis"; (2) nhãn hai trục là đại lượng thật, không dấu; (3) hình có vòng tròn/góc/đa giác thì đã bật "equal" và tỉ lệ nhìn thấy đúng tỉ lệ thật; (4) hiện tượng tuần hoàn dùng "orbit" hoặc hình sin, không dùng parabol/đường thẳng; (5) nếu không đủ dữ kiện để vẽ đúng, trả "no_draw" thay vì vẽ đại.
+
+ĐÚNG BẢN CHẤT HÌNH HỌC (quan trọng nhất, sai là bài giảng thành sai):
+- Đường tròn phải là đường tròn thật: nghiêm cấm dùng "param" với hệ số cos và sin khác nhau (ví dụ "2*cos(t)" đi cùng "1.2*sin(t)") để giả đường tròn — đó là elip.
+- DAO ĐỘNG ĐIỀU HÒA / vòng tròn lượng giác: BẮT BUỘC dùng "orbit". Bán kính = A, "omega" = ω, "phase" = φ; li độ của vật chính là hình chiếu của bán kính quay xuống trục ngang. Kịch bản mẫu đúng:
+  {"do":"axes","id":"ax","x":[-2.6,2.6],"y":[-2.6,2.6],"grid":true,"xlabel":"x","ylabel":"y","t":1.2}
+  {"do":"dot","id":"M","axes":"ax","at":[2,0],"color":"#ffd54a","t":0.5}
+  {"do":"orbit","id":"M","center":[0,0],"radius":2,"omega":1,"phase":0,"t":6.3}
+  {"do":"text","latex":"x=A\\cos(\\omega t+\\varphi)","anchor":"top","t":1}
+  {"do":"wait","t":1.2}
+  Không vẽ elip, không vẽ parabol, không dùng "move"/"trace" để giả chuyển động quay.
+- Muốn vẽ đồ thị li độ theo thời gian thì dùng hệ trục khác với "xlabel":"t" và "plot" có "fn" dạng "A*cos(omega*x+phi)" (biến x ở đây là thời gian). Đồ thị dao động là hình sin, không phải parabol và không phải đường thẳng.
+- Con lắc lò xo / vật dao động trên trục: vẽ "orbit" rồi dùng hình chiếu, hoặc vẽ "plot" hình sin theo "t"; không vẽ quỹ đạo dao động thành đường tròn kín.
+- Khi nội dung cần bàn luận là hệ số góc hay độ nghiêng của "tangent" thì đặt "equal":true cho "axes", nếu không góc nhìn thấy sẽ không bằng góc thật.
+- Hình học phẳng (góc, tam giác, vec-tơ): chọn "x","y" vừa đủ bao trọn hình vì equal được bật tự động; "xlabel"/"ylabel" phải là đại lượng thật ("x","y","t","F").
+
+ĐÚNG BẢN CHẤT KHOA HỌC:
+- Thể hiện đúng khái niệm và công thức của lời giải: parabol mở đúng chiều, đạo hàm là hệ số góc tiếp tuyến, tích phân là diện tích dưới đường cong, vec-tơ lực cùng hướng gia tốc, dao động điều hòa có dạng sin, phương trình hóa học cân bằng đúng số nguyên tử.
+- Trung lập, khách quan; chỉ dùng dữ kiện có trong lời giải, không bịa số liệu; nhãn và công thức phải khớp chính xác với lời giải.`;
   }
 
   async function requestIllustration(groupId) {
@@ -1696,149 +3053,87 @@ ${cleanCode}
 
     const latestAnswer = responseGroup.dataset.illustrationAnswer || responseGroup.querySelector(".bot-text")?.innerText || "";
     const latestQuestion = responseGroup.dataset.illustrationQuestion || "";
-    const prompt = `Bạn là chuyên gia dựng animation giáo dục bằng Manim Community phong cách 3Blue1Brown, đồng thời là giáo viên Toán/Lý/Hóa chính xác và khách quan.
-Câu hỏi: ${latestQuestion}
-Lời giải: ${latestAnswer}
+    const basePrompt = buildIllustrationPrompt(latestQuestion, latestAnswer);
+    let scene = null;
+    let usedFallback = false;
 
-YÊU CẦU ĐẦU RA:
-- Trả về DUY NHẤT một khối <manim_code> chứa mã Python Manim Community; không viết gì ngoài khối này.
-- Mã bắt buộc có: from manim import *, class DynamicScene(Scene) và def construct(self).
+    const buildScene = async (promptText) => {
+      const raw = await callGeminiIllustration(promptText);
+      const parsed = extractAnimScene(raw);
+      if (!parsed) throw new Error("AI khong tra ve khoi <anim_code> hop le.");
+      return validateAnimScene(parsed, latestAnswer);
+    };
 
-NỘI DUNG - ĐÚNG BẢN CHẤT KHOA HỌC (bắt buộc):
-- Animation phải thể hiện ĐÚNG bản chất khái niệm, công thức và quan hệ của môn học trong lời giải; không minh họa sai lệch, không chỉ làm chữ nhấp nháy.
-- Toán: hình/đồ thị đúng tính chất (parabol y=x^2 mở lên, đạo hàm là hệ số góc tiếp tuyến, tích phân là diện tích dưới đường cong, tỉ lệ trục hợp lý).
-- Lý: chuyển động và vec-tơ đúng quy luật (dao động điều hòa dạng sin, lực cùng hướng gia tốc, đúng chiều và đúng độ lớn tương đối); không vẽ ngược chiều vật lý.
-- Hóa: phương trình/phân tử phải cân bằng đúng số nguyên tử và đúng công thức; không bịa chất hay hệ số.
-- Trung lập, khách quan, KHÔNG thiên vị hay chen quan điểm cá nhân; chỉ dùng dữ kiện trong câu hỏi và lời giải, không bịa số liệu.
-- Nhãn và công thức hiển thị phải khớp chính xác với lời giải.
-
-THỜI LƯỢNG:
-- Tổng khoảng 7 đến 11 giây: mỗi self.play run_time 1.2 đến 2.5, kết thúc bằng self.wait(1 đến 1.5); không dài hơn 12 giây.
-- Chia thành 4 đến 6 nhịp rõ ràng (dựng hình -> biến đổi/ chuyển động -> nhấn mạnh kết quả) để người học kịp theo dõi, mỗi nhịp thêm một chi tiết mới.
-
-KỸ THUẬT để code CHẮC CHẮN chạy (hạn chế tối đa sai sót):
-- Chỉ dùng đối tượng/animation phổ biến: Text, MathTex, Tex, VGroup, Dot, Line, Arrow, Circle, Rectangle, Axes, NumberLine, Create, Write, FadeIn, FadeOut, Transform, ReplacementTransform, MoveAlongPath, Indicate, GrowArrow.
-- Công thức toán dùng MathTex hoặc Tex trong chuỗi raw, ví dụ MathTex(r"\\frac{a}{b}"); không nhét ký tự Unicode toán học vào MathTex.
-- KHÔNG viết chữ giải thích hay chữ tiếng Việt vào video: LaTeX thiếu glyph dấu nên chữ Việt rất hay thành ô vuông lỗi font. Ưu tiên tuyệt đối chỉ hiển thị kí hiệu và công thức toán bằng MathTex/Tex (chuỗi raw).
-- Nếu bắt buộc cần nhãn ngắn, chỉ dùng kí hiệu không dấu (O, x, y, t, A, B, v, m, s...) hoặc chữ tiếng Anh không dấu qua Text(); không dùng Text() chứa tiếng Việt có dấu.
-- Bố cục gọn trong khung hình, không chồng lấn hay tràn; giãn bằng .to_edge / .shift / .next_to với khoảng cách hợp lý.
-- Mã ngắn (tối đa khoảng 60 dòng); không chuỗi nhiều dòng, không đọc file hay ảnh ngoài, không thư viện lạ, không f-string chứa ngoặc nhọn.
-- Mọi biến phải được định nghĩa trước khi dùng; không gọi hàm hay thuộc tính không tồn tại trong Manim.`;
-
-    let manimCode = "";
     try {
-      manimCode = extractManimCode(await callGeminiIllustration(prompt));
-      if (!manimCode) throw new Error("AI không trả về mã Manim hợp lệ.");
+      scene = await buildScene(basePrompt);
     } catch (error) {
-      console.error("Lỗi tạo mã Manim:", error);
-      panel.innerHTML = `<div class="illustration-note">Không tạo được mã Manim: ${escapeHtml(error.message)}</div>`;
+      console.warn("Kịch bản animation lỗi, nhờ Gemini sửa một lần:", error);
+      try {
+        scene = await buildScene(`${basePrompt}\n\nLƯỢT TRƯỚC BỊ TỪ CHỐI: ${error.message}\nHãy sửa đúng lỗi đó, giữ nguyên ý nghĩa khoa học, rồi trả về kịch bản mới.`);
+      } catch (repairError) {
+        console.warn("Không sửa được kịch bản, dùng animation mẫu:", repairError);
+      }
+    }
+    if (!scene) {
+      scene = validateAnimScene(buildSafeAnimFallback(), "");
+      usedFallback = true;
+    }
+
+    // Số không có trong lời giải = có dấu hiệu bịa dữ liệu: cho AI làm lại đúng một lần.
+    let anchored = !scene?.unanchored?.length;
+    if (!scene?.noDraw && !anchored) {
+      const listed = scene.unanchored.slice(0, 8).join(", ");
+      console.warn("Kịch bản dùng số không có trong lời giải:", scene.unanchored);
+      try {
+        const fixed = await buildScene(`${basePrompt}\n\nLƯỢT TRƯỚC DÙNG CÁC SỐ KHÔNG CÓ TRONG LỜI GIẢI: ${listed}.\nHãy sửa: chỉ dùng số lấy nguyên văn từ lời giải (hoặc đổi đơn vị thập phân của nó), nếu buộc phải phóng/tách để hình vừa khung thì khai báo trong "basis", còn không thì vẽ tổng quát bằng nhãn ký hiệu.`);
+        if (fixed.noDraw) {
+          scene = fixed;
+        } else {
+          scene = fixed;
+          anchored = !fixed.unanchored.length;
+        }
+      } catch (error) {
+        console.warn("Không sửa được số liệu của kịch bản:", error);
+      }
+    }
+
+    if (scene?.noDraw) {
+      panel.innerHTML = `<div class="illustration-note">${escapeHtml(scene.note || "Chủ đề này vẽ hình dễ gây hiểu nhầm nên tớ giải thích bằng lời cho chắc.")}</div>`;
       button.disabled = false;
       button.textContent = "🖼 Vẽ hình minh họa";
       return;
     }
+
+    const mountScene = () => {
+      const caption = usedFallback
+        ? "AI chưa tạo được kịch bản phù hợp nên hệ thống dựng animation mẫu."
+        : (anchored
+          ? "Animation dựng trực tiếp trong trình duyệt — máy nào cũng chạy được, không cần cài đặt."
+          : "Hình có chi tiết phóng/tách so với số liệu trong lời giải, cậu đối chiếu lại công thức nhé.");
+      panel.innerHTML = `<div class="anim-stage"><canvas class="anim-canvas"></canvas><div class="anim-labels"></div><button class="anim-replay" type="button">▶ Chơi lại</button></div><div class="illustration-note">${caption}</div>`;
+      const stage = panel.querySelector(".anim-stage");
+      stage.querySelector(".anim-replay").addEventListener("click", () => runAnimScene(stage, scene));
+      runAnimScene(stage, scene);
+    };
+
     try {
-      let data = null;
-      let lastError = null;
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        try {
-          const response = await fetch("http://localhost:8000/api/render-manim", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ manim_code: manimCode, fallback_code: buildSafeManimFallback() })
-          });
-          const result = await response.json().catch(() => ({}));
-          if (!response.ok || !result.video_url) throw new Error(result.detail || `Server Manim trả về HTTP ${response.status}.`);
-          data = result;
-          break;
-        } catch (error) {
-          lastError = error;
-        }
-      }
-      if (!data) throw lastError || new Error("Không nhận được video Manim.");
-
-      // Mã AI chưa chạy được (phải dùng bản dự phòng): nhờ Gemini tự sửa 1 lần
-      // dựa trên lỗi render thực tế để video vẫn đúng bản chất bài giảng.
-      if (data.fallback_used && data.render_error) {
-        try {
-          const repairPrompt = `Mã Manim dưới đây bị lỗi khi render. Hãy SỬA ĐÚNG LỖI nhưng GIỮ NGUYÊN ý nghĩa khoa học, công thức và thời lượng 7 đến 11 giây.
-LỖI RENDER THỰC TẾ:
-${data.render_error}
-
-MÃ GỐC:
-${manimCode}
-
-Trả về DUY NHẤT một khối <manim_code> chứa mã đã sửa, đủ from manim import *, class DynamicScene(Scene) và def construct(self). Chỉ dùng đối tượng/animation phổ biến của Manim Community.`;
-          const repairedCode = extractManimCode(await callGeminiIllustration(repairPrompt));
-          if (repairedCode) {
-            const repairResponse = await fetch("http://localhost:8000/api/render-manim", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ manim_code: repairedCode, fallback_code: buildSafeManimFallback() })
-            });
-            const repairResult = await repairResponse.json().catch(() => ({}));
-            if (repairResponse.ok && repairResult.video_url && !repairResult.fallback_used) data = repairResult;
-          }
-        } catch (repairError) {
-          console.warn("Tự sửa mã Manim không thành công, giữ bản dự phòng:", repairError);
-        }
-      }
-
-      const videoUrl = /^https?:\/\//i.test(data.video_url)
-        ? data.video_url
-        : `http://localhost:8000${data.video_url.startsWith("/") ? "" : "/"}${data.video_url}`;
-      panel.innerHTML = `<video class="manim-video" controls playsinline preload="metadata" src="${escapeAttribute(videoUrl)}"></video><div class="illustration-note">${data.fallback_used ? "Mã AI chưa chạy được, hệ thống đã dùng animation Manim dự phòng." : "Video được render bằng Manim Community."}</div>`;
+      mountScene();
     } catch (error) {
-      console.error("Lỗi render Manim:", error);
-      const isServerDown = /Failed to fetch|NetworkError|refused|ERR_CONNECTION/i.test(String(error && error.message));
-      const note = isServerDown
-        ? "Không kết nối được máy chủ render (localhost:8000) — server chưa chạy. Cậu bấm đúp file KhoDongAI.bat trên Desktop để mở server kèm AI rồi bấm nút vẽ lại nhé. Nếu máy vừa khởi động, chờ vài giây cho server kịp bật."
-        : `Render Manim thất bại: ${escapeHtml(error.message)}`;
-      panel.innerHTML = `<div class="illustration-note">${note}</div>`;
+      console.warn("Kịch bản AI dựng thất bại, chuyển sang animation mẫu:", error);
+      usedFallback = true;
+      scene = validateAnimScene(buildSafeAnimFallback(), "");
+      try {
+        mountScene();
+      } catch (fatalError) {
+        console.error("Không dựng được animation:", fatalError);
+        panel.innerHTML = `<div class="illustration-note">Không dựng được animation: ${escapeHtml(fatalError.message)}</div>`;
+        button.disabled = false;
+        button.textContent = "🖼 Vẽ hình minh họa";
+        return;
+      }
     }
     button.disabled = false;
     button.textContent = "Ẩn animation";
-  }
-
-  function buildSafeManimFallback() {
-    return `from manim import *
-
-class DynamicScene(Scene):
-    def construct(self):
-        formula = MathTex(r"f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}", font_size=32)
-        formula.to_edge(UP)
-        axes = Axes(x_range=[-3, 3, 1], y_range=[-2, 3, 1], color=GREY)
-        curve = axes.plot(lambda x: 0.4 * x ** 2 - 0.5, color=BLUE)
-        point = Dot(color=YELLOW)
-        self.play(Create(axes), run_time=1.5)
-        self.play(Create(curve), run_time=2)
-        self.play(Write(formula), run_time=1.6)
-        self.play(MoveAlongPath(point, curve), run_time=3)
-        self.play(Indicate(formula), run_time=1.2)
-        self.wait(1.2)
-`;
-  }
-
-  function extractManimCode(rawText) {
-    const source = String(rawText || "")
-      .replace(/&lt;/gi, "<")
-      .replace(/&gt;/gi, ">")
-      .replace(/&amp;/gi, "&")
-      .replace(/\r/g, "")
-      .trim();
-    const taggedMatch = source.match(/<manim_code\s*>\s*([\s\S]*?)(?:<\/manim_code\s*>|$)/i);
-    const fencedMatch = source.match(/```(?:python|py)?\s*([\s\S]*?)```/i);
-    const rawCandidate = taggedMatch?.[1] || fencedMatch?.[1] || source;
-    const codeStart = rawCandidate.search(/(?:^|\n)\s*from\s+manim\s+import\s+.+/m);
-    const candidate = codeStart >= 0 ? rawCandidate.slice(codeStart) : rawCandidate;
-    const code = candidate
-      .replace(/^\s*```(?:python|py)?\s*/i, "")
-      .replace(/\s*```\s*$/i, "")
-      .trim();
-    return /^\s*from\s+manim\s+import\s+.+/m.test(code)
-      && /^\s*class\s+DynamicScene\s*\(\s*Scene\s*\)\s*:/m.test(code)
-      && /^\s*def\s+construct\s*\(\s*self\s*\)\s*:/m.test(code)
-      ? code
-      : "";
   }
 
   function buildHarmonicMotionPython() {
@@ -2155,7 +3450,7 @@ result`;
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             system_instruction: { parts: [{ text: prompt }] },
-            contents: [{ role: "user", parts: [{ text: "Người học đã yêu cầu vẽ. Hãy trả về đúng một khối <manim_code> chứa mã Manim Community hợp lệ với class DynamicScene." }] }],
+            contents: [{ role: "user", parts: [{ text: "Người học đã yêu cầu vẽ. Hãy trả về DUY NHẤT một khối <anim_code>{\"steps\":[...]}</anim_code> chứa kịch bản AnimScene hợp lệ theo đúng schema trong hệ thống. Không viết Python, không viết thêm chữ nào ngoài khối đó." }] }],
             generationConfig: { temperature: 0.15, maxOutputTokens: 5000, thinkingConfig: { thinkingBudget: 0 } }
           })
         });
@@ -2210,12 +3505,11 @@ result`;
       if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
       requestMicrophoneAndListen();
     } else {
+      if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
       if (speechRecognition) {
         try { speechRecognition.stop(); } catch (error) {}
       }
-      if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-      speechRecognition = null;
     }
   }
 
@@ -2241,33 +3535,41 @@ result`;
       try { speechRecognition.stop(); } catch (error) {}
     }
 
-    speechRecognition = new Recognition();
-    speechRecognition.lang = "en-US";
-    speechRecognition.interimResults = false;
-    // Một lần bấm chỉ nhận một lượt nói; quyền đã cấp vẫn được trình duyệt giữ.
-    speechRecognition.continuous = false;
-    speechRecognition.maxAlternatives = 3;
-    speechRecognition.onstart = () => {
+    const recognition = new Recognition();
+    speechRecognition = recognition;
+    voiceTranscript = "";
+    voiceInterimTranscript = "";
+    recognition.lang = "en-US";
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.maxAlternatives = 3;
+    recognition.onstart = () => {
       microphonePermissionStatus = "granted";
       localStorage.setItem("english-microphone-permission", microphonePermissionStatus);
       document.getElementById("voiceStatus").textContent = "Đang nghe... Hãy nói bằng tiếng Anh.";
     };
-    speechRecognition.onresult = event => {
-      const transcript = Array.from(event.results)
-        .slice(event.resultIndex)
-        .map(result => result[0]?.transcript || "")
-        .join(" ")
-        .trim();
-      if (transcript) {
-        voiceModeEnabled = false;
-        document.getElementById("voiceModeBtn").classList.remove("active");
-        try { speechRecognition.stop(); } catch (error) {}
-        document.getElementById("userInput").value = transcript;
-        sendMessage();
+    recognition.onresult = event => {
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const piece = (event.results[i][0]?.transcript || "").trim();
+        if (!piece) continue;
+        if (event.results[i].isFinal) {
+          voiceTranscript += (voiceTranscript ? " " : "") + piece;
+          voiceInterimTranscript = "";
+        } else {
+          voiceInterimTranscript = piece;
+        }
       }
+      const currentTranscript = [voiceTranscript, voiceInterimTranscript].filter(Boolean).join(" ");
+      if (currentTranscript) {
+        document.getElementById("voiceStatus").textContent = `Đang nghe: "${currentTranscript}"`;
+      }
+      if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
+      voiceRestartTimer = window.setTimeout(() => {
+        if (speechRecognition === recognition) recognition.stop();
+      }, 1600);
     };
-    speechRecognition.onerror = event => {
-      speechRecognition.__hasError = true;
+    recognition.onerror = event => {
+      recognition.__hasError = true;
       if (["not-allowed", "service-not-allowed"].includes(event.error)) {
         microphonePermissionStatus = "denied";
         localStorage.setItem("english-microphone-permission", microphonePermissionStatus);
@@ -2285,16 +3587,31 @@ result`;
         document.getElementById("voiceModeBtn").classList.remove("active");
       }
     };
-    speechRecognition.onend = () => {
-      if (voiceModeEnabled && !speechRecognition?.__hasError) {
+    recognition.onend = () => {
+      if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
+      voiceRestartTimer = null;
+      const heard = voiceTranscript.trim();
+      voiceTranscript = "";
+      voiceInterimTranscript = "";
+      const hadError = Boolean(recognition.__hasError);
+      if (speechRecognition === recognition) speechRecognition = null;
+      if (heard && !hadError && voiceModeEnabled) {
+        voiceModeEnabled = false;
+        document.getElementById("voiceModeBtn").classList.remove("active");
+        document.getElementById("userInput").value = heard;
+        document.getElementById("voiceStatus").textContent = "Nhắn tin hoặc bật voice mode để luyện nói.";
+        sendMessage();
+        return;
+      }
+      if (voiceModeEnabled && !hadError) {
         document.getElementById("voiceStatus").textContent = "Micro đã dừng. Bấm mic để nói tiếp.";
       }
-      speechRecognition = null;
     };
     try {
-      speechRecognition.__hasError = false;
-      speechRecognition.start();
+      recognition.__hasError = false;
+      recognition.start();
     } catch (error) {
+      if (speechRecognition === recognition) speechRecognition = null;
       document.getElementById("voiceStatus").textContent = "Micro đang bận. Hãy chờ một chút rồi thử lại.";
       voiceModeEnabled = false;
       document.getElementById("voiceModeBtn").classList.remove("active");
@@ -2375,6 +3692,9 @@ result`;
       parentContainer.innerHTML = `<span class="feedback-status understood">Đã ghi nhận cách giải này cho các câu hỏi sau.</span>`;
     } else if (type === 'confused') {
       if (!responseElement || !responseGroup) return;
+      if (isSendingMessage) { nudgeComposer(); return; }
+      isSendingMessage = true;
+      setSendBusy(true);
       saveLearnerProfile("confused", "Người học chưa nắm được cách giải ở lượt gần nhất.");
       const lastModelIndex = chatHistory.map(item => item.role).lastIndexOf("model");
       if (lastModelIndex >= 0) chatHistory.splice(lastModelIndex, 1);
@@ -2392,7 +3712,13 @@ result`;
             ? 0.45
             : thinkingLevel === "talking" ? 0.25 : 0.2;
       const engineName = learningMode === "arena" ? "Gemini Flash · HSG" : "Gemini 3.6 Flash";
-      const success = await callGeminiApi(responseElement.id, retryPrompt, modelName, engineName, temperature);
+      let success = false;
+      try {
+        success = await callGeminiApi(responseElement.id, retryPrompt, modelName, engineName, temperature);
+      } finally {
+        isSendingMessage = false;
+        setSendBusy(false);
+      }
       if (!success) responseElement.innerHTML = "⚠️ Chưa thể viết lại lúc này. Cậu thử bấm gửi lại câu hỏi sau nhé!";
     }
   }
@@ -2406,6 +3732,7 @@ result`;
       document.getElementById("imagePreview").src = evt.target.result;
       document.getElementById("imageName").innerText = file.name || "Ảnh đã dán";
       document.getElementById("imagePreviewContainer").style.display = "flex";
+      renderModeRibbon();
     };
     reader.readAsDataURL(file);
     return true;
@@ -2420,12 +3747,18 @@ result`;
     selectedImageMimeType = null;
     document.getElementById("imageInput").value = "";
     document.getElementById("imagePreviewContainer").style.display = "none";
+    renderModeRibbon();
   }
 
   function clearChat() {
     if (confirm("Xóa toàn bộ lịch sử trò chuyện?")) {
       chatHistory = [];
       saveActiveChatHistory();
+      stopArenaTimer();
+      arenaSession.seconds = 0;
+      arenaSession.problems = 0;
+      arenaSession.scores = [];
+      renderModeRibbon();
       const welcomeText = activeSpace === "english"
         ? "Your English practice history is clear. Ready for a new conversation? 😊"
         : "Lịch sử trò chuyện đã được làm sạch! 😊";
