@@ -39,7 +39,7 @@ jobs:
           if not api_url.startswith("https://"):
               raise SystemExit("Set the repository variable API_BASE_URL to your Render HTTPS URL first.")
 
-            source = Path("index.html")
+          source = Path("index.html")
           if not source.is_file():
               raise SystemExit("Expected index.html at the repository root.")
 
