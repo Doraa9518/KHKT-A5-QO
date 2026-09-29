@@ -1,0 +1,65 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build site with backend URL
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          api_url = os.environ.get("API_BASE_URL", "").strip().rstrip("/")
+          if not api_url.startswith("https://"):
+              raise SystemExit("Set the repository variable API_BASE_URL to your Render HTTPS URL first.")
+
+            source = Path("index.html")
+          if not source.is_file():
+              raise SystemExit("Expected index.html at the repository root.")
+
+          html = source.read_text(encoding="utf-8")
+          if html.count("__API_BASE_URL__") != 1:
+              raise SystemExit("Expected exactly one __API_BASE_URL__ placeholder in the HTML.")
+
+          output = Path("build")
+          output.mkdir(exist_ok=True)
+          (output / "index.html").write_text(
+              html.replace("__API_BASE_URL__", api_url), encoding="utf-8"
+          )
+          (output / ".nojekyll").touch()
+          PY
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

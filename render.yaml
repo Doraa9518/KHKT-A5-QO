@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ai-gia-su-backend
+    runtime: python
+    plan: free
+    buildCommand: python -m py_compile ai_proxy.py
+    startCommand: python ai_proxy.py
+    healthCheckPath: /health
+    envVars:
+      - key: AI_PROXY_HOST
+        value: 0.0.0.0
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
