@@ -21,11 +21,13 @@
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <script>
     window.APP_CONFIG = {
-      apiBaseUrl: "__API_BASE_URL__",
-      geminiApiEndpoint: "/api/gemini",
-      animationApiEndpoint: "/api/animation",
-      mathReviewApiEndpoint: "/api/math-review",
-      mathSolveApiEndpoint: "/api/math-solve"
+      geminiKeys: [
+        "QVEuQWI4Uk42SnlCLWF3M2VwaFZyNUIwaTJETWJXZzkyYXEzQXQtWUJDRWQ0OXFpWEtBeFE",
+        "QVEuQWI4Uk42TFF6dzMwRUwtU19aNFFsUG4xWmwwT3pNRlZiMmVnTzhpR2ttdjQ4OUZVSWc=",
+        "QVEuQWI4Uk42SS15LWpFT2duZjJlZVdfdnZDMjJ5MzUzOUM3TjdSc2R3bXE1UF9NMGMwa2c=",
+        "QVEuQWI4Uk42S2ktcnNMbENRdDJIUHFGenRJdUgzQUJqMUxaVzE1YWdPZVRLVjg5dUF0TVE=",
+        "QVEuQWI4Uk42THJZVE5aR2k4bTJ6b3huSzBlUWZ2TWNrS2dLdU1RbW5jVnplaVBYME5QQnc="
+      ]
     };
   </script>
 
@@ -317,16 +319,12 @@
     .feedback-btn { padding: 5px 12px; border-radius: 14px; border: 1px solid var(--ui-line); background: rgba(255,255,255,0.04); color: var(--ui-text); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .feedback-btn.understand:hover { background: #e6f4ea; color: #137333; border-color: #137333; }
     .feedback-btn.confused:hover { background: #fce8e6; color: #c5221f; border-color: #c5221f; }
-    .deepseek-panel { margin: 10px 0; padding: 12px 14px; border: 1px solid var(--ui-line); border-left: 3px solid #19a974; border-radius: 12px; background: var(--ui-panel); color: var(--ui-text); font-size: 13px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .math-solve-panel { border-left-color: #e0a326; }
-    .deepseek-panel[hidden] { display: none; }
     .feedback-status { font-size: 12px; font-weight: 600; }
     .feedback-status.understood { color: #137333; }
     .feedback-status.retrying { color: #c5221f; }
     .speech-toggle-btn { padding: 5px 9px; border-radius: 12px; border: 1px solid var(--ui-line); background: rgba(255,255,255,0.04); color: var(--ui-text); font-size: 12px; cursor: pointer; }
     .illustration-btn { padding: 5px 10px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--ui-accent) 45%, var(--ui-line)); background: color-mix(in srgb, var(--ui-accent) 10%, transparent); color: var(--ui-text); font-size: 12px; cursor: pointer; }
     .illustration-btn:hover { background: color-mix(in srgb, var(--ui-accent) 22%, transparent); }
-    .illustration-btn.suggested { background: color-mix(in srgb, var(--ui-accent) 28%, transparent); border-color: var(--ui-accent); font-weight: 600; }
     .illustration-btn:disabled { opacity: 0.65; cursor: wait; }
     .anim-stage { position: relative; width: 100%; max-width: 720px; margin: 0 auto; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: radial-gradient(circle at 28% 18%, #17233f 0%, #0b1120 72%); box-shadow: inset 0 0 0 1px rgba(148,163,184,0.16); }
     .anim-canvas { display: block; width: 100%; height: 100%; }
@@ -1042,75 +1040,27 @@
 </div>
 
 <script>
-  // Hạn mức miễn phí tính riêng cho từng model, nên các model dự phòng cuối danh sách là "lượt dùng thêm" khi model chính hết lượt.
-  const GEMINI_PRIMARY_MODELS = ["gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-latest"];
-  const GEMINI_FALLBACK_MODELS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
-  const GEMINI_TALKING_MODELS = [...GEMINI_PRIMARY_MODELS, ...GEMINI_FALLBACK_MODELS];
-  const GEMINI_STUDY_MODELS = [...GEMINI_PRIMARY_MODELS, ...GEMINI_FALLBACK_MODELS];
+  // KHÔI PHỤC 4 GEMINI KEYS XOAY VÒNG
+  const GEMINI_KEYS = window.APP_CONFIG?.geminiKeys || [];
+  let currentGeminiIndex = 0;
+  function getNextGeminiKey() {
+    if (GEMINI_KEYS.length === 0) return "";
+    const key = atob(GEMINI_KEYS[currentGeminiIndex]);
+    currentGeminiIndex = (currentGeminiIndex + 1) % GEMINI_KEYS.length;
+    return key;
+  }
+
+  const GEMINI_TALKING_MODELS = ["gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-latest"];
+  const GEMINI_STUDY_MODELS = ["gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-flash-latest"];
   const GEMINI_TALKING_MODEL = GEMINI_TALKING_MODELS[0];
   const GEMINI_STUDY_MODEL = GEMINI_STUDY_MODELS[0];
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-  // Cặp key|model vừa báo hết quota sẽ bị bỏ qua đến hết thời gian chờ Google trả về, thay vì gọi lại vô ích mỗi tin nhắn.
-  const geminiCooldowns = new Map();
-  let lastGeminiFailure = { rateLimited: false, perDay: false, waitSeconds: 0 };
-
-  function geminiAttemptPlan(models) {
-    const now = Date.now();
-    const plan = [];
-    models.forEach(model => {
-      if ((geminiCooldowns.get(`0|${model}`) || 0) <= now) plan.push({ keyIndex: 0, model });
-    });
-    return plan;
-  }
-
-  function secondsUntilGeminiAvailable(models) {
-    const now = Date.now();
-    let soonest = Infinity;
-    models.forEach(model => { soonest = Math.min(soonest, (geminiCooldowns.get(`0|${model}`) || 0) - now); });
-    return Number.isFinite(soonest) ? Math.max(0, Math.ceil(soonest / 1000)) : 0;
-  }
-
-  async function noteGeminiFailure(response, attempt) {
-    let data = {};
-    try { data = await response.json(); } catch (_) {}
-    const status = response.status || 0;
-    const message = data.error?.message || data.error?.status || "";
-    console.warn(`Gemini lỗi HTTP ${status} (${attempt.model}):`, message);
-    const pairKey = `${attempt.keyIndex}|${attempt.model}`;
-    if (status === 429) {
-      const details = data.error?.details || [];
-      const retryInfo = details.find(item => String(item["@type"] || "").includes("RetryInfo"));
-      const perDay = /PerDay/i.test(JSON.stringify(details));
-      const retrySeconds = parseFloat(retryInfo?.retryDelay) || parseFloat((message.match(/retry in ([\d.]+)s/i) || [])[1]) || 60;
-      geminiCooldowns.set(pairKey, Date.now() + (perDay ? 60 * 60 : Math.ceil(retrySeconds)) * 1000);
-      lastGeminiFailure.rateLimited = true;
-      lastGeminiFailure.perDay = lastGeminiFailure.perDay || perDay;
-      return;
-    }
-    if (status === 403 || status === 404) {
-      geminiCooldowns.set(pairKey, Date.now() + 10 * 60 * 1000);
-      return;
-    }
-    if (status >= 500) await sleep(300 + Math.random() * 300);
-  }
-
-  function geminiFailureMessage(models) {
-    if (!lastGeminiFailure.rateLimited) {
-      return "⚠️ Tớ chưa kết nối được tới Gemini. Cậu kiểm tra mạng rồi gửi lại nhé!";
-    }
-    const wait = secondsUntilGeminiAvailable(models);
-    if (lastGeminiFailure.perDay || wait > 15 * 60) {
-      return "⚠️ Gemini đã dùng hết lượt hôm nay. Cậu quay lại sau hoặc kiểm tra hạn mức API nhé!";
-    }
-    return `⚠️ Gemini đang tạm hết lượt. Cậu đợi khoảng ${Math.max(5, wait)} giây rồi gửi lại nhé!`;
-  }
   const DIAGRAM_SYSTEM_PROMPT = `
 **System Prompt:**
 Bạn là trợ lý giáo dục Toán/Lý trực quan theo phong cách 3Blue1Brown.
 
 **QUY TẮC BẮT BUỘC:**
-1. Trả lời bài giảng bằng Markdown ngắn gọn, dễ hiểu.
+1. Trả lời bằng Markdown rõ ràng, có chiều sâu vừa đủ để người học hiểu bản chất. Độ dài phải theo độ khó: câu hỏi đơn giản thì gọn, bài tập hoặc câu hỏi khái niệm thì giải thích đầy đủ, không cắt ngắn các bước quan trọng.
 2. KHÔNG viết code Python, Manim hay bất kỳ đoạn mã mô phỏng nào trong câu trả lời; hệ thống tự dựng animation bằng engine riêng.
 3. Nếu (và chỉ nếu) chuyển động, đồ thị, hình học hay mô phỏng vật lý giúp người học hiểu bản chất hơn, thêm đúng marker nội bộ [[DRAW_DIAGRAM]] ở dòng cuối câu trả lời. Marker bị ẩn với người học, không được nhắc tới hay giải thích.
 4. Không thêm marker khi câu trả lời chỉ cần chữ.
@@ -1130,7 +1080,7 @@ Bạn là Trợ lý Học tập AI Sư phạm dành cho học sinh THPT.
 9. KIỂM CHỨNG: Với bài tính, hãy kiểm tra bằng cách thay ngược kết quả, xét điều kiện xác định và đơn vị nếu có. Nếu có nhiều cách giải, ưu tiên cách ngắn và chắc nhất, có thể nêu cách thứ hai khi nó giúp hiểu bản chất.
 10. PHÂN LOẠI: Tự nhận diện câu hỏi là kiến thức, bài tính, phân tích ảnh, sửa lỗi, khái niệm hay lập kế hoạch học tập để chọn cách trả lời tương ứng.
 11. ĐỘ TIN CẬY: Nếu đề thiếu dữ kiện, ảnh không rõ hoặc có nhiều cách hiểu, phải nói chính xác điểm chưa chắc và hỏi lại. Tuyệt đối không tự bịa số liệu, công thức, nguồn, định lý hoặc đáp án.
-12. VÀO THẲNG VẤN ĐỀ: Không chép lại đề, không chào hỏi dài dòng, không "như đã nói ở trên", không xin lỗi. Câu mở đầu tối đa 1 dòng nêu hướng làm. Mỗi đoạn văn tối đa 3 dòng; danh sách chỉ dùng khi thật sự cần liệt kê và tối đa 1 cấp thụt lề (điện thoại đọc khó).
+  12. VÀO THẲNG VẤN ĐỀ: Không chép lại đề, không chào hỏi dài dòng, không "như đã nói ở trên", không xin lỗi. Câu mở đầu tối đa 1 dòng nêu hướng làm. Chia đoạn để dễ đọc trên điện thoại nhưng không được cắt mất giải thích, điều kiện hoặc bước biến đổi quan trọng.
 13. CÔNG THỨC DỄ ĐỌC: Công thức quan trọng đặt một dòng riêng dạng $$...$$, không nhúng công thức dài giữa câu văn. Số có đơn vị luôn kèm đơn vị ở kết quả. Không dùng bảng markdown quá 4 cột.
 14. KẾT LUẬN RÕ RÀNG: Kết thúc bằng đúng một dòng "**Đáp số:** ..." (hoặc "**Kết luận:** ...") ghi kết quả cuối kèm đơn vị và điều kiện nếu có. Bài nhiều phần phải trả lời đủ và gắn nhãn (a), (b), (c) cho từng phần.
 15. TỰ THỬ LẠI TRƯỚC KHI HIỆN KẾT QUẢ: chọn một phép thử phù hợp (thế kết quả vào phương trình, kiểm thứ nguyên/đơn vị, xét trường hợp đặc biệt hoặc miền giá trị). Nếu phép thử không đạt, im lặng làm lại và chỉ trình bày lời giải đã đúng; không đưa đáp số rồi đính chính.
@@ -1530,7 +1480,8 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
   - Nếu sửa bài: Tìm bước sai đầu tiên, giải thích nguyên nhân, sau đó mới đưa cách sửa.
   - Nếu thiếu dữ kiện: dừng ở phần có thể kết luận và hỏi đúng thông tin còn thiếu; không đoán.
   - Mỗi khẳng định định lượng phải có nguồn từ đề, từ sách giáo khoa hoặc từ bước biến đổi hiển thị ở trên; không đưa số "chừng khoảng" không căn cứ.
-  - Ưu tiên lập luận liền mạch, ngắn hơn nhưng đủ ý; xóa mọi câu lặp lại lời hỏi, câu cảm thán hoặc câu dẫn không mang thông tin.
+  - Với Toán/Lý/Hóa, tự kiểm tra độc lập các phép biến đổi, dấu, điều kiện xác định, nghiệm ngoại lai, trường hợp biên và đơn vị; nếu có đáp số, thế ngược hoặc dùng phép kiểm tra tương đương trước khi kết luận.
+  - Ưu tiên lập luận liền mạch, đủ ý và có chiều sâu theo độ khó; xóa câu lặp lại lời hỏi, câu cảm thán hoặc câu dẫn không mang thông tin, nhưng không được rút gọn thành đáp số hoặc vài công thức rời rạc.
   - Cuối câu trả lời, tự rà soát độ đúng, điều kiện áp dụng, đơn vị và sự phù hợp với trình độ người học trước khi gửi.
   - Ưu tiên cách giải chuẩn chương trình THPT; nếu dùng kiến thức ngoài chương trình, ghi rõ nhãn "nâng cao ngoài SGK".
   - Kết quả cuối cùng phải nằm trong một dòng "**Đáp số:**" hoặc "**Kết luận:**" để người học tìm lại dễ trên điện thoại.
@@ -1554,17 +1505,6 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
 - Ưu tiên cách giải chắc, sáng sủa và phù hợp THPT. Nếu có cách nâng cao ngắn hơn, nêu sau lời giải chính với nhãn "Cách nhìn khác".
 - Với câu hỏi khái niệm, dùng trực giác, ví dụ đúng và trường hợp dễ nhầm thay vì ép thành lời giải bài toán.
 - Được phép trình bày lời giải đầy đủ, đáp số và phần kiểm tra khi đề đã đủ dữ kiện.
-`;
-    }
-    if (mode === "student" && learningMode !== "arena") {
-      activePrompt += `
-[PHƯƠNG PHÁP DẠY HỌC FEYNMAN - BẮT BUỘC]: Mục tiêu là giúp người học tự hiểu và giải thích lại được, không chỉ nhìn thấy đáp số.
-- Bắt đầu từ ý cốt lõi bằng ngôn ngữ đơn giản, đúng trình độ THPT; giải thích thuật ngữ mới trước khi dùng.
-- Với khái niệm, hãy dùng một ví dụ gần gũi hoặc phép so sánh cụ thể khi nó giúp sáng tỏ, rồi nói rõ ví dụ đó tương ứng với yếu tố nào trong kiến thức thật và giới hạn của phép so sánh.
-- Với bài tập, giải thích vì sao chọn định lý/công thức và vì sao từng bước biến đổi hợp lệ; luôn nối phép tính với ý nghĩa của nó thay vì chỉ liệt kê thao tác.
-- Chỉ ra một chỗ dễ hiểu nhầm và cách tự kiểm tra. Kết thúc bằng một câu hỏi ngắn để người học tự diễn đạt lại ý chính hoặc thử một bước tương tự; không yêu cầu trả lời nếu câu hỏi của người dùng chỉ cần một dữ kiện rất ngắn.
-- Giữ câu trả lời gọn theo độ khó: không ép mọi câu hỏi thành bài giảng dài, nhưng tuyệt đối không đưa đáp số trơ trọi khi người dùng đang hỏi bài hoặc cần học.
-- Không trình bày suy nghĩ nội bộ. Chỉ đưa lời giải thích sư phạm cần thiết; vẫn tuân thủ giới hạn của chế độ chẩn đoán và không tự giải hết bài trong chế độ đó.
 `;
     }
     return activePrompt;
@@ -1830,7 +1770,7 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
       const replySuccess = await callGeminiApi(loadingId, activePrompt, selectedGeminiModel, engineName, selectedTemperature);
 
       if (!replySuccess) {
-        document.getElementById(loadingId).innerHTML = geminiFailureMessage(GEMINI_STUDY_MODELS);
+        document.getElementById(loadingId).innerHTML = "⚠️ Gemini đang bận hoặc các API key đều không khả dụng. Cậu thử lại sau vài giây nhé!";
         chatHistory.pop();
         saveActiveChatHistory();
       }
@@ -1843,12 +1783,13 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
   }
 
   // QUYẾT ĐỊNH NGÂN SÁCH SUY LUẬN (thinking) THEO TỪNG CHẾ ĐỘ
-  // 0 = tắt (chat thường, cần nhanh); -1 = để model TỰ suy luận (dynamic) -> giải Toán khó đúng hơn hẳn.
+  // Giới hạn cố định giúp phản hồi nhanh và ổn định hơn dynamic thinking.
   function computeThinkingBudget() {
     const mode = document.getElementById("aiMode").value;
     const thinkingLevel = document.getElementById("thinkingMode").value;
     if (mode === "talkshow" || mode === "english" || thinkingLevel === "talking") return 0;
-    return -1;
+    const detailLevel = document.getElementById("detailMode").value;
+    return detailLevel === "detailed" ? 1024 : 0;
   }
 
   // Dựng phần "contents" chuẩn Gemini từ lịch sử chat (ghép các lượt trùng role, bỏ lượt mở đầu không phải user).
@@ -1881,8 +1822,10 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
 
   function buildGeminiRequestBody(activePrompt, maxOutputTokens, temperature, thinkingBudget) {
     const generationConfig = { temperature, maxOutputTokens };
-    // thinkingBudget 0 -> tắt suy luận (nhanh). Khác 0 -> bỏ hẳn thinkingConfig để model dùng mặc định (thinking BẬT).
-    if (thinkingBudget === 0) generationConfig.thinkingConfig = { thinkingBudget: 0 };
+    // Luôn truyền budget để tránh model tự chọn dynamic thinking gây chậm không ổn định.
+    if (Number.isFinite(thinkingBudget) && thinkingBudget >= 0) {
+      generationConfig.thinkingConfig = { thinkingBudget };
+    }
     return {
       system_instruction: { parts: [{ text: activePrompt }] },
       contents: buildGeminiContents(),
@@ -1930,33 +1873,43 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
     let buffer = "";
     let fullText = "";
     let finishReason = "";
+    const processLine = (rawLine) => {
+      const line = rawLine.trim();
+      if (!line.startsWith("data:")) return;
+      const payload = line.slice(5).trim();
+      if (!payload || payload === "[DONE]") return;
+      let json;
+      try { json = JSON.parse(payload); } catch (_) { return; }
+      const candidate = json.candidates?.[0];
+      if (candidate?.finishReason) finishReason = candidate.finishReason;
+      for (const part of (candidate?.content?.parts || [])) {
+        if (typeof part.text !== "string" || part.thought) continue;
+        fullText += part.text;
+        streamer.push(fullText);
+      }
+    };
     while (true) {
       const { value, done } = await reader.read();
-      if (done) break;
+      if (done) {
+        buffer += decoder.decode();
+        break;
+      }
       buffer += decoder.decode(value, { stream: true });
       let idx;
       while ((idx = buffer.indexOf("\n")) >= 0) {
-        const line = buffer.slice(0, idx).trim();
+        const line = buffer.slice(0, idx);
         buffer = buffer.slice(idx + 1);
-        if (!line.startsWith("data:")) continue;
-        const payload = line.slice(5).trim();
-        if (!payload || payload === "[DONE]") continue;
-        let json;
-        try { json = JSON.parse(payload); } catch (_) { continue; }
-        const candidate = json.candidates?.[0];
-        if (candidate?.finishReason) finishReason = candidate.finishReason;
-        for (const part of (candidate?.content?.parts || [])) {
-          if (typeof part.text !== "string" || part.thought) continue;
-          fullText += part.text;
-          streamer.push(fullText);
-        }
+        processLine(line);
       }
     }
+    if (buffer.trim()) processLine(buffer);
     return { text: fullText, finishReason };
   }
 
   // GỌI GEMINI API - STREAMING (SSE) + TỰ XOAY KEY / ĐỔI MODEL KHI BẬN
   async function callGeminiApi(loadingId, activePrompt, modelName, engineLabel, temperature) {
+    if (!GEMINI_KEYS || GEMINI_KEYS.length === 0) return false;
+
     const modelCandidates = modelName.includes("lite") ? GEMINI_TALKING_MODELS : GEMINI_STUDY_MODELS;
     const currentMode = document.getElementById("aiMode").value;
     const thinkingBudget = computeThinkingBudget();
@@ -1964,41 +1917,72 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
     const maxOutputTokens = currentMode === "english"
       ? 1024
       : thinkingBudget === 0
-        ? (modelName.includes("lite") ? 1800 : 3000)
+        ? (modelName.includes("lite") ? 3000 : 6000)
         : 8192;
 
     const requestBody = buildGeminiRequestBody(activePrompt, maxOutputTokens, temperature, thinkingBudget);
     if (!requestBody.contents.length) return false;
 
     const streamer = createStreamPreview(loadingId);
-    lastGeminiFailure = { rateLimited: false, perDay: false, waitSeconds: 0 };
-    const plan = geminiAttemptPlan(modelCandidates);
-    if (!plan.length) lastGeminiFailure.rateLimited = true;
+    let attempts = 0;
+    while (attempts < GEMINI_KEYS.length) {
+      attempts++;
+      const apiKey = getNextGeminiKey();
+      if (!apiKey) continue;
 
-    for (const attempt of plan) {
-      try {
-        const response = await fetch(getGeminiApiEndpoint(), {
+      for (const candidateModel of modelCandidates) try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${candidateModel}:streamGenerateContent?alt=sse&key=${apiKey}`;
+        const response = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ model: attempt.model, request: requestBody, stream: true })
+          body: JSON.stringify(requestBody)
         });
 
         if (!response.ok || !response.body) {
-          await noteGeminiFailure(response, attempt);
+          const status = response.status || 0;
+          let message = "";
+          try { const errData = await response.json(); message = errData.error?.message || errData.error?.status || ""; } catch (_) {}
+          console.warn(`Gemini lỗi HTTP ${status} (${candidateModel}):`, message);
+          // 429/5xx (gồm 503 "quá tải") là lỗi tạm thời: lùi theo số lần thử rồi đổi model/key.
+          if (status === 429 || status >= 500) await sleep(350 * attempts + Math.random() * 200);
           continue;
         }
 
-        const { text, finishReason } = await readGeminiSSE(response, streamer);
-        const botReply = text.trim();
-        if (!botReply) continue;
+        let { text, finishReason } = await readGeminiSSE(response, streamer);
+        let botReply = text.trim();
+        if (!botReply) { await sleep(200); continue; }
 
+        let continuationCount = 0;
+        while (finishReason === "MAX_TOKENS" && continuationCount < 2) {
+          continuationCount += 1;
+          const continuationBody = {
+            ...requestBody,
+            contents: [
+              ...requestBody.contents,
+              { role: "model", parts: [{ text: botReply }] },
+              { role: "user", parts: [{ text: "Hãy tiếp tục chính xác từ chỗ vừa dừng, không nhắc lại phần đã trả lời. Hoàn thành đầy đủ yêu cầu ban đầu, giữ nguyên ký hiệu và kiểm tra tính đúng đắn của các kết quả Toán/Lý/Hóa." }] }
+            ]
+          };
+          const continuationResponse = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(continuationBody)
+          });
+          if (!continuationResponse.ok || !continuationResponse.body) break;
+          const continuation = await readGeminiSSE(continuationResponse, {
+            push: (suffix) => streamer.push(`${botReply}\n${suffix}`)
+          });
+          if (!continuation.text.trim()) break;
+          botReply += `\n${continuation.text.trim()}`;
+          finishReason = continuation.finishReason;
+        }
         const finishedText = finishReason === "MAX_TOKENS"
-          ? `${botReply}\n\n> ⏳ Câu trả lời dài nên bị cắt ở đây. Cậu gõ **"tiếp"** để tớ viết nốt phần còn lại.`
+          ? `${botReply}\n\n> ⏳ Câu trả lời vẫn chạm giới hạn độ dài; phần đã tạo được giữ lại.`
           : botReply;
         renderBotResponse(loadingId, finishedText, engineLabel, "engine-gemini");
         return true;
       } catch (err) {
-        console.error(`Lỗi kết nối Gemini (${attempt.model}):`, err);
+        console.error(`Lỗi kết nối Gemini (${candidateModel}) lượt ${attempts}:`, err);
       }
     }
     return false;
@@ -2035,7 +2019,6 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
       <div class="feedback-actions">
         ${speechButtonMarkup}
         ${activeSpace !== "english" ? `<button class="illustration-btn" onclick="requestIllustration('${elemId}-group')" title="Chỉ tạo hình khi cậu cần hình dung">🖼 Vẽ hình minh họa</button>` : ""}
-        ${activeSpace !== "english" && document.getElementById("aiMode").value !== "talkshow" && getMathReviewApiEndpoint() ? `<button class="feedback-btn" data-deepseek-task="review" onclick="requestDeepSeekMath('${elemId}-group', 'review')" title="Gọi DeepSeek rà soát độc lập lời giải">🧮 Kiểm tra Toán</button><button class="feedback-btn" data-deepseek-task="solve" onclick="requestDeepSeekMath('${elemId}-group', 'solve')" title="Nhờ DeepSeek tự giải đề để đối chiếu">💡 Cách giải khác</button>` : ""}
         <button class="feedback-btn understand" onclick="handleFeedback(this, 'understand')">👍 Đã hiểu</button>
         <button class="feedback-btn confused" onclick="handleFeedback(this, 'confused')">❓ Chưa hiểu lắm</button>
       </div>
@@ -2059,75 +2042,8 @@ If the learner writes in Vietnamese, answer briefly in Vietnamese and invite the
     const speechControlButton = document.querySelector(`#${elemId}-group .speech-toggle-btn`);
     if (speechControlButton) speechControlButton.dataset.speechText = visibleReplyText;
     if (activeSpace === "english" && speechOutputEnabled) speakEnglishReply(visibleReplyText);
-    // Chỉ tự dựng hình khi người học chủ động xin vẽ; nếu chỉ AI gợi ý thì làm nổi nút để khỏi tốn thêm lượt API.
-    if (shouldDrawFromText(sourceQuestion)) {
+    if (drawMarkerFound || shouldDrawFromText(sourceQuestion)) {
       window.setTimeout(() => requestIllustration(`${elemId}-group`), 120);
-    } else if (drawMarkerFound) {
-      const drawButton = renderedGroup.querySelector(".illustration-btn");
-      if (drawButton) {
-        drawButton.classList.add("suggested");
-        drawButton.textContent = "✨ Nên xem hình minh họa";
-      }
-    }
-  }
-
-  function getAppApiUrl(endpoint) {
-    const baseUrl = String(window.APP_CONFIG?.apiBaseUrl || "").trim();
-    const normalizedBase = /^__[A-Z_]+__$/.test(baseUrl) ? "" : baseUrl.replace(/\/+$/, "");
-    const normalizedPath = String(endpoint || "").replace(/^\/+/, "");
-    return normalizedBase ? `${normalizedBase}/${normalizedPath}` : `/${normalizedPath}`;
-  }
-
-  function getGeminiApiEndpoint() {
-    return getAppApiUrl(window.APP_CONFIG?.geminiApiEndpoint);
-  }
-
-  function getMathReviewApiEndpoint() {
-    return getAppApiUrl(window.APP_CONFIG?.mathReviewApiEndpoint);
-  }
-
-  async function requestDeepSeekMath(groupId, task) {
-    const group = document.getElementById(groupId);
-    if (task !== "review" && task !== "solve") return;
-    const button = group?.querySelector(`[data-deepseek-task="${task}"]`);
-    const answer = group?.dataset.illustrationAnswer || "";
-    const question = group?.dataset.illustrationQuestion || "";
-    const endpoint = task === "solve"
-      ? getAppApiUrl(window.APP_CONFIG?.mathSolveApiEndpoint)
-      : getMathReviewApiEndpoint();
-    if (!group || !button || !endpoint || button.disabled) return;
-
-    const panelClass = task === "solve" ? "math-solve-panel" : "math-review-panel";
-    let panel = group.querySelector(`.${panelClass}`);
-    if (!panel) {
-      panel = document.createElement("div");
-      panel.className = `deepseek-panel ${panelClass}`;
-      panel.setAttribute("role", "status");
-      panel.setAttribute("aria-live", "polite");
-      group.querySelector(".msg.bot")?.appendChild(panel);
-    }
-    panel.hidden = false;
-    panel.textContent = task === "solve" ? "DeepSeek đang tự giải đề để đối chiếu..." : "DeepSeek đang rà soát độc lập lời giải...";
-    button.disabled = true;
-
-    try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(task === "solve" ? { question } : { question, answer })
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || `Dịch vụ kiểm tra trả về HTTP ${response.status}.`);
-      const review = data.text || data.choices?.[0]?.message?.content;
-      if (typeof review !== "string" || !review.trim()) throw new Error("DeepSeek chưa trả về nhận xét.");
-      panel.textContent = review.trim();
-      button.textContent = task === "solve" ? "↻ Giải lại" : "↻ Kiểm tra lại";
-      if (window.MathJax?.typesetPromise) await window.MathJax.typesetPromise([panel]).catch(() => {});
-    } catch (error) {
-      panel.textContent = `Chưa kiểm tra được: ${error.message || "lỗi kết nối"}. Cậu thử lại sau nhé.`;
-      console.error(`DeepSeek math ${task} failed:`, error);
-    } finally {
-      button.disabled = false;
     }
   }
 
@@ -3210,42 +3126,6 @@ TRƯỚC KHI TRẢ VỀ, tự kiểm tra 5 điều và sửa lại nếu bất k
 - Trung lập, khách quan; chỉ dùng dữ kiện có trong lời giải, không bịa số liệu; nhãn và công thức phải khớp chính xác với lời giải.`;
   }
 
-  function getAnimationApiEndpoint() {
-    return getAppApiUrl(window.APP_CONFIG?.animationApiEndpoint);
-  }
-
-  async function callAnimationApi(endpoint, prompt, question, answer) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000);
-    try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, question, answer }),
-        signal: controller.signal
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.details || errorData.error || `Animation API lỗi HTTP ${response.status}.`);
-      }
-      const data = await response.json();
-      const videoUrl = data.videoUrl || data.video_url;
-      if (videoUrl) {
-        const parsedUrl = new URL(videoUrl);
-        if (!/^https?:$/.test(parsedUrl.protocol)) throw new Error("Video API trả về URL không an toàn.");
-        return { videoUrl: parsedUrl.href };
-      }
-      if (data.scene && typeof data.scene === "object") {
-        return { raw: `<anim_code>${JSON.stringify(data.scene)}</anim_code>` };
-      }
-      if (Array.isArray(data.steps)) return { raw: JSON.stringify(data) };
-      if (typeof data.text === "string" && data.text.trim()) return { raw: data.text };
-      throw new Error("Video API cần trả về videoUrl, video_url, scene, steps hoặc text.");
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }
-
   async function requestIllustration(groupId) {
     const responseGroup = document.getElementById(groupId);
     const button = responseGroup?.querySelector(".illustration-btn");
@@ -3253,124 +3133,96 @@ TRƯỚC KHI TRẢ VỀ, tự kiểm tra 5 điều và sửa lại nếu bất k
 
     const existingPanel = responseGroup.querySelector(".illustration-panel");
     if (existingPanel) {
-      const canRetry = existingPanel.dataset.retry === "1";
       existingPanel.remove();
-      if (!canRetry) {
-        button.textContent = "🖼 Vẽ hình minh họa";
-        return;
-      }
+      button.textContent = "🖼 Vẽ hình minh họa";
+      return;
     }
 
     button.disabled = true;
-    const animationApiEndpoint = getAnimationApiEndpoint();
-    button.textContent = animationApiEndpoint ? "⏳ Llama đang dựng..." : "⏳ Đang dựng animation...";
+    button.textContent = "⏳ Đang dựng animation...";
     const panel = document.createElement("div");
     panel.className = "illustration-panel";
-    panel.innerHTML = `<div class="typing-label">${animationApiEndpoint ? "Llama đang tạo kịch bản animation..." : "AI đang dựng animation ngắn..."}</div>`;
+    panel.innerHTML = `<div class="typing-label">AI đang dựng animation ngắn...</div>`;
     responseGroup.querySelector(".msg.bot")?.appendChild(panel);
 
     const latestAnswer = responseGroup.dataset.illustrationAnswer || responseGroup.querySelector(".bot-text")?.innerText || "";
     const latestQuestion = responseGroup.dataset.illustrationQuestion || "";
     const basePrompt = buildIllustrationPrompt(latestQuestion, latestAnswer);
     let scene = null;
-    let videoUrl = "";
-
-    const finish = (label) => {
-      button.disabled = false;
-      button.textContent = label;
-    };
-    const showNote = (message) => {
-      panel.innerHTML = `<div class="illustration-note">${escapeHtml(message)}</div>`;
-      panel.dataset.retry = "1";
-      finish("🖼 Vẽ hình minh họa");
-    };
+    let usedFallback = false;
 
     const buildScene = async (promptText) => {
-      let raw;
-      if (animationApiEndpoint) {
-        try {
-          const result = await callAnimationApi(animationApiEndpoint, promptText, latestQuestion, latestAnswer);
-          if (result.videoUrl) return { videoUrl: result.videoUrl };
-          raw = result.raw;
-        } catch (error) {
-          error.apiFailed = true;
-          throw error;
-        }
-      } else {
-        raw = await callGeminiIllustration(promptText);
-      }
-      if (!raw) {
-        const error = new Error("API khong tra ve ket qua.");
-        error.apiFailed = true;
-        throw error;
-      }
+      const raw = await callGeminiIllustration(promptText);
       const parsed = extractAnimScene(raw);
       if (!parsed) throw new Error("AI khong tra ve khoi <anim_code> hop le.");
-      return { scene: validateAnimScene(parsed, latestAnswer) };
+      return validateAnimScene(parsed, latestAnswer);
     };
-    const acceptBuildResult = (result) => {
-      videoUrl = result.videoUrl || "";
-      scene = result.scene || null;
-    };
-    const apiFailedNote = () => animationApiEndpoint
-      ? "Tớ chưa kết nối được với dịch vụ animation. Cậu kiểm tra proxy và GROQ_API_KEY rồi thử lại nhé!"
-      : lastGeminiFailure.rateLimited
-        ? "Các API key miễn phí đang tạm hết lượt nên tớ chưa dựng hình được. Cậu bấm lại nút sau ít phút nhé!"
-        : "Tớ chưa kết nối được tới Gemini để dựng hình. Cậu kiểm tra mạng rồi bấm lại nút nhé!";
 
     try {
-      acceptBuildResult(await buildScene(basePrompt));
+      scene = await buildScene(basePrompt);
     } catch (error) {
-      if (error.apiFailed) { showNote(apiFailedNote()); return; }
-      console.warn("Kịch bản animation không hợp lệ, nhờ model dựng lại một lần:", error);
+      console.warn("Kịch bản animation lỗi, nhờ Gemini sửa một lần:", error);
       try {
-        acceptBuildResult(await buildScene(`${basePrompt}\n\nLƯỢT TRƯỚC BỊ TỪ CHỐI: ${error.message}\nHãy sửa đúng lỗi đó, giữ nguyên ý nghĩa khoa học, rồi trả về kịch bản mới.`));
+        scene = await buildScene(`${basePrompt}\n\nLƯỢT TRƯỚC BỊ TỪ CHỐI: ${error.message}\nHãy sửa đúng lỗi đó, giữ nguyên ý nghĩa khoa học, rồi trả về kịch bản mới.`);
       } catch (repairError) {
-        console.warn("Không sửa được kịch bản animation:", repairError);
-        showNote(repairError.apiFailed
-          ? apiFailedNote()
-          : "Tớ chưa dựng được hình đúng bản chất cho bài này nên không vẽ đại, tránh làm cậu hiểu sai. Cậu bấm lại nút để tớ thử lần nữa nhé!");
-        return;
+        console.warn("Không sửa được kịch bản, dùng animation mẫu:", repairError);
       }
+    }
+    if (!scene) {
+      scene = {
+        noDraw: true,
+        note: "Chưa dựng được hình đúng với dữ kiện và bản chất của câu hỏi nên tớ không vẽ đại."
+      };
     }
 
     // Số không có trong lời giải = có dấu hiệu bịa dữ liệu: cho AI làm lại đúng một lần.
-    let anchored = Boolean(videoUrl) || !scene?.unanchored?.length;
-    if (!videoUrl && !scene?.noDraw && !anchored) {
+    let anchored = !scene?.unanchored?.length;
+    if (!scene?.noDraw && !anchored) {
       const listed = scene.unanchored.slice(0, 8).join(", ");
       console.warn("Kịch bản dùng số không có trong lời giải:", scene.unanchored);
       try {
         const fixed = await buildScene(`${basePrompt}\n\nLƯỢT TRƯỚC DÙNG CÁC SỐ KHÔNG CÓ TRONG LỜI GIẢI: ${listed}.\nHãy sửa: chỉ dùng số lấy nguyên văn từ lời giải (hoặc đổi đơn vị thập phân của nó), nếu buộc phải phóng/tách để hình vừa khung thì khai báo trong "basis", còn không thì vẽ tổng quát bằng nhãn ký hiệu.`);
-        scene = fixed;
-        anchored = fixed.noDraw || !fixed.unanchored.length;
+        if (fixed.noDraw) {
+          scene = fixed;
+        } else {
+          scene = fixed;
+          anchored = !fixed.unanchored.length;
+        }
       } catch (error) {
         console.warn("Không sửa được số liệu của kịch bản:", error);
       }
     }
 
-    if (!videoUrl && scene?.noDraw) {
-      showNote(scene.note || "Chủ đề này vẽ hình dễ gây hiểu nhầm nên tớ giải thích bằng lời cho chắc.");
+    if (scene?.noDraw) {
+      panel.innerHTML = `<div class="illustration-note">${escapeHtml(scene.note || "Chủ đề này vẽ hình dễ gây hiểu nhầm nên tớ giải thích bằng lời cho chắc.")}</div>`;
+      button.disabled = false;
+      button.textContent = "🖼 Vẽ hình minh họa";
       return;
     }
 
-    try {
-      if (videoUrl) {
-        panel.innerHTML = `<video class="manim-video" controls playsinline preload="metadata" src="${escapeAttribute(videoUrl)}"></video><div class="illustration-note">Video được dựng bởi dịch vụ video đã cấu hình.</div>`;
-      } else {
-        const caption = anchored
+    const mountScene = () => {
+      const caption = usedFallback
+        ? "AI chưa tạo được kịch bản phù hợp nên hệ thống dựng animation mẫu."
+        : (anchored
           ? "Animation dựng trực tiếp trong trình duyệt — máy nào cũng chạy được, không cần cài đặt."
-          : "Hình có chi tiết phóng/tách so với số liệu trong lời giải, cậu đối chiếu lại công thức nhé.";
-        panel.innerHTML = `<div class="anim-stage"><canvas class="anim-canvas"></canvas><div class="anim-labels"></div><button class="anim-replay" type="button">▶ Chơi lại</button></div><div class="illustration-note">${caption}</div>`;
-        const stage = panel.querySelector(".anim-stage");
-        stage.querySelector(".anim-replay").addEventListener("click", () => runAnimScene(stage, scene));
-        runAnimScene(stage, scene);
-      }
+          : "Hình có chi tiết phóng/tách so với số liệu trong lời giải, cậu đối chiếu lại công thức nhé.");
+      panel.innerHTML = `<div class="anim-stage"><canvas class="anim-canvas"></canvas><div class="anim-labels"></div><button class="anim-replay" type="button">▶ Chơi lại</button></div><div class="illustration-note">${caption}</div>`;
+      const stage = panel.querySelector(".anim-stage");
+      stage.querySelector(".anim-replay").addEventListener("click", () => runAnimScene(stage, scene));
+      runAnimScene(stage, scene);
+    };
+
+    try {
+      mountScene();
     } catch (error) {
       console.error("Không dựng được animation:", error);
-      showNote("Kịch bản hình có lỗi nên tớ không hiển thị, tránh làm cậu hiểu sai. Cậu bấm lại nút để tớ thử lần nữa nhé!");
+      panel.innerHTML = `<div class="illustration-note">Không dựng được hình đúng bản chất cho câu hỏi này nên tớ không vẽ đại. Cậu thử lại với đề hoặc dữ kiện rõ hơn nhé.</div>`;
+      button.disabled = false;
+      button.textContent = "🖼 Vẽ hình minh họa";
       return;
     }
-    finish("Ẩn animation");
+    button.disabled = false;
+    button.textContent = "Ẩn animation";
   }
 
   function buildHarmonicMotionPython() {
@@ -3676,28 +3528,34 @@ result`;
 
   async function callGeminiIllustration(prompt) {
     const modelCandidates = GEMINI_STUDY_MODELS;
-    lastGeminiFailure = { rateLimited: false, perDay: false, waitSeconds: 0 };
-    for (const attempt of geminiAttemptPlan(modelCandidates)) {
-      try {
-        const response = await fetch(getGeminiApiEndpoint(), {
+    let attempts = 0;
+    while (attempts < GEMINI_KEYS.length) {
+      attempts += 1;
+      const apiKey = getNextGeminiKey();
+      if (!apiKey) continue;
+      for (const candidateModel of modelCandidates) try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${candidateModel}:generateContent?key=${apiKey}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: attempt.model,
-            stream: false,
             system_instruction: { parts: [{ text: prompt }] },
             contents: [{ role: "user", parts: [{ text: "Người học đã yêu cầu vẽ. Hãy trả về DUY NHẤT một khối <anim_code>{\"steps\":[...]}</anim_code> chứa kịch bản AnimScene hợp lệ theo đúng schema trong hệ thống. Không viết Python, không viết thêm chữ nào ngoài khối đó." }] }],
+            // BẬT thinking (bỏ thinkingBudget:0): model suy luận kỹ hơn -> kịch bản hình đúng bản chất, ít bịa số liệu.
             generationConfig: { temperature: 0.15, maxOutputTokens: 8192 }
           })
         });
-        if (!response.ok) {
-          await noteGeminiFailure(response, attempt);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.error) {
+          const status = response.status || 0;
+          const message = data.error?.message || data.error?.status || `HTTP ${status}`;
+          console.warn("Gemini không tạo được kịch bản animation:", message);
+          if (status === 429 || status >= 500) await sleep(350 * attempts + Math.random() * 200);
           continue;
         }
-        const data = await response.json().catch(() => ({}));
         const result = (data.candidates?.[0]?.content?.parts || [])
-          .map(part => typeof part.text === "string" && !part.thought ? part.text : "").join("").trim();
-        if (result) return result;
+          .map(part => typeof part.text === "string" ? part.text : "").join("").trim();
+        if (!result) throw new Error("Gemini trả về phản hồi rỗng.");
+        return result;
       } catch (error) {
         console.error("Lỗi dựng hình minh họa:", error);
       }
